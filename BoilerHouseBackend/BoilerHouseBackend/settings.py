@@ -76,9 +76,13 @@ WSGI_APPLICATION = "BoilerHouseBackend.wsgi.application"
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'asdfjkhasdfj1238u8d7faysdfabxzlv12312379',
+        'HOST': 'boilerhouse-postgres-db.cke5ybck7fmc.us-east-2.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
