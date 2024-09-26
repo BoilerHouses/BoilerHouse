@@ -9,7 +9,7 @@ import cryptocode
 
 def create_user_obj(data):
     if User.objects.filter(username=data["username"]).exists():
-        return {"error": "User already exists", "status": 304}
+        return {"error": "User Already Exists!", 'status': 400}
     bio = ''
     if 'bio' in data:
         bio = data['bio']

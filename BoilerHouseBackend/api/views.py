@@ -6,7 +6,7 @@ from datetime import datetime
 from .models import User
 from .user_controller import create_user_obj, find_user_obj
 from .bucket_controller import find_buckets
-
+import json
 
 '''
 Look at the examples dir for examples of api requests, we can share a postman collection on a later day as well
@@ -49,5 +49,6 @@ def create_account(request):
         return Response({"error": "Invalid Request Missing Parameters"}, status=400)
     ret = create_user_obj(data)
     if 'error' in ret:
+        print(Response({'error': ret['error']}, status=ret['status']))
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(retObj, status=200)
