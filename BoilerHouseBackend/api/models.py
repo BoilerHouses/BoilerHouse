@@ -5,7 +5,7 @@ import json
 
 
 class User(models.Model):
-    username = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     bio = models.CharField(max_length=2048)
