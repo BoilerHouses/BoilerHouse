@@ -22,32 +22,33 @@ class User(models.Model):
     Use the major and interest methods below to access/modify majors and interests
     '''
 
+    # Constructor type method
     @classmethod
     def create(cls, username, password, name, bio, interests, grad_year, major):
         user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year)
         if interests:
-            user.setInterests(interests)
+            user.set_interests(interests)
         else:
-            user.setInterests([])
-        user.setMajor(major)
+            user.set_interests([])
+        user.set_major(major)
         # do something with the book
         return user
 
-    def getMajors(self):
+    def get_majors(self):
         return json.loads(self.major)
 
-    def addMajor(self, major):
+    def add_major(self, major):
         self.major = json.dumps(json.loads(self.major).append(major))
 
-    def setMajor(self, majors):
+    def set_major(self, majors):
         self.major = json.dumps(majors)
 
-    def getInterests(self):
+    def get_interests(self):
         return json.loads(self.interests)
 
-    def addInterest(self, interest):
+    def add_interest(self, interest):
         self.interests = json.dumps(json.loads(self.interests).append(interest))
 
-    def setInterests(self, interest):
+    def set_interests(self, interest):
         self.interests = json.dumps(interest)
 # Create your models here.

@@ -13,6 +13,8 @@ Look at the examples dir for examples of api requests, we can share a postman co
 
 General structure of a request: Do request validations and then call the method
 '''
+
+
 @api_view(['GET'])
 def ping(request):
     return Response("Up and Running: " + str(datetime.now()))
