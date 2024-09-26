@@ -18,8 +18,9 @@ def create_user_obj(data):
         interests = data['interests']
     load_dotenv()
     try:
-        user = User.create(data['username'], cryptocode.encrypt(data['password'], os.getenv("ENCRYPTION_KEY")),
-                           data['name'], bio, data['grad_year'], data['major'])
+        user = User.create(username=data['username'], password=cryptocode.encrypt(data['password'], os.getenv("ENCRYPTION_KEY")),
+                           name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
+                           major=data['major'])
         user.save()
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
