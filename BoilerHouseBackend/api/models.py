@@ -51,4 +51,13 @@ class User(models.Model):
 
     def set_interests(self, interest):
         self.interests = json.dumps(interest)
-# Create your models here.
+
+
+class LoginPair(models.Model):
+    username = models.CharField(max_length=255, unique=True)
+    password = models.CharField(max_length=255)
+
+    @classmethod
+    def create(cls, username, password):
+        pair = cls(username=username, password=password)
+        return pair

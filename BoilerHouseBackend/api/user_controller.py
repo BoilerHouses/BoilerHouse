@@ -1,7 +1,7 @@
 from dotenv import load_dotenv, dotenv_values
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv, dotenv_values
-from .models import User
+from .models import User, LoginPair
 import json
 import os
 import cryptocode
@@ -12,7 +12,6 @@ def create_user_obj(data):
     # Check if user account already exists
     if User.objects.filter(username=data["username"]).exists():
         return {"error": "User Already Exists!", 'status': 400}
-
     # Since bio and interests are optional, pull them out if present
     bio = ''
     if 'bio' in data:
@@ -23,9 +22,12 @@ def create_user_obj(data):
 
     # Attempt to create and save the user object
     load_dotenv()
+    pair = LoginPair.objects().filter(username=data['username']).first()
+    if not pair:
+        return {'error': "User not found", "status": 404}
     try:
         user = User.create(username=data['username'],
-                           password=cryptocode.encrypt(data['password'], os.getenv("ENCRYPTION_KEY")),
+                           password=pair['password'],
                            name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
                            major=data['major'])
         user.save()
@@ -35,6 +37,16 @@ def create_user_obj(data):
     ret_obj = model_to_dict(user)
     ret_obj['password'] = cryptocode.decrypt(retObj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
+
+
+def save_login_pair(username, password):
+    password = cryptocode.encrypt(password, os.getenv("ENCRYPTION_KEY"))
+    try:
+        pair = LoginPair.create(username=username, password=password)
+        pair.save()
+        return pair
+    except Exception as e:
+        return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
 
 
 # Find a user given username and password
