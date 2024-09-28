@@ -117,7 +117,7 @@ const UserRegistration = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center justify-center mt-14">
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
@@ -163,7 +163,7 @@ const UserRegistration = () => {
               fullWidth
               label="Confirm Password"
               name="confirmPassword"
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'}
               value={formData.confirmPassword}
               error={confirmPasswordError}
               onChange={handleConfirmPasswordChange}
@@ -173,7 +173,7 @@ const UserRegistration = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
-                      onClick={() => setPasswordHelperText(!showConfirmPassword)}
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                       edge="end"
                     >
                       {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
