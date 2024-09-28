@@ -1,4 +1,4 @@
-import  { useState } from 'react';
+import { useState } from 'react';
 import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
@@ -79,7 +79,6 @@ const UserLogin = () => {
                 fullWidth
                 label="Email"
                 name="email"
-                type="email"
                 value={email}
                 onChange={handleEmailChange}
                 error={emailError}

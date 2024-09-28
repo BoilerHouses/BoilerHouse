@@ -122,14 +122,13 @@ const UserRegistration = () => {
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
-            Sign Up
+            Register
           </Typography>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
               fullWidth
               label="Email"
               name="email"
-              type="email"
               value={email}
               onChange={handleEmailChange}
               error={emailError}
