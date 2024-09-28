@@ -5,6 +5,7 @@ import Navbar from "./routes/navbar";
 import RegisterUser from "./routes/registerUser";
 import ErrorPage from "./error-page";
 import UserLogin from "./routes/loginUser";
+import LandingPage from "./routes/landingPage";
 
 import {
   createBrowserRouter,
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <UserLogin/>
+      },
+      {
+        index: true,
+        element: <LandingPage/>
       }
     ]
   },
