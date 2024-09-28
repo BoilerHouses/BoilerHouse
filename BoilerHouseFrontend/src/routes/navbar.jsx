@@ -1,3 +1,5 @@
+import { Outlet } from "react-router-dom";
+
 const Navbar = () => {
   return (
     <nav className="bg-gray-200 p-4">
@@ -13,6 +15,8 @@ const Navbar = () => {
         </ul>
       </div>
     </nav>
+    <Outlet />
+    </>
   );
 }
 

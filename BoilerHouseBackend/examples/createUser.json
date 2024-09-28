@@ -1,0 +1,11 @@
+{
+  "request": "http://127.0.0.1:8000/api/user",
+  "body": {
+    "username": "babu9",
+    "password": "woshiyiga",
+    "name": "Adhi Babu",
+    "bio": "I am a Purdue CS Student",
+    "grad_year": 2026,
+    "major": ["Computer Science"]
+  }
+}
