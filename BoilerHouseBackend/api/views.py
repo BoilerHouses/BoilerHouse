@@ -7,6 +7,14 @@ from .models import User
 from .user_controller import create_user_obj, find_user_obj, save_login_pair
 from .bucket_controller import find_buckets
 import json
+from .tokens import account_activation_token
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from django.http import HttpResponse
+
 
 '''
 Look at the examples dir for examples of api requests, we can share a postman collection on a later day as well
@@ -14,7 +22,48 @@ Look at the examples dir for examples of api requests, we can share a postman co
 General structure of a request: Do request validations and then call the method
 '''
 
+def activateEmail(request, user, to_email):
+    mail_subject = "Activate your user account."
+    message = render_to_string("activate_account.html", {
+        'user':user.name, 
+        'domain':get_current_site(request).domain,
+        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+        'token':account_activation_token.make_token(user),
+        "protocol": 'https' if request.is_secure() else 'http'
 
+    })
+    email = EmailMessage(mail_subject, message, to={to_email})
+    if email.send():
+        return Response("email sent.")
+    else:
+        Response("email was not sent due to some error.")
+
+@api_view(['GET'])
+def activate(request, uidb64, token):
+    user = None
+    uid = None
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        return Response("unable to activate user because user not found")
+    if account_activation_token.check_token(user, token):
+        user.is_active = True
+    else:
+        return Response("unable to activate user") 
+    user.delete()
+    return Response("user activated.")
+
+def test_email_auth(request):
+    email = request.GET['email']
+    name = request.GET['name']
+    user = User()
+    user.username = email
+    user.name = name
+    user.save()
+    activateEmail(request, user, to_email=email)
+    return HttpResponse("email sent")
+    
 @api_view(['GET'])
 def ping(request):
     return Response("Up and Running: " + str(datetime.now()))
