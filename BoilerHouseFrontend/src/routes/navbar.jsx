@@ -1,7 +1,4 @@
 import { Outlet } from "react-router-dom";
-import { NavLink } from 'react-router-dom';
-
-
 
 const Navbar = () => {
   return (
@@ -13,10 +10,8 @@ const Navbar = () => {
           <span className="text-yellow-500">House</span>
         </a>
         <ul className="flex space-x-8 text-lg">
-
-          <li><NavLink to="/login" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Login</NavLink></li>
-          <li><NavLink to="/register" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</NavLink></li>
-
+          <li><a href="/login" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Login</a></li>
+          <li><a href="/register" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</a></li>
           <li><a href="#profile" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</a></li>
         </ul>
       </div>
