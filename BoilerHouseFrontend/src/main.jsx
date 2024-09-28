@@ -2,6 +2,7 @@ import * as React from "react";
 import * as ReactDOM from "react-dom/client";
 
 import Navbar from "./routes/navbar";
+import RegisterUser from "./routes/registerUser";
 import ErrorPage from "./error-page";
 
 import {
@@ -17,6 +18,12 @@ const router = createBrowserRouter([
     path: "/",
     element: <Navbar/>,
     errorElement: <ErrorPage/>,
+    children: [
+      {
+        path: "/register",
+        element: <RegisterUser/>
+      }
+    ]
   },
 ]);
 
