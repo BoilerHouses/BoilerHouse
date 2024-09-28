@@ -4,6 +4,7 @@ import * as ReactDOM from "react-dom/client";
 import Navbar from "./routes/navbar";
 import RegisterUser from "./routes/registerUser";
 import ErrorPage from "./error-page";
+import UserLogin from "./routes/loginUser";
 
 import {
   createBrowserRouter,
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterUser/>
+      },
+      {
+        path: "/login",
+        element: <UserLogin/>
       }
     ]
   },
