@@ -69,60 +69,69 @@ const UserLogin = () => {
     };
 
     return (
-      <div className="flex items-center justify-center mt-14">
-        <Card className="w-full max-w-md">
-          <CardContent>
-            <Typography variant="h5" component="h2" className="mb-4 text-center">
-              Login
-            </Typography>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <TextField
-                fullWidth
-                label="Email"
-                name="email"
-                value={email}
-                onChange={handleEmailChange}
-                error={emailError}
-                className="bg-white !my-3.5"
-                helperText={emailHelperText}
-              />
-              <TextField
-                fullWidth
-                label="Password"
-                name="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                error={passwordError}
-                onChange={handlePasswordChange}
-                className="bg-white !my-3.5"
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label="toggle password visibility"
-                        onClick={() => setShowPassword(!showPassword)}
-                        edge="end"
-                      >
-                        {showPassword ? <Visibility /> : <VisibilityOff />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-                helperText={passwordHelperText}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                className="mt-4"
-              >
-                Login
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+        <div className="flex items-center justify-center mt-14">
+            <Card className="w-full max-w-md">
+                <CardContent>
+                    <Typography variant="h5" component="h2" className="mb-4 text-center">
+                        Login
+                    </Typography>
+                    <form onSubmit={handleSubmit} className="space-y-4">
+                        <TextField
+                            fullWidth
+                            label="Email"
+                            name="email"
+                            type="email"
+                            value={email}
+                            onChange={handleEmailChange}
+                            error={emailError}
+                            className="bg-white !my-3.5"
+                            helperText={emailHelperText}
+                        />
+                        <TextField
+                            fullWidth
+                            label="Password"
+                            name="password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            error={passwordError}
+                            onChange={handlePasswordChange}
+                            className="bg-white !my-3.5"
+                            InputProps={{
+                                endAdornment: (
+                                    <InputAdornment position="end">
+                                        <IconButton
+                                            aria-label="toggle password visibility"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            edge="end"
+                                        >
+                                            {showPassword ? <Visibility /> : <VisibilityOff />}
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            }}
+                            helperText={passwordHelperText}
+                        />
+                        <Typography 
+                            variant="body2" 
+                            color="primary" 
+                            className="cursor-pointer text-center"
+                            onClick={<NavLink to='/forgot'>Forgot Password?</NavLink>}
+                        >
+                            Forgot Password?
+                        </Typography>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            fullWidth
+                            className="mt-4"
+                        >
+                            Login
+                        </Button>
+                    </form>
+                </CardContent>
+            </Card>
+        </div>
     );
 };
 

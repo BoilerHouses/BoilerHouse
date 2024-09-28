@@ -5,7 +5,6 @@ import Navbar from "./routes/navbar";
 import RegisterUser from "./routes/registerUser";
 import ErrorPage from "./error-page";
 import UserLogin from "./routes/loginUser";
-import ForgotPassword from "./routes/forgotPassword";
 
 import {
   createBrowserRouter,
@@ -28,10 +27,6 @@ const router = createBrowserRouter([
       {
         path: "/login",
         element: <UserLogin/>
-      },
-      {
-        path: "/forgot_password",
-        element: <ForgotPassword/>
       }
     ]
   },

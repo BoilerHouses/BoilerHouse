@@ -112,23 +112,23 @@ const UserRegistration = () => {
 
     if (err === false) {
       alert('create user')
-      console.log(email, password)
     }
     
   };
 
   return (
-    <div className="flex items-center justify-center my-14">
+    <div className="flex items-center justify-center mt-14">
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
-            Register
+            Sign Up
           </Typography>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
               fullWidth
               label="Email"
               name="email"
+              type="email"
               value={email}
               onChange={handleEmailChange}
               error={emailError}
