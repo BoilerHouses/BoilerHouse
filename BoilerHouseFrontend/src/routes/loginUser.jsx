@@ -45,11 +45,6 @@ const UserLogin = () => {
         }
     };
 
-    const handleForgotPassword = (e) => {
-        e.preventDefault();
-        alert('hello');
-    };
-
     const handleSubmit = (e) => {
         e.preventDefault();
 
