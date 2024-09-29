@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment} from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { NavLink } from 'react-router-dom';
 
@@ -110,6 +110,15 @@ const UserLogin = () => {
                 }}
                 helperText={passwordHelperText}
               />
+              <NavLink
+                  to="/forgot_password"
+                  className="cursor-pointer text-center"
+              >
+                <div className="text-blue-500 underline"> 
+                  Forgot Password?
+                </div>
+              </NavLink>
+
               <Button
                 type="submit"
                 variant="contained"
