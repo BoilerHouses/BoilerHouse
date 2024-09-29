@@ -1,5 +1,5 @@
 import  { useState } from 'react';
-import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment } from '@mui/material';
+import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 
@@ -32,6 +32,8 @@ const UserRegistration = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [adminKey, setAdminKey] = useState("");
 
 
 
@@ -85,6 +87,17 @@ const UserRegistration = () => {
     }
   };
 
+  
+  const handleAdminKeyChange = (event) => {
+    const newKey = event.target.value;
+    setAdminKey(newKey);
+  };
+
+
+  const toggleAdmin = () => {
+    const adminField = document.querySelector("#admin-text-field");
+    adminField.classList.toggle("hidden");
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -121,7 +134,7 @@ const UserRegistration = () => {
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
-            Sign Up
+            Register
           </Typography>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
@@ -167,7 +180,7 @@ const UserRegistration = () => {
               value={formData.confirmPassword}
               error={confirmPasswordError}
               onChange={handleConfirmPasswordChange}
-              className="bg-white !my-3.5"
+              className="bg-white !mt-3.5"
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -183,6 +196,23 @@ const UserRegistration = () => {
               }}
               helperText={confirmPasswordHelperText}
             />
+
+            <div id="admin-text-field" className='hidden'
+            >
+            <TextField
+              fullWidth
+              label="Admin Key"
+              name="adminKey"
+              type="password"
+              value={adminKey}
+              onChange={handleAdminKeyChange}
+              className="bg-white !mt-3.5"
+            />
+            </div>
+            <FormGroup>
+              <FormControlLabel control={<Checkbox/>} label="Create Admin Account" onClick={toggleAdmin}/>
+            </FormGroup>
+
             <Button
               type="submit"
               variant="contained"

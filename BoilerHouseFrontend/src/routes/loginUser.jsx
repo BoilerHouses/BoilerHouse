@@ -111,14 +111,16 @@ const UserLogin = () => {
                             }}
                             helperText={passwordHelperText}
                         />
-                        <Typography 
-                            variant="body2" 
-                            color="primary" 
-                            className="cursor-pointer text-center"
-                            onClick={<NavLink to='/forgot'>Forgot Password?</NavLink>}
+
+                        <NavLink 
+                            to='/forgot_password'
+                            className = "underline-offset w-full text-center"
                         >
+                          <div className='text-blue-500 underline'> 
                             Forgot Password?
-                        </Typography>
+                          </div>
+                        </NavLink>
+
                         <Button
                             type="submit"
                             variant="contained"
