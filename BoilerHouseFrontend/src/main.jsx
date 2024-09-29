@@ -6,6 +6,7 @@ import RegisterUser from "./routes/registerUser";
 import ErrorPage from "./error-page";
 import UserLogin from "./routes/loginUser";
 import ForgotPassword from "./routes/forgotPassword";
+import LandingPage from "./routes/landingPage";
 
 import {
   createBrowserRouter,
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "/forgot_password",
         element: <ForgotPassword/>
+      },
+      {
+        index: true,
+        element: <LandingPage/>
       }
     ]
   },
