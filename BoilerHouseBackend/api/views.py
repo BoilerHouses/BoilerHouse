@@ -80,9 +80,9 @@ def try_bucket(request):
 
 @api_view(['GET'])
 def register_account(request):
-    if "user" not in request.query_params or "password" not in request.query_params:
+    if "email" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
-    ret = cre(request.query_params['user'], request.query_params['password'])
+    ret = cre(request.query_params['email'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
