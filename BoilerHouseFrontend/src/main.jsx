@@ -3,7 +3,7 @@ import * as ReactDOM from "react-dom/client";
 
 import Navbar from "./routes/navbar";
 import RegisterUser from "./routes/registerUser";
-import ErrorPage from "./error-page";
+import ErrorPage from "./routes/error-page";
 import UserLogin from "./routes/loginUser";
 import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";

@@ -1,7 +1,7 @@
 import  { useState } from 'react';
 import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-
+import key from "../adminkey.jsx"
 
 const isValidEmailAddress = (email) => {
   const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -34,13 +34,16 @@ const UserRegistration = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [adminKey, setAdminKey] = useState("");
+  const [adminError, setAdminError] = useState(false);
+  const [adminErrorHelperText, setAdminErrorHelperText] = useState('');
 
 
 
   const [formData, setFormData] = useState({
     email: '',
     password: '', 
-    confirmPassword: ''
+    confirmPassword: '',
+    admin: false
   });
 
   const handleEmailChange = (event) => {
@@ -91,13 +94,28 @@ const UserRegistration = () => {
   const handleAdminKeyChange = (event) => {
     const newKey = event.target.value;
     setAdminKey(newKey);
+    setAdminError(false);
+    setAdminErrorHelperText("");
+
+/*
+    if (formData.admin && newKey !== key) {
+      setAdminError(true);
+      setAdminErrorHelperText("Admin Key is not valid");
+    }
+    else {
+      setAdminError(false);
+      setAdminErrorHelperText("");
+    }
+*/
   };
 
-
   const toggleAdmin = () => {
+    const admin = formData.admin
+    setFormData({ ...formData, admin: !admin});
     const adminField = document.querySelector("#admin-text-field");
     adminField.classList.toggle("hidden");
   }
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -122,10 +140,16 @@ const UserRegistration = () => {
       err = true;
     }
 
+    if (formData.admin && adminKey !== key) {
+      setAdminError(true);
+      setAdminErrorHelperText("Admin Key is not valid");
+      err=true;
+    }
+
 
     if (err === false) {
       alert('create user')
-      console.log(email, password)
+      console.log(formData)
     }
     
   };
@@ -205,8 +229,10 @@ const UserRegistration = () => {
               name="adminKey"
               type="password"
               value={adminKey}
+              error={adminError}
               onChange={handleAdminKeyChange}
               className="bg-white !mt-3.5"
+              helperText={adminErrorHelperText}
             />
             </div>
             <FormGroup>
