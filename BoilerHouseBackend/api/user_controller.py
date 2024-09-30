@@ -40,11 +40,12 @@ def create_user_obj(data):
 
 
 def save_login_pair(username, password):
+    load_dotenv()
     password = cryptocode.encrypt(password, os.getenv("ENCRYPTION_KEY"))
     try:
         pair = LoginPair.create(username=username, password=password)
         pair.save()
-        return pair
+        return model_to_dict(pair)
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
 
