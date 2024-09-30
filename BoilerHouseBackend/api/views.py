@@ -82,7 +82,7 @@ def try_bucket(request):
 def register_account(request):
     if "email" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
-    ret = cre(request.query_params['email'], request.query_params['password'])
+    ret = save_login_pair(request.query_params['email'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
@@ -92,7 +92,7 @@ def register_account(request):
 def log_in(request):
     if "user" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
-    ret = save_login_pair(request.query_params['user'], request.query_params['password'])
+    ret = find_user_obj(request.query_params['user'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
