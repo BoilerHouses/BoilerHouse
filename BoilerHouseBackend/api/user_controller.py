@@ -22,7 +22,7 @@ def create_user_obj(data):
 
     # Attempt to create and save the user object
     load_dotenv()
-    pair = LoginPair.objects().filter(username=data['username']).first()
+    pair = LoginPair.objects.filter(username=data['username']).first()
     if not pair:
         return {'error': "User not found", "status": 404}
     try:
@@ -35,7 +35,7 @@ def create_user_obj(data):
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
     # Decrypt password and return it
     ret_obj = model_to_dict(user)
-    ret_obj['password'] = cryptocode.decrypt(retObj['password'], os.getenv("ENCRYPTION_KEY"))
+    ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
 
 

@@ -88,7 +88,7 @@ def register_account(request):
     return Response(ret, status=200)
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def log_in(request):
     if "user" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
@@ -105,6 +105,7 @@ def create_account(request):
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return Response({"error": "Invalid JSON Document"}, status=422)
+    print(data)
     if ('username' not in data or
             'name' not in data or 'grad_year' not in data or 'major' not in data):
         return Response({"error": "Invalid Request Missing Parameters"}, status=400)
