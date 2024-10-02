@@ -14,6 +14,9 @@ from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
 from django.http import HttpResponse
+from dotenv import load_dotenv, dotenv_values
+import os
+
 
 
 '''
@@ -80,8 +83,11 @@ def try_bucket(request):
 
 @api_view(['GET'])
 def register_account(request):
+    load_dotenv()
     if "email" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    if "adminKey" in request.query_params and request.query_params['adminKey'] != os.getenv("ADMIN_KEY"):
+        return Response(status=401)
     ret = save_login_pair(request.query_params['email'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
@@ -90,9 +96,9 @@ def register_account(request):
 
 @api_view(['GET'])
 def log_in(request):
-    if "user" not in request.query_params or "password" not in request.query_params:
+    if "username" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
-    ret = find_user_obj(request.query_params['user'], request.query_params['password'])
+    ret = find_user_obj(request.query_params['username'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
@@ -105,7 +111,6 @@ def create_account(request):
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return Response({"error": "Invalid JSON Document"}, status=422)
-    print(data)
     if ('username' not in data or
             'name' not in data or 'grad_year' not in data or 'major' not in data):
         return Response({"error": "Invalid Request Missing Parameters"}, status=400)

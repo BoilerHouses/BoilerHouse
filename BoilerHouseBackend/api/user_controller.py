@@ -58,7 +58,10 @@ def save_login_pair(email, password):
 # Find a user given email and password
 def find_user_obj(email, password):
     load_dotenv()
-    target = User.objects.filter(email=email).first()
+    target = User.objects.filter(username=email).first()
+    a = LoginPair.objects.all()
+    for i in a:
+        print(model_to_dict(i))
     # If no user found return error
     if not target:
         return {"error": "Invalid Login Credentials!", 'status': 404}

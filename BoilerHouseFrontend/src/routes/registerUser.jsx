@@ -4,7 +4,6 @@ import { TextField, Button, Card, CardContent, Typography, IconButton,
 import { NavLink, useNavigate } from 'react-router-dom';
 
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import key from "../adminkey.jsx";
 
 import axios from "axios";
 
@@ -40,10 +39,8 @@ const UserRegistration = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [adminKey, setAdminKey] = useState("");
-  const [adminError, setAdminError] = useState(false);
-  const [adminErrorHelperText, setAdminErrorHelperText] = useState('');
 
-  const[isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -108,15 +105,21 @@ const UserRegistration = () => {
   const handleAdminKeyChange = (event) => {
     const newKey = event.target.value;
     setAdminKey(newKey);
-    setAdminError(false);
-    setAdminErrorHelperText("");
+
+
+    const adminKeyAlert = document.querySelector("#admin-key-alert")
+    adminKeyAlert.classList.add("hidden");
   };
 
   const toggleAdmin = () => {
+    const adminKeyAlert = document.querySelector("#admin-key-alert")
+    adminKeyAlert.classList.add("hidden");
+
     const admin = formData.admin
     setFormData({ ...formData, admin: !admin});
     const adminField = document.querySelector("#admin-text-field");
     adminField.classList.toggle("hidden");
+    setAdminKey("")
   }
 
 
@@ -147,25 +150,25 @@ const UserRegistration = () => {
       err = true;
     }
 
-    if (formData.admin && adminKey !== key) {
-      setAdminError(true);
-      setAdminErrorHelperText("Admin Key is not valid");
-      err=true;
-    }
-
-
     if (err === false) {
       setIsLoading(true);
+
+      let params = {
+        email: formData.email,
+        password: formData.password
+      }
+
+      if (formData.admin) {
+        params.adminKey = adminKey;
+      }
+
       axios({
           // create account endpoint
           url: "http://127.0.0.1:8000/api/registerAccount/",
           method: "GET",
 
           // params
-          params: {
-            email: formData.email,
-            password: formData.password
-          }
+          params: params
       }) 
 
       // success
@@ -184,9 +187,14 @@ const UserRegistration = () => {
           const emailAlert = document.querySelector("#email-already-exists-alert")
           emailAlert.classList.remove("hidden");
         }
-        else {
+
+        else if (err.status == 404) {
           const serverAlert = document.querySelector("#server-error-alert")
           serverAlert.classList.remove("hidden");
+        }
+        else {
+          const adminKeyAlert = document.querySelector("#admin-key-alert")
+          adminKeyAlert.classList.remove("hidden");
         }
       });
     }
@@ -269,10 +277,8 @@ const UserRegistration = () => {
               name="adminKey"
               type="password"
               value={adminKey}
-              error={adminError}
               onChange={handleAdminKeyChange}
               className="bg-white !mt-3.5"
-              helperText={adminErrorHelperText}
             />
             </div>
             <FormGroup>
@@ -296,6 +302,13 @@ const UserRegistration = () => {
             <div id="server-error-alert" className='hidden'>
               <Alert severity="error">
                 A server error occurred. Please try again later.
+              </Alert>
+            </div> 
+
+                        
+            <div id="admin-key-alert" className='hidden'>
+              <Alert severity="error">
+                Admin key is incorrect.
               </Alert>
             </div> 
 
