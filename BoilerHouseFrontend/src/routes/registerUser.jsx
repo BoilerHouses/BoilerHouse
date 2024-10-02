@@ -1,7 +1,13 @@
 import  { useState } from 'react';
-import { TextField, Button, Card, CardContent, Typography, IconButton, InputAdornment, FormGroup, FormControlLabel, Checkbox } from '@mui/material';
+import { TextField, Button, Card, CardContent, Typography, IconButton, 
+         InputAdornment, FormGroup, FormControlLabel, Checkbox, Alert, CircularProgress} from '@mui/material';
+import { NavLink, useNavigate } from 'react-router-dom';
+
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import key from "../adminkey.jsx"
+import key from "../adminkey.jsx";
+
+import axios from "axios";
+
 
 const isValidEmailAddress = (email) => {
   const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
@@ -37,6 +43,9 @@ const UserRegistration = () => {
   const [adminError, setAdminError] = useState(false);
   const [adminErrorHelperText, setAdminErrorHelperText] = useState('');
 
+  const[isLoading, setIsLoading] = useState(false);
+
+  const navigate = useNavigate();
 
 
   const [formData, setFormData] = useState({
@@ -47,6 +56,11 @@ const UserRegistration = () => {
   });
 
   const handleEmailChange = (event) => {
+
+    const emailAlert = document.querySelector("#email-already-exists-alert")
+    emailAlert.classList.add("hidden");
+
+
     const newEmail = event.target.value;
     setEmail(newEmail);
 
@@ -96,17 +110,6 @@ const UserRegistration = () => {
     setAdminKey(newKey);
     setAdminError(false);
     setAdminErrorHelperText("");
-
-/*
-    if (formData.admin && newKey !== key) {
-      setAdminError(true);
-      setAdminErrorHelperText("Admin Key is not valid");
-    }
-    else {
-      setAdminError(false);
-      setAdminErrorHelperText("");
-    }
-*/
   };
 
   const toggleAdmin = () => {
@@ -118,6 +121,10 @@ const UserRegistration = () => {
 
 
   const handleSubmit = (e) => {
+
+    const serverAlert = document.querySelector("#server-error-alert")
+    serverAlert.classList.add("hidden");
+    
     e.preventDefault();
 
     let err = false;
@@ -148,14 +155,47 @@ const UserRegistration = () => {
 
 
     if (err === false) {
-      alert('create user')
-      console.log(formData)
+      setIsLoading(true);
+      axios({
+          // create account endpoint
+          url: "http://127.0.0.1:8000/api/registerAccount/",
+          method: "GET",
+
+          // params
+          params: {
+            email: formData.email,
+            password: formData.password
+          }
+      }) 
+
+      // success
+      .then((res) => {
+        setIsLoading(false);
+
+        navigate("/verify_account", {state: {data: res.data}});
+      })
+
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoading(false);
+
+        // email already exists
+        if (err.status == 409) {
+          const emailAlert = document.querySelector("#email-already-exists-alert")
+          emailAlert.classList.remove("hidden");
+        }
+        else {
+          const serverAlert = document.querySelector("#server-error-alert")
+          serverAlert.classList.remove("hidden");
+        }
+      });
     }
     
   };
 
   return (
     <div className="flex items-center justify-center my-14">
+
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
@@ -239,14 +279,36 @@ const UserRegistration = () => {
               <FormControlLabel control={<Checkbox/>} label="Create Admin Account" onClick={toggleAdmin}/>
             </FormGroup>
 
+            <div id="email-already-exists-alert" className='hidden'>
+              <Alert severity="error">
+                An account with email {email} already exists. {" "}
+                <NavLink
+                to="/login">
+                  <span className="text-blue-500 underline">
+                    Log in
+                  </span>
+                </NavLink>
+                {" instead?"}
+              </Alert>
+            </div> 
+
+            
+            <div id="server-error-alert" className='hidden'>
+              <Alert severity="error">
+                A server error occurred. Please try again later.
+              </Alert>
+            </div> 
+
             <Button
               type="submit"
               variant="contained"
               color="primary"
               fullWidth
               className="mt-4"
+              disabled={isLoading}
             >
-              Register
+              {isLoading ? (
+                <CircularProgress size={24} color="inherit" />) : ("Register")}
             </Button>
           </form>
         </CardContent>

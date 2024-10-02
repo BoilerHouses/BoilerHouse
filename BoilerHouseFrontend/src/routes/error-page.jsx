@@ -1,4 +1,4 @@
-import { Button } from '@mui/material';  // MUI button
+import { Button } from '@mui/material'; 
 import { useNavigate } from 'react-router-dom';
 
 const ErrorPage = () => {
@@ -18,7 +18,6 @@ const ErrorPage = () => {
         <img 
           className="w-full h-64 object-contain my-6" 
           src="../../public/not_found.jpg" 
-          alt="funny gif"
         />
 
         <Button 
