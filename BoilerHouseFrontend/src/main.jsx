@@ -7,7 +7,7 @@ import UserLogin from "./routes/loginUser";
 import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
-
+import ActivateAccount from "./routes/activateAccount"
 import {
   createBrowserRouter,
   RouterProvider,
@@ -41,6 +41,10 @@ const router = createBrowserRouter([
       {
         path: "/verify_account",
         element: <VerifyAccount/>
+      },
+      {
+        path: "/activate",
+        element: <ActivateAccount/>
       }
 
     ]
