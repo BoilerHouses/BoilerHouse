@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
-from .models import User, LoginPair
+from .models import User
 from .user_controller import create_user_obj, find_user_obj, save_login_pair
 from .bucket_controller import find_buckets
 import json
@@ -58,13 +58,23 @@ def activate(request, uidb64, token):
     user.delete()
     return Response("user activated.")
 
+@api_view(['GET'])
 def test_email_auth(request):
-    email = request.GET['email']
-    name = request.GET['name']
-    user = User()
-    user.username = email
-    user.name = name
-    user.save()
+    # check if user already exists
+    # if it does, then don't create a new user object
+    if "email" not in request.query_params or "name" not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    
+    email = request.query_params['email']
+    name = request.query_params['name']
+    user = User.objects.filter(username=email).first()
+
+    if not user:
+        user = User()
+        user.username = email
+        user.name = name
+        user.save()
+
     activateEmail(request, user, to_email=email)
     return HttpResponse("email sent")
     

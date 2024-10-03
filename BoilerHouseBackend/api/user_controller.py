@@ -31,7 +31,6 @@ def create_user_obj(data):
                            password=model_to_dict(pair)['password'],
                            name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
                            major=data['major'], is_admin=data['is_admin'])
-        print(user)
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
     # Decrypt password and return it
@@ -59,7 +58,6 @@ def save_login_pair(email, password, is_admin):
 def find_user_obj(email, password):
     load_dotenv()
     target = LoginPair.objects.filter(username=email).first()
-    print(target)
 
     # If no user found return error
     if not target:
