@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ping, try_bucket, log_in, create_account, register_account, activate, test_email_auth
+from .views import ping, try_bucket, log_in, create_account, register_account, activate
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
