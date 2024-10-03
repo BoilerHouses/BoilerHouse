@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
-from .models import User
+from .models import User, LoginPair
 from .user_controller import create_user_obj, find_user_obj, save_login_pair
 from .bucket_controller import find_buckets
 import json
@@ -13,6 +13,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
+from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from dotenv import load_dotenv, dotenv_values
 import os
@@ -86,9 +87,16 @@ def register_account(request):
     load_dotenv()
     if "email" not in request.query_params or "password" not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    
+    isAdmin = False
     if "adminKey" in request.query_params and request.query_params['adminKey'] != os.getenv("ADMIN_KEY"):
         return Response(status=401)
-    ret = save_login_pair(request.query_params['email'], request.query_params['password'])
+    
+    if "adminKey" in request.query_params and request.query_params['adminKey'] == os.getenv("ADMIN_KEY"):
+        isAdmin = True
+
+    ret = save_login_pair(request.query_params['email'], request.query_params['password'], isAdmin)
+
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
@@ -112,10 +120,9 @@ def create_account(request):
     except json.JSONDecodeError:
         return Response({"error": "Invalid JSON Document"}, status=422)
     if ('username' not in data or
-            'name' not in data or 'grad_year' not in data or 'major' not in data):
+            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
         return Response({"error": "Invalid Request Missing Parameters"}, status=400)
     ret = create_user_obj(data)
     if 'error' in ret:
-        print(Response({'error': ret['error']}, status=ret['status']))
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
