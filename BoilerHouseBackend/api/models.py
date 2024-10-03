@@ -7,7 +7,6 @@ import json
 class User(models.Model):
     username = models.CharField(max_length=255, unique=True)
     is_admin = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
     password = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     bio = models.CharField(max_length=2048)
@@ -60,6 +59,7 @@ class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
     is_admin = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
 
 
     @classmethod

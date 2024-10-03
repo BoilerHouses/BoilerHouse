@@ -46,19 +46,23 @@ def create_user_obj(data):
 
 
 def activate_email(request, user):
-    mail_subject = "Activate your user account."
-    message = render_to_string("activate_account.html", {
-        'user': user.username,
-        'domain': get_current_site(request).domain,
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        'token': account_activation_token.make_token(user),
-        "protocol": 'https' if request.is_secure() else 'http'
+    try:
+        mail_subject = "Activate your user account."
+        message = render_to_string("activate_account.html", {
+            'user': user.username,
+            'domain': get_current_site(request).domain,
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_activation_token.make_token(user),
+            "protocol": 'https' if request.is_secure() else 'http'
 
-    })
-    email = EmailMessage(mail_subject, message, to={user.username})
-    if email.send():
-        return "working"
-    else:
+        })
+        email = EmailMessage(mail_subject, message, to={user.username})
+        if email.send():
+            return "working"
+        else:
+            return "error"
+    except Exception as e:
+        print(e)
         return "error"
 
 

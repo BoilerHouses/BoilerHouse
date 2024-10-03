@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
-from .models import User
+from .models import User, LoginPair
 from .user_controller import create_user_obj, find_user_obj, save_login_pair
 from .bucket_controller import find_buckets
 import json
@@ -48,15 +48,20 @@ def activate(request, uidb64, token):
     uid = None
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(pk=uid)
+        user = LoginPair.objects.get(pk=uid)
     except:
         return Response("unable to activate user because user not found")
     if account_activation_token.check_token(user, token):
         user.is_active = True
+        profile = User.create(username=user.username,
+                           password=user.password,
+                           name='', bio='', interests=None, grad_year=-1,
+                           major='', is_admin=user.is_admin)
+        profile.save()
     else:
+        user.delete()
         return Response("unable to activate user") 
-    user.delete()
-    return Response("user activated.")
+    return Response({"message": "Activated Account", "profile": model_to_dict(profile)})
 
 def email_auth(request):
     # check if user already exists
