@@ -6,6 +6,7 @@ import json
 
 class User(models.Model):
     username = models.CharField(max_length=255, unique=True)
+    is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     password = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
@@ -19,20 +20,21 @@ class User(models.Model):
     )
     major = models.CharField(max_length=2048)
 
+
     '''
     Use the major and interest methods below to access/modify majors and interests
     '''
 
     # Constructor type method
     @classmethod
-    def create(cls, username, password, name, bio, interests, grad_year, major):
-        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year)
+    def create(cls, username, password, name, bio, interests, grad_year, major, is_admin):
+        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin)
         if interests:
             user.set_interests(interests)
         else:
             user.set_interests([])
         user.set_major(major)
-        # do something with the book
+
         return user
 
     def get_majors(self):
@@ -57,8 +59,10 @@ class User(models.Model):
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
+    is_admin = models.BooleanField(default=False)
+
 
     @classmethod
-    def create(cls, username, password):
-        pair = cls(username=username, password=password)
+    def create(cls, username, password, is_admin):
+        pair = cls(username=username, password=password, is_admin=is_admin)
         return pair
