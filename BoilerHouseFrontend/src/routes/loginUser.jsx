@@ -106,6 +106,7 @@ const UserLogin = () => {
           setIsLoading(false);
 
           alert("successfuly logged in");
+          console.log(res)
         })
 
         // Catch errors if any

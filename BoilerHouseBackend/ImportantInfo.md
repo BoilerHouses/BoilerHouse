@@ -13,3 +13,11 @@ Use the /api/ping/ endpoint as an example
 1. Create the handler method in views.py using the correct decorator (get put post delete etc.)
 2. Add the url to /api/urls.py file, note it will be available at /api/*
 3. Test the endpoint from postman
+
+
+To reset the migrations:
+(THIS WILL RESET THE DATABASE)
+
+python3 manage.py migrate api zero
+python3 manage.py makemigrations
+python3 manage.py migrate
