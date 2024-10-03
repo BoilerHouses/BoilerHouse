@@ -1,9 +1,10 @@
 // VerifyAccount.jsx
 
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Button, Typography, Container, Paper } from '@mui/material';
 import axios from 'axios';
+import { NavLink } from 'react-router-dom';
 
 const VerifyAccount = () => {
     const [loading, setLoading] = useState(true);
@@ -11,9 +12,7 @@ const VerifyAccount = () => {
     const [error, setError] = useState(false);
     const location = useLocation();
 
-    const query = new URLSearchParams(location.search);
-    const pk = query.get('pk')
-    const token = query.get('token');
+    const {pk, token} = useParams()
 
     useEffect(() => {
         const verifyToken = async () => {
@@ -24,7 +23,8 @@ const VerifyAccount = () => {
             }
             try {
                 const response = await axios.get(`http://127.0.0.1:8000/api/activate/${pk}/${token}`);
-                if (response.data.success) {
+                console.log(response)
+                if (response.status == 200 || response.status == 202) {
                     setSuccess(true);
                 } else {
                     setError(true);
@@ -38,6 +38,7 @@ const VerifyAccount = () => {
 
         verifyToken();
     }, [token]);
+
 
     if (loading) {
         return (
@@ -61,12 +62,15 @@ const VerifyAccount = () => {
                         <Typography variant="body1" className="mt-2">The verification link is invalid or has expired.</Typography>
                     </>
                 )}
-                <Button variant="contained" color="primary" className="mt-4" href="/">
-                    Go to Home
+                <Button>
+                    <NavLink variant="contained" color="primary" className="mt-4" to="/login">
+                        Go to Login
+                    </NavLink>
                 </Button>
             </Paper>
         </Container>
     );
+
 };
 
 export default VerifyAccount;

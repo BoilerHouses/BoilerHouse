@@ -50,7 +50,11 @@ def activate(request, uidb64, token):
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = LoginPair.objects.get(pk=uid)
     except:
-        return Response("unable to activate user because user not found")
+        return Response("unable to activate user because user not found", status=401)
+    
+    if User.objects.filter(username=user.username).first() is not None:
+        return Response("Account already activated", status=202)
+
     if account_activation_token.check_token(user, token):
         user.is_active = True
         profile = User.create(username=user.username,
@@ -60,8 +64,8 @@ def activate(request, uidb64, token):
         profile.save()
     else:
         user.delete()
-        return Response("unable to activate user") 
-    return Response({"message": "Activated Account", "profile": model_to_dict(profile)})
+        return Response("unable to activate user", status=400) 
+    return Response({"message": "Activated Account", "profile": model_to_dict(profile)}, status = 200)
 
 def email_auth(request):
     # check if user already exists

@@ -43,7 +43,7 @@ const router = createBrowserRouter([
         element: <VerifyAccount/>
       },
       {
-        path: "/activate",
+        path: "/activate/:pk/:token",
         element: <ActivateAccount/>
       }
 
