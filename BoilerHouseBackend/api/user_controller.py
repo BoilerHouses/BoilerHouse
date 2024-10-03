@@ -5,6 +5,13 @@ from .models import User, LoginPair
 import json
 import os
 import cryptocode
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.core.mail import EmailMessage
+from .tokens import account_activation_token
+
 from django.db import IntegrityError
 
 
@@ -38,13 +45,32 @@ def create_user_obj(data):
     ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
 
+def activateEmail(request, user):
+    mail_subject = "Activate your user account."
+    message = render_to_string("activate_account.html", {
+        'user':user.username,
+        'domain':get_current_site(request).domain,
+        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+        'token':account_activation_token.make_token(user),
+        "protocol": 'https' if request.is_secure() else 'http'
 
-def save_login_pair(email, password, is_admin):
+    })
+    email = EmailMessage(mail_subject, message, to={user.username})
+    if email.send():
+        return "working"
+    else:
+        return "error"
+
+def save_login_pair(request, email, password, is_admin):
     load_dotenv()
     password = cryptocode.encrypt(password, os.getenv("ENCRYPTION_KEY"))
     try:
         pair = LoginPair.create(username=email, password=password, is_admin=is_admin)
         pair.save()
+        s = activateEmail(request, pair)
+        if ("error" in s):
+            pair.delete()
+            raise Exception("Email not sent, try creating account again")
         return model_to_dict(pair)
     
     except IntegrityError as e:

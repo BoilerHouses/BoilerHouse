@@ -7,6 +7,5 @@ urlpatterns = [
     path('loginUser/', log_in, name='getUser'),
     path('registerAccount/', register_account, name='register_account'),
     path('user/create/', create_account, name='createUser'),
-    path('activate/<uidb64>/<token>', activate, name="activate"),
-    path('testemailauth', test_email_auth, name="test_email_auth")
+    path('activate/<uidb64>/<token>', activate, name="activate")
 ]

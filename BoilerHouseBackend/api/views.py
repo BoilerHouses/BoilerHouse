@@ -58,8 +58,7 @@ def activate(request, uidb64, token):
     user.delete()
     return Response("user activated.")
 
-@api_view(['GET'])
-def test_email_auth(request):
+def email_auth(request):
     # check if user already exists
     # if it does, then don't create a new user object
     if "email" not in request.query_params or "name" not in request.query_params:
@@ -105,7 +104,7 @@ def register_account(request):
     if "adminKey" in request.query_params and request.query_params['adminKey'] == os.getenv("ADMIN_KEY"):
         isAdmin = True
 
-    ret = save_login_pair(request.query_params['email'], request.query_params['password'], isAdmin)
+    ret = save_login_pair(request, request.query_params['email'], request.query_params['password'], isAdmin)
 
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
