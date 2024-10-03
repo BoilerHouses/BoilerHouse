@@ -88,16 +88,25 @@ def save_login_pair(request, email, password, is_admin):
 # Find a user given email and password
 def find_user_obj(email, password):
     load_dotenv()
+
     target = LoginPair.objects.filter(username=email).first()
 
-    # If no user found return error
+    # User hasn't registered with that email yet
     if not target:
         return {"error": "That email is not associated with an account", 'status': 401}
-
+    
     # Check if password matches and return if it does
     target = model_to_dict(target)
     target['password'] = cryptocode.decrypt(target['password'], os.getenv("ENCRYPTION_KEY"))
     if target['password'] == password:
+
+        # User hasn't verified account yet
+        user = User.objects.filter(username=email).first()
+
+        if not user:
+            return {"error": "Please verify your account to be able to login", 'status': 403}
+
+
         return target
     else:
         return {"error": "Incorrect password", 'status': 401}

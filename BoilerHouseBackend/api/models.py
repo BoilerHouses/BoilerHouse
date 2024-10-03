@@ -11,6 +11,7 @@ class User(models.Model):
     name = models.CharField(max_length=255)
     bio = models.CharField(max_length=2048)
     interests = models.CharField(max_length=2048)
+    created_profile = models.BooleanField(default=False)
     grad_year = models.IntegerField(
         default=int(datetime.now().year),
         validators=[
@@ -27,7 +28,7 @@ class User(models.Model):
     # Constructor type method
     @classmethod
     def create(cls, username, password, name, bio, interests, grad_year, major, is_admin):
-        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin)
+        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin, created_profile=False)
         if interests:
             user.set_interests(interests)
         else:
