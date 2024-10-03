@@ -2,7 +2,6 @@ from dotenv import load_dotenv, dotenv_values
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv, dotenv_values
 from .models import User, LoginPair
-import json
 import os
 import cryptocode
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -45,13 +44,14 @@ def create_user_obj(data):
     ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
 
-def activateEmail(request, user):
+
+def activate_email(request, user):
     mail_subject = "Activate your user account."
     message = render_to_string("activate_account.html", {
-        'user':user.username,
-        'domain':get_current_site(request).domain,
-        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-        'token':account_activation_token.make_token(user),
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
         "protocol": 'https' if request.is_secure() else 'http'
 
     })
@@ -61,18 +61,19 @@ def activateEmail(request, user):
     else:
         return "error"
 
+
 def save_login_pair(request, email, password, is_admin):
     load_dotenv()
     password = cryptocode.encrypt(password, os.getenv("ENCRYPTION_KEY"))
     try:
         pair = LoginPair.create(username=email, password=password, is_admin=is_admin)
         pair.save()
-        s = activateEmail(request, pair)
-        if ("error" in s):
+        s = activate_email(request, pair)
+        if "error" in s:
             pair.delete()
             raise Exception("Email not sent, try creating account again")
         return model_to_dict(pair)
-    
+
     except IntegrityError as e:
         return {'error': "Integrity Error: " + str(type(e)) + str(e), "status": 409}
 
