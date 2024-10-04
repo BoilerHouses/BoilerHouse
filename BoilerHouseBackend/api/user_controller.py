@@ -37,6 +37,7 @@ def create_user_obj(data):
                            password=model_to_dict(pair)['password'],
                            name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
                            major=data['major'], is_admin=data['is_admin'])
+        user.save()
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
     # Decrypt password and return it
@@ -62,7 +63,6 @@ def activate_email(request, user):
         else:
             return "error"
     except Exception as e:
-        print(e)
         return "error"
 
 
@@ -105,7 +105,6 @@ def find_user_obj(email, password):
 
         if not user:
             return {"error": "Please verify your account to be able to login", 'status': 403}
-
 
         return target
     else:
