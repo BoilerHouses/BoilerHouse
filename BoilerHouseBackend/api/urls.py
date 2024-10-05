@@ -1,7 +1,11 @@
 from django.urls import path
-from .views import ping, tryBucket
+from .views import ping, try_bucket, log_in, create_account, register_account, activate
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
-    path('buckets/', tryBucket, name='tryBucket')
+    path('buckets/', try_bucket, name='tryBucket'),
+    path('loginUser/', log_in, name='getUser'),
+    path('registerAccount/', register_account, name='register_account'),
+    path('user/create/', create_account, name='createUser'),
+    path('activate/<uidb64>/<token>', activate, name="activate")
 ]
