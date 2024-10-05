@@ -10,6 +10,7 @@ import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
 import ResetPassword from "./routes/resetPassword";
 
+import CreateProfile from "./routes/createProfile";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
       {
         path: "/verify_account",
         element: <VerifyAccount/>
+      },
+      {
+        path: "/create_profile",
+        element: <CreateProfile/>
       },
       {
         path: "/activate/:pk/:token",
