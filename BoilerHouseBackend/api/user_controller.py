@@ -9,7 +9,8 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from .tokens import account_activation_token
+from .tokens import generate_token
+from django.http import HttpResponse
 
 from django.db import IntegrityError
 
@@ -53,7 +54,7 @@ def activate_email(request, user):
             'user': user.username,
             'domain': 'localhost:5173',
             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': account_activation_token.make_token(user),
+            'token': generate_token.make_token(user),
             "protocol": 'https' if request.is_secure() else 'http'
 
         })
@@ -65,6 +66,22 @@ def activate_email(request, user):
     except Exception as e:
         return "error"
 
+def resetPasswordEmail(request, user, to_email):
+    mail_subject = "Reset your password."
+
+    message = render_to_string("forgot_password.html", {
+        'user': user.username, 
+        'domain': 'localhost:5173',
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': generate_token.make_token(user),
+        "protocol": 'https' if request.is_secure() else 'http'
+    })
+
+    email = EmailMessage(mail_subject, message, to={to_email})
+    if not email.send():
+        return {"error": "Error occurred while sending email", 'status': 401}
+    
+    return "success"
 
 def save_login_pair(request, email, password, is_admin):
     load_dotenv()
