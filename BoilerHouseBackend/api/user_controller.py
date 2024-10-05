@@ -45,6 +45,40 @@ def create_user_obj(data):
     ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
 
+def edit_user_obj(data):
+    # Check if user account already exists
+    user = User.objects.filter(email=data["email"]).first()
+    if not user:
+        return {"error": "User Does Not Exist!", 'status': 400}
+    # Since bio and interests are optional, pull them out if present
+    
+    # Attempt to create and save the user object
+    load_dotenv()
+    try:
+        bio = ''
+        if 'bio' in data:
+            bio = data['bio']
+        interests = None
+        if 'interests' in data:
+            interests = data['interests']
+        user.name = data['name']
+        user.bio = bio
+        user.grad_year = data['grad_year']
+        user.set_major([])
+        user.set_interests([])
+        for major in data['major']:
+            user.add_major(major=major)
+        user.is_admin = data['is_admin']
+        for interest in interests:
+            user.add_interest(interest=interest)
+        user.save()
+    except Exception as e:
+        return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
+    # Decrypt password and return it
+    ret_obj = model_to_dict(user)
+    ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
+    return ret_obj
+
 
 def activate_email(request, user):
     try:

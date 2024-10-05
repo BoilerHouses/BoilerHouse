@@ -1,2 +1,5 @@
 /BoilerHouseBackend/api/.env
+/BoilerHouseBackend/env
+/BoilerHouseBackend/api/__pycache__
+/BoilerHouseBackend/api/migrations
 /BoilerHouseFrontend/adminkey.jsx
