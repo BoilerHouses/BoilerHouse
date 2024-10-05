@@ -114,9 +114,8 @@ const UserLogin = () => {
         // success
         .then((res) => {
           setIsLoading(false);
-
+          axios.defaults.headers.common['Authorization'] = res.data.token
           alert("successfuly logged in");
-          console.log(res);
         })
 
         // Catch errors if any

@@ -13,6 +13,10 @@ from .tokens import account_activation_token
 import json
 from django.db import IntegrityError
 
+from django.conf import settings
+import jwt
+from jwt import DecodeError, ExpiredSignatureError
+
 
 # Create User Object
 def create_user_obj(data):
@@ -139,3 +143,21 @@ def find_user_obj(email, password):
         return target
     else:
         return {"error": "Incorrect password", 'status': 401}
+
+
+
+def generate_token(user):
+    secret_key = settings.SECRET_KEY
+    payload = {'username':user.username, 'is_admin':user.is_admin}
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return token
+
+def verify_token(token):
+    secret_key = settings.SECRET_KEY
+    try:
+        # Decode the token
+        decoded = jwt.decode(token, secret_key, algorithms=['HS256'])
+        user = User.objects.filter(username=decoded['username'])
+        return user
+    except DecodeError:
+        return "Invalid token"
