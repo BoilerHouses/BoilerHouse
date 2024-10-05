@@ -157,7 +157,7 @@ def verify_token(token):
     try:
         # Decode the token
         decoded = jwt.decode(token, secret_key, algorithms=['HS256'])
-        user = User.objects.filter(username=decoded['username'])
+        user = User.objects.filter(username=decoded['username']).first()
         return user
     except DecodeError:
         return "Invalid token"

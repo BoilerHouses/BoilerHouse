@@ -99,6 +99,23 @@ def try_bucket(request):
         return Response({'error': "Internal Server Error: " + str(type(e)) + str(e)}, status=500)
     return Response(lst)
 
+@api_view(['GET'])
+def get_user_profile(request):
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if user == "Invalid token":
+        return Response({'error':"Auth token invalid"}, status = 500)
+    data = {
+        "name":user.name,
+        "email":user.username,
+        "bio":user.bio,
+        "major":json.loads(user.major),
+        "interests":json.loads(user.interests),
+        "grad_year":user.grad_year,
+    }
+    return Response(data, status=200)
+
+
 
 @api_view(['GET'])
 def register_account(request):
