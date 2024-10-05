@@ -1,21 +1,15 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
 from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair
 from .bucket_controller import find_buckets
 import json
 from .tokens import generate_token
-from django.template.loader import render_to_string
-from django.contrib.sites.shortcuts import get_current_site
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from django.utils.encoding import force_bytes, force_str
-from django.core.mail import EmailMessage
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
-from django.http import HttpResponse
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 import os
 
 
