@@ -28,6 +28,17 @@ const CreateProfile = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [tagCount, setTagCount] = useState([])
 
+    const [selectedImage, setSelectedImage] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+      if (file) {
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImage(imageUrl);
+     }
+    };
+
+
     const handleAddTag = (event) => {
         if (event.key === 'Enter' && major) {
             let a = majors.filter((key, tag) => key == major)
@@ -174,6 +185,31 @@ const CreateProfile = () => {
                     />
                 ))}
               </Box>
+              <Box sx={{ textAlign: 'center', mt: 4 }}>
+      <Typography variant="h6">Upload a Profile Picture</Typography>
+      <input
+        accept="image/*"
+        type="file"
+        onChange={handleImageChange}
+        style={{ display: 'none' }}
+        id="upload-button"
+      />
+      
+      {selectedImage && (
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+          <img
+            src={selectedImage}
+            alt="Preview"
+            style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+          />
+        </Box>
+      )}
+      <label htmlFor="upload-button">
+        <Button variant="contained" component="span">
+          Upload Image
+        </Button>
+      </label>
+    </Box>
               
               <Button
                   type="submit"
