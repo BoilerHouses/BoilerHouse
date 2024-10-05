@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from .tokens import account_activation_token
+import json
 from django.db import IntegrityError
 
 from django.conf import settings
@@ -48,6 +49,36 @@ def create_user_obj(data):
     ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
     return ret_obj
 
+# Create User Object
+def edit_user_obj(data):
+    user = User.objects.filter(username=data["email"]).first()
+    # Check if user account already exists
+    if not user:
+        return {"error": "User Does Not Exist!", 'status': 400}
+    # Since bio and interests are optional, pull them out if present
+    bio = ''
+    if 'bio' in data:
+        bio = data['bio']
+    interests = []
+    if 'interests' in data:
+        interests = data['interests']
+
+    # Attempt to create and save the user object
+    load_dotenv()
+    try:
+        user.name = data['name']
+        user.interests = json.dumps(interests)
+        user.major = json.dumps(data['major'])
+        user.bio = bio
+        user.grad_year = data['grad_year']
+        user.is_admin = user.is_admin
+        user.save()
+    except Exception as e:
+        return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
+    # Decrypt password and return it
+    ret_obj = model_to_dict(user)
+    ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
+    return ret_obj
 
 def activate_email(request, user):
     try:
