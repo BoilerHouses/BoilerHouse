@@ -2,12 +2,14 @@ import * as ReactDOM from "react-dom/client";
 
 import Navbar from "./routes/navbar";
 import RegisterUser from "./routes/registerUser";
-import ErrorPage from "./routes/error-page";
+import ErrorPage from "./routes/errorPage";
 import UserLogin from "./routes/loginUser";
 import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
-import ActivateAccount from "./routes/activateAccount"
+import ActivateAccount from "./routes/activateAccount";
+import ResetPassword from "./routes/resetPassword";
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -45,6 +47,10 @@ const router = createBrowserRouter([
       {
         path: "/activate/:pk/:token",
         element: <ActivateAccount/>
+      },
+      {
+        path: "/reset_password/:pk/:token",
+        element: <ResetPassword/> 
       }
 
     ]

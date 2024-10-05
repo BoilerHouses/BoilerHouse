@@ -2,10 +2,10 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair
+from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair, generate_token
 from .bucket_controller import find_buckets
 import json
-from .tokens import generate_token
+from .tokens import account_activation_token, reset_password_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
@@ -32,7 +32,7 @@ def activate(request, uidb64, token):
     if User.objects.filter(username=user.username).first() is not None:
         return Response("Account already activated", status=202)
 
-    if generate_token.check_token(user, token):
+    if account_activation_token.check_token(user, token):
         user.is_active = True
         profile = User.create(username=user.username,
                            password=user.password,
@@ -114,10 +114,29 @@ def forgot_password(request):
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
     
     email = request.query_params["email"]
-    user = LoginPair.objects.filter(username=email).first()
+    user = User.objects.filter(username=email).first()
 
     if not user:
         return Response({"error": "That email is not associated with an account"}, status=401)
 
     resetPasswordEmail(request, user, to_email=email)
     return Response({"message": "Email sent successfully!"}, status=200)
+
+
+@api_view(['GET'])
+def activate_forgot_password(request, uidb64, token):
+    user = None
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.filter(pk=uid).first()
+    except:
+        return Response("An error occurred", status=400)
+    
+    if user is None:
+        return Response("Unable to reset password because requested user does not exist", status=401)
+    
+    if not reset_password_token.check_token(user, token):
+        return Response("invalid reset password link", status=402) 
+
+    return Response("verified password reset link", status=200) 

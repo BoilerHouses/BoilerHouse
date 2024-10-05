@@ -9,7 +9,7 @@ from django.utils.encoding import force_bytes, force_str
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
-from .tokens import account_activation_token
+from .tokens import account_activation_token, reset_password_token
 from django.db import IntegrityError
 
 from django.conf import settings
@@ -54,7 +54,7 @@ def activate_email(request, user):
             'user': user.username,
             'domain': 'localhost:5173',
             'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-            'token': generate_token.make_token(user),
+            'token': account_activation_token.make_token(user),
             "protocol": 'https' if request.is_secure() else 'http'
 
         })
@@ -73,7 +73,7 @@ def resetPasswordEmail(request, user, to_email):
         'user': user.username, 
         'domain': 'localhost:5173',
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        'token': generate_token.make_token(user),
+        'token': reset_password_token.make_token(user),
         "protocol": 'https' if request.is_secure() else 'http'
     })
 
