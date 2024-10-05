@@ -37,6 +37,7 @@ def create_user_obj(data):
                            password=model_to_dict(pair)['password'],
                            name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
                            major=data['major'], is_admin=data['is_admin'])
+        user.save()
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
     # Decrypt password and return it
@@ -46,19 +47,22 @@ def create_user_obj(data):
 
 
 def activate_email(request, user):
-    mail_subject = "Activate your user account."
-    message = render_to_string("activate_account.html", {
-        'user': user.username,
-        'domain': 'localhost:5173',
-        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-        'token': account_activation_token.make_token(user),
-        "protocol": 'https' if request.is_secure() else 'http'
+    try:
+        mail_subject = "Activate your user account."
+        message = render_to_string("activate_account.html", {
+            'user': user.username,
+            'domain': 'localhost:5173',
+            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+            'token': account_activation_token.make_token(user),
+            "protocol": 'https' if request.is_secure() else 'http'
 
-    })
-    email = EmailMessage(mail_subject, message, to={user.username})
-    if email.send():
-        return "working"
-    else:
+        })
+        email = EmailMessage(mail_subject, message, to={user.username})
+        if email.send():
+            return "working"
+        else:
+            return "error"
+    except Exception as e:
         return "error"
 
 
@@ -84,16 +88,24 @@ def save_login_pair(request, email, password, is_admin):
 # Find a user given email and password
 def find_user_obj(email, password):
     load_dotenv()
+
     target = LoginPair.objects.filter(username=email).first()
 
-    # If no user found return error
+    # User hasn't registered with that email yet
     if not target:
         return {"error": "That email is not associated with an account", 'status': 401}
-
+    
     # Check if password matches and return if it does
     target = model_to_dict(target)
     target['password'] = cryptocode.decrypt(target['password'], os.getenv("ENCRYPTION_KEY"))
     if target['password'] == password:
+
+        # User hasn't verified account yet
+        user = User.objects.filter(username=email).first()
+
+        if not user:
+            return {"error": "Please verify your account to be able to login", 'status': 403}
+
         return target
     else:
         return {"error": "Incorrect password", 'status': 401}

@@ -21,3 +21,6 @@ To reset the migrations:
 python3 manage.py migrate api zero
 python3 manage.py makemigrations
 python3 manage.py migrate
+
+OR run
+python3 migrate.py

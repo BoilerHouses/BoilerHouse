@@ -129,6 +129,12 @@ const UserRegistration = () => {
     const serverAlert = document.querySelector("#server-error-alert");
     serverAlert.classList.add("hidden");
 
+    const adminKeyAlert = document.querySelector("#admin-key-alert");
+    adminKeyAlert.classList.add("hidden");
+
+    const emailAlert = document.querySelector("#email-already-exists-alert");
+    emailAlert.classList.add("hidden");
+
     e.preventDefault();
 
     let err = false;

@@ -73,6 +73,16 @@ const UserLogin = () => {
     const serverAlert = document.querySelector("#server-error-alert");
     serverAlert.classList.add("hidden");
 
+    const invalidCredentialsAlert = document.querySelector(
+      "#incorrect-credentials-alert"
+    );
+    invalidCredentialsAlert.classList.add("hidden");
+
+    const activateAccountAlert = document.querySelector(
+      "#activate-account-alert"
+    );
+    activateAccountAlert.classList.add("hidden");
+
     e.preventDefault();
     let err = false;
 
@@ -106,7 +116,7 @@ const UserLogin = () => {
           setIsLoading(false);
 
           alert("successfuly logged in");
-          console.log(res)
+          console.log(res);
         })
 
         // Catch errors if any
@@ -120,7 +130,13 @@ const UserLogin = () => {
             );
             invalidCredentialsAlert.classList.remove("hidden");
           }
-
+          // user hasn't verified account yet
+          else if (err.status == 403) {
+            const activateAccountAlert = document.querySelector(
+              "#activate-account-alert"
+            );
+            activateAccountAlert.classList.remove("hidden");
+          }
           // other server error
           else {
             const serverAlert = document.querySelector("#server-error-alert");
@@ -189,6 +205,12 @@ const UserLogin = () => {
             <div id="server-error-alert" className="hidden">
               <Alert severity="error">
                 A server error occurred. Please try again later.
+              </Alert>
+            </div>
+
+            <div id="activate-account-alert" className="hidden">
+              <Alert severity="error">
+                Please verify your account to be able to log in.
               </Alert>
             </div>
 
