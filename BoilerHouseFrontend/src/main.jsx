@@ -7,7 +7,8 @@ import UserLogin from "./routes/loginUser";
 import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
-import ActivateAccount from "./routes/activateAccount"
+import ActivateAccount from "./routes/activateAccount";
+import RegisterUserAdmin from "./routes/registerUserAdmin";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -29,6 +30,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterUser/>
+      },
+      {
+        path: "/registeradmin",
+        element: <RegisterUserAdmin/>
       },
       {
         path: "/login",

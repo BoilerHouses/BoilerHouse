@@ -45,6 +45,7 @@ const UserRegistration = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAdminKey, setShowAdminKey] = useState(false); // Admin key visibility toggle
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -179,7 +180,7 @@ const UserRegistration = () => {
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
-            Register
+            Register Admin
           </Typography>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
@@ -246,10 +247,24 @@ const UserRegistration = () => {
               fullWidth
               label="Admin Key"
               name="adminKey"
+              type={showAdminKey ? "text" : "password"} // Toggle between text and password types
               value={adminKey}
               onChange={handleAdminKeyChange}
               error={adminKeyError}
               className="bg-white !mt-3.5"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle admin key visibility"
+                      onClick={() => setShowAdminKey(!showAdminKey)} // Toggle admin key visibility
+                      edge="end"
+                    >
+                      {showAdminKey ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               helperText={adminKeyError ? "Admin Key is required" : ""}
             />
 
@@ -265,27 +280,24 @@ const UserRegistration = () => {
 
             <div id="server-error-alert" className="hidden">
               <Alert severity="error">
-                A server error occurred. Please try again later.
+                A server error has occurred. Please try again later.
               </Alert>
             </div>
 
             <div id="admin-key-alert" className="hidden">
-              <Alert severity="error">Admin key is incorrect.</Alert>
+              <Alert severity="error">
+                The admin key you entered is incorrect.
+              </Alert>
             </div>
 
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               className="mt-4"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Register"
-              )}
+              {isLoading ? <CircularProgress size={24} /> : "Register"}
             </Button>
           </form>
         </CardContent>
