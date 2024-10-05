@@ -150,3 +150,20 @@ def create_account(request):
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
+
+
+@api_view(['POST'])
+def edit_account(request):
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if ('email' not in data or
+            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
+        return Response({"error": "Invalid Request Missing Parameters"}, status=400)
+    ret = edit_user_obj(data)
+    if 'error' in ret:
+        return Response({'error': ret['error']}, status=ret['status'])
+    return Response(ret, status=200)
+
