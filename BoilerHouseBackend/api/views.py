@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair
+from .user_controller import create_user_obj, find_user_obj, save_login_pair, edit_user_obj
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -144,3 +144,20 @@ def create_account(request):
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
+
+
+@api_view(['POST'])
+def edit_account(request):
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if ('email' not in data or
+            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
+        return Response({"error": "Invalid Request Missing Parameters"}, status=400)
+    ret = edit_user_obj(data)
+    if 'error' in ret:
+        return Response({'error': ret['error']}, status=ret['status'])
+    return Response(ret, status=200)
+
