@@ -1,1 +1,6 @@
-/BoilerHouseBackend/api/.env
+.env
+env/
+*.pyc
+.git
+.DS_Store
+.gitignore

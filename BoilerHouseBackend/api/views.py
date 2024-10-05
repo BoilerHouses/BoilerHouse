@@ -86,7 +86,11 @@ def log_in(request):
     ret = find_user_obj(request.query_params['username'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
-    return Response(ret, status=200)
+    # generate JWT token for user
+    user = User.objects.filter(username=ret['username']).first()
+    token = generate_token(user)
+    data = {"token":token}
+    return Response(data, status=200)
 
 
 @api_view(['POST'])

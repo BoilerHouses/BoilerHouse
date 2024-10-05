@@ -113,6 +113,7 @@ const UserLogin = () => {
       })
         // success
         .then((res) => {
+          console.log(res)
           setIsLoading(false);
 
           alert("successfuly logged in");
