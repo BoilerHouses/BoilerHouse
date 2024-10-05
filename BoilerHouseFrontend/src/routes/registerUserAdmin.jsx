@@ -7,8 +7,6 @@ import {
   Typography,
   IconButton,
   InputAdornment,
-  FormControlLabel,
-  Checkbox,
   Alert,
   CircularProgress,
 } from "@mui/material";
@@ -42,6 +40,9 @@ const UserRegistration = () => {
   const [confirmPasswordHelperText, setConfirmPasswordHelperText] =
     useState("");
 
+  const [adminKey, setAdminKey] = useState(""); // Admin key state
+  const [adminKeyError, setAdminKeyError] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
@@ -53,15 +54,12 @@ const UserRegistration = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    adminKey: "",
   });
 
   const handleEmailChange = (event) => {
-    const emailAlert = document.querySelector("#email-already-exists-alert");
-    emailAlert.classList.add("hidden");
-
     const newEmail = event.target.value;
     setEmail(newEmail);
-
     setFormData({ ...formData, email: newEmail });
 
     if (!isValidEmailAddress(newEmail)) {
@@ -103,17 +101,19 @@ const UserRegistration = () => {
     }
   };
 
+  const handleAdminKeyChange = (event) => {
+    const newAdminKey = event.target.value;
+    setAdminKey(newAdminKey);
+    setFormData({ ...formData, adminKey: newAdminKey });
+
+    if (newAdminKey.trim() === "") {
+      setAdminKeyError(true);
+    } else {
+      setAdminKeyError(false);
+    }
+  };
 
   const handleSubmit = (e) => {
-    const serverAlert = document.querySelector("#server-error-alert");
-    serverAlert.classList.add("hidden");
-
-    const adminKeyAlert = document.querySelector("#admin-key-alert");
-    adminKeyAlert.classList.add("hidden");
-
-    const emailAlert = document.querySelector("#email-already-exists-alert");
-    emailAlert.classList.add("hidden");
-
     e.preventDefault();
 
     let err = false;
@@ -138,51 +138,37 @@ const UserRegistration = () => {
       err = true;
     }
 
+    if (adminKey.trim() === "") {
+      setAdminKeyError(true);
+      err = true;
+    }
+
     if (err === false) {
       setIsLoading(true);
 
       let params = {
         email: formData.email,
         password: formData.password,
+        adminKey: formData.adminKey,
       };
 
       axios({
-        // create account endpoint
         url: "http://127.0.0.1:8000/api/registerAccount/",
         method: "GET",
-
-        // params
         params: params,
       })
-        // success
         .then((res) => {
           setIsLoading(false);
-
           navigate("/verify_account", { state: { data: res.data } });
         })
-
-        // Catch errors if any
         .catch((err) => {
           setIsLoading(false);
-
-          // email already exists
-          if (err.status == 409) {
-            const emailAlert = document.querySelector(
-              "#email-already-exists-alert"
-            );
-            emailAlert.classList.remove("hidden");
-          }
-
-          // admin key is incorrect
-          else if (err.status == 401) {
-            const adminKeyAlert = document.querySelector("#admin-key-alert");
-            adminKeyAlert.classList.remove("hidden");
-          }
-
-          // other server error
-          else {
-            const serverAlert = document.querySelector("#server-error-alert");
-            serverAlert.classList.remove("hidden");
+          if (err.status === 409) {
+            document.querySelector("#email-already-exists-alert").classList.remove("hidden");
+          } else if (err.status === 401) {
+            document.querySelector("#admin-key-alert").classList.remove("hidden");
+          } else {
+            document.querySelector("#server-error-alert").classList.remove("hidden");
           }
         });
     }
@@ -256,8 +242,16 @@ const UserRegistration = () => {
               }}
               helperText={confirmPasswordHelperText}
             />
-
-            
+            <TextField
+              fullWidth
+              label="Admin Key"
+              name="adminKey"
+              value={adminKey}
+              onChange={handleAdminKeyChange}
+              error={adminKeyError}
+              className="bg-white !mt-3.5"
+              helperText={adminKeyError ? "Admin Key is required" : ""}
+            />
 
             <div id="email-already-exists-alert" className="hidden">
               <Alert severity="error">
