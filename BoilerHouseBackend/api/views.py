@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token
+from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token, verify_token
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -132,6 +132,8 @@ def log_in(request):
     token = generate_token(user)
     data = {"token":token}
     return Response(data, status=200)
+
+
 
 
 @api_view(['POST'])
