@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token, verify_token
+from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -130,7 +130,7 @@ def log_in(request):
     # generate JWT token for user
     user = User.objects.filter(username=ret['username']).first()
     token = generate_token(user)
-    data = {"token":token}
+    data = {"token":token, "profile": user.created_profile}
     return Response(data, status=200)
 
 
@@ -154,15 +154,15 @@ def create_account(request):
 
 @api_view(['POST'])
 def edit_account(request):
+    user = verify_token(request.headers.get('Authorization'))
     data = {}
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
         return Response({"error": "Invalid JSON Document"}, status=422)
-    if ('email' not in data or
-            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
+    if ('name' not in data or 'grad_year' not in data or 'major' not in data):
         return Response({"error": "Invalid Request Missing Parameters"}, status=400)
-    ret = edit_user_obj(data)
+    ret = edit_user_obj(user, data)
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)

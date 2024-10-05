@@ -50,8 +50,7 @@ def create_user_obj(data):
     return ret_obj
 
 # Create User Object
-def edit_user_obj(data):
-    user = User.objects.filter(username=data["email"]).first()
+def edit_user_obj(user, data):
     # Check if user account already exists
     if not user:
         return {"error": "User Does Not Exist!", 'status': 400}
@@ -62,7 +61,8 @@ def edit_user_obj(data):
     interests = []
     if 'interests' in data:
         interests = data['interests']
-
+    print(user)
+    print(model_to_dict(user))
     # Attempt to create and save the user object
     load_dotenv()
     try:
@@ -71,7 +71,7 @@ def edit_user_obj(data):
         user.major = json.dumps(data['major'])
         user.bio = bio
         user.grad_year = data['grad_year']
-        user.is_admin = user.is_admin
+        user.created_profile = True
         user.save()
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
@@ -157,7 +157,7 @@ def verify_token(token):
     try:
         # Decode the token
         decoded = jwt.decode(token, secret_key, algorithms=['HS256'])
-        user = User.objects.filter(username=decoded['username'])
+        user = User.objects.filter(username=decoded['username']).first()
         return user
     except DecodeError:
         return "Invalid token"

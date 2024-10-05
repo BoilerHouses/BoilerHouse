@@ -15,12 +15,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const CreateProfile = () => {
     const [name, setName] = useState("")
     const [bio, setBio] = useState("")
-    const [grad_year, setGradYear] = useState("")
+    const [grad_year, setGradYear] = useState()
     const [majors, setMajors] = useState([])
     const [major, setMajor] = useState("")
     const [interest, setInterest] = useState("")
@@ -75,9 +75,35 @@ const CreateProfile = () => {
 
     const handleSubmit = (event) => {
       event.preventDefault(); // Prevent page refresh
-      console.log(event)
       setIsLoading(true)
-      console.log(name)
+      if (majors.length == 0) {
+        alert("Must Enter a Major!")
+        setIsLoading(false)
+        return
+      }
+      axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
+      axios({
+        // create account endpoint
+        url: "http://127.0.0.1:8000/api/user/edit/",
+        method: "POST",
+
+        // params
+        data: {
+          name: name,
+          bio: bio,
+          grad_year: grad_year,
+          major: majors.filter((key, tag) => key),
+          interests: interests.filter((key, tag) => key)
+        }
+      }).then((res) => {
+        setIsLoading(false);
+        console.log(res)
+      })
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoading(false);
+        alert("error")
+      })
     }
     const handleNameChange = (event) => {
       setName(event.target.value)
@@ -86,7 +112,13 @@ const CreateProfile = () => {
       setBio(event.target.value)
     }
     const handleYearChange = (event) => {
-      setGradYear(event.target.value)
+      const year = parseInt(event.target.value, 10)
+      if (isNaN(year)) {
+        alert("Grad Year must be a number")
+        setGradYear(2026)
+      } else {
+        setGradYear(event.target.value)
+      }
     }
     const handleMajorChange = (event) => {
       setMajor(event.target.value)
@@ -100,6 +132,7 @@ const CreateProfile = () => {
       if (event.key == 'Enter') {
         event.preventDefault()
       }
+      
     }
 
     return (
@@ -141,7 +174,6 @@ const CreateProfile = () => {
                   label="Enter your Majors..."
                   name="majors"
                   value={major}
-                  required={true}
                   onKeyDown={handleAddTag}
                   onChange={handleMajorChange}
                   className="bg-white !mt-3.5"
@@ -210,7 +242,6 @@ const CreateProfile = () => {
         </Button>
       </label>
     </Box>
-              
               <Button
                   type="submit"
                   variant="contained"
