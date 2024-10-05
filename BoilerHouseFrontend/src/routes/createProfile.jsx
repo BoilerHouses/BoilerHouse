@@ -88,11 +88,15 @@ const CreateProfile = () => {
       if (selectedImage != null) {
         formData.append('profile_picture', selectedImage)
       }
+      majors.filter((key, tag) => key).forEach((i, e) => {
+        formData.append(`major[${e}]`, i)
+      })
+      interests.filter((key, tag) => key).forEach((i, e) => {
+        formData.append(`interest[${e}]`, i)
+      })
       formData.append('name', name);
       formData.append('bio', bio);
-      formData.append('grad_year', grad_year);
-      formData.append('major', majors.filter((key, tag) => key));
-      formData.append('interests', interests.filter((key, tag) => key));
+      formData.append('grad_year', grad_year)
       axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
       axios.post("http://127.0.0.1:8000/api/user/edit/", formData, {
         headers: {

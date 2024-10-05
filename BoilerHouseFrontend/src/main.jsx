@@ -12,6 +12,7 @@ import ResetPassword from "./routes/resetPassword";
 import ViewProfile from "./routes/viewProfile"
 import EditProfile from "./routes/editProfile";
 import CreateProfile from "./routes/createProfile";
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -65,6 +66,9 @@ const router = createBrowserRouter([
       {
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
+      },{
+        path:"/profile",
+        element:<ViewProfile/>
       }
 
     ]
