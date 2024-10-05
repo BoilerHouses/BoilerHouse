@@ -1,2 +1,6 @@
-/BoilerHouseBackend/api/.env
-/BoilerHouseFrontend/adminkey.jsx
+.env
+env/
+*.pyc
+.git
+.DS_Store
+.gitignore

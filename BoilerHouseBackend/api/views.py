@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair
+from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -127,7 +127,11 @@ def log_in(request):
     ret = find_user_obj(request.query_params['username'], request.query_params['password'])
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
-    return Response(ret, status=200)
+    # generate JWT token for user
+    user = User.objects.filter(username=ret['username']).first()
+    token = generate_token(user)
+    data = {"token":token}
+    return Response(data, status=200)
 
 
 @api_view(['POST'])

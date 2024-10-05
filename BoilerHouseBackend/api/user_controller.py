@@ -10,9 +10,10 @@ from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import EmailMessage
 from .tokens import account_activation_token
-
 from django.db import IntegrityError
 
+from django.conf import settings
+import jwt
 
 # Create User Object
 def create_user_obj(data):
@@ -109,3 +110,12 @@ def find_user_obj(email, password):
         return target
     else:
         return {"error": "Incorrect password", 'status': 401}
+
+
+
+def generate_token(user):
+    secret_key = settings.SECRET_KEY
+    payload = {'username':user.username, 'is_admin':user.is_admin}
+    token = jwt.encode(payload, secret_key, algorithm='HS256')
+    return token
+
