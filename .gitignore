@@ -1,9 +1,0 @@
-.env
-env/
-*.pyc
-.git
-.DS_Store
-.gitignore
-/BoilerHouseBackend/api/.env
-/BoilerHouseFrontend/adminkey.jsx
-/BoilerHouseBackend/BoilerHouseBackend/__pycache__
