@@ -1,0 +1,4 @@
+/env/
+/api/__pycache__/
+/api/migrations/
+/BoilerHouseBackend/__pycache__/

@@ -7,6 +7,7 @@ from .models import User, LoginPair
 from .user_controller import create_user_obj, find_user_obj, save_login_pair
 from .bucket_controller import find_buckets
 import json
+import boto3
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -16,6 +17,7 @@ from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from dotenv import load_dotenv, dotenv_values
+from django.conf import settings
 import os
 
 
@@ -95,9 +97,8 @@ def ping(request):
 def try_bucket(request):
     try:
         return Response(find_buckets())
-    except Exception as ex:
+    except Exception as e:
         return Response({'error': "Internal Server Error: " + str(type(e)) + str(e)}, status=500)
-    return Response(lst)
 
 
 @api_view(['GET'])
@@ -144,3 +145,49 @@ def create_account(request):
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
+
+@api_view(['POST'])
+def upload_profile_picture(request):
+    load_dotenv()
+    request_body = request.body
+    print("Request body:", request.body)
+    print("Content-Type header:", request.headers.get('Content-Type'))
+    user_id = request.data.get('username')
+    print("User ID:", user_id)
+    print("Files:", request.FILES)  
+
+    if not user_id or 'profile_picture' not in request.FILES:
+        return Response({"error": "Invalid request, missing parameters!"}, status=400)
+
+    try:
+        user = User.objects.filter(username=user_id).first()
+    except User.DoesNotExist:
+        return Response({"error": "User not found!"}, status=404)
+
+    profile_picture = request.FILES['profile_picture']
+    s3_client = boto3.client('s3',
+                      aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                      aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
+
+    try:
+        # Create a unique filename (using UUID)
+        import uuid
+        file_name = f'{user_id}/profile_picture/{uuid.uuid4()}.{profile_picture.name.split(".")[-1]}'
+
+        # Upload the file to S3
+        s3_client.upload_fileobj(
+            profile_picture,
+            settings.AWS_STORAGE_BUCKET_NAME,
+            file_name,
+            ExtraArgs={'ACL': 'public-read', 'ContentType': profile_picture.content_type}
+        )
+
+        # Update the user's profile picture URL
+        user.profile_picture = f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}'
+        user.save()
+
+        return Response({"message": "Profile picture uploaded successfully!", "profile_picture": user.profile_picture}, status=200)
+
+    except Exception as e:
+        print("Error uploading to S3:", e)
+        return Response({'error': f"Error uploading to S3: {str(e)}"}, status=500)
