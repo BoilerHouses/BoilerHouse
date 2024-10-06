@@ -3,6 +3,7 @@
 /boilerhouse/
 /Lib/
 /BoilerHouseBackend/__pycache__/
+/BoilerHouseBackend/venv/
 /Scripts/
 /api/migrations/__pycache__/
 /tutorial-env/

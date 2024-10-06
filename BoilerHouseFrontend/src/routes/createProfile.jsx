@@ -18,6 +18,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const CreateProfile = () => {
+    const navigate = useNavigate()
     const [name, setName] = useState("")
     const [bio, setBio] = useState("")
     const [grad_year, setGradYear] = useState()
@@ -100,6 +101,7 @@ const CreateProfile = () => {
       }).then((res) => {
         setIsLoading(false);
         console.log(res)
+        navigate('/profile')
       })
       // Catch errors if any
       .catch((err) => {
