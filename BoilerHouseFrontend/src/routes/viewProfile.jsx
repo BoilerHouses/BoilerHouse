@@ -1,5 +1,6 @@
 // ViewProfile.js
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
 
 const ViewProfile = () => {
   // Hardcoded user data
@@ -11,9 +12,26 @@ const ViewProfile = () => {
     major: 'Computer Science',
     image: 'https://via.placeholder.com/120', // Sample profile image URL
   };
-  const [loading, setLoading] = useState(True);
-  
+  const [loading, setLoading] = useState(false); 
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const token = localStorage.getItem("token")
+            if (token){
+                const response = await axios.get("http://127.0.0.1:8000/api/get_user_profile/", {
+                    headers:{
+                        'Authorization': token
+                    }
+                })
+                console.log(response.data)
+            }
+        }
+        fetchProfile()
+    }, [])
 
+    if (loading){
+        return <div>Loading..</div>
+    }
+    else{
     return (
         <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
         {/* Edit Profile Button */}
@@ -37,7 +55,7 @@ const ViewProfile = () => {
             </p>
         </div>
         </div>
-    );
+    );}
 };
 
 export default ViewProfile;
