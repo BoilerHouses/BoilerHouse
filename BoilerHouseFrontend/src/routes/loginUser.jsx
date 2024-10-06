@@ -122,6 +122,8 @@ const UserLogin = () => {
           console.log(res.data)
           if (!res.data.profile) {
             navigate('/create_profile')
+          } else {
+            navigate('/profile')
           }
         })
 
