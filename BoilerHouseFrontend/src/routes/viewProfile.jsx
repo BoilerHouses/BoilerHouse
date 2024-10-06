@@ -63,6 +63,12 @@ const ViewProfile = () => {
            <strong>Interests:</strong> {user.interests.join(', ')}
            </p>
        </div>
+       <button className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200" 
+        onClick={() => {
+            localStorage.removeItem('token')
+            navigate('/')}}>
+           Log Out
+        </button>
        </div>
    );}
 };

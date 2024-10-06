@@ -31,7 +31,6 @@ const CreateProfile = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageURL, setSelectedImageURL] = useState(null);
 
-
   const handleImageChange = (event) => {
     const file = event.target.files[0];
       if (file) {
