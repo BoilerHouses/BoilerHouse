@@ -27,14 +27,16 @@ const CreateProfile = () => {
     const [interests, setInterests] = useState([])
     const [isLoading, setIsLoading] = useState(false);
     const [tagCount, setTagCount] = useState([])
-
     const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImageURL, setSelectedImageURL] = useState(null);
+
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
       if (file) {
         const imageUrl = URL.createObjectURL(file);
-        setSelectedImage(imageUrl);
+        setSelectedImageURL(imageUrl);
+        setSelectedImage(file)
      }
     };
 
@@ -81,19 +83,19 @@ const CreateProfile = () => {
         setIsLoading(false)
         return
       }
+      const formData = new FormData();
+      if (selectedImage != null) {
+        formData.append('profile_picture', selectedImage)
+      }
+      formData.append('name', name);
+      formData.append('bio', bio);
+      formData.append('grad_year', grad_year);
+      formData.append('major', majors.filter((key, tag) => key));
+      formData.append('interests', interests.filter((key, tag) => key));
       axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
-      axios({
-        // create account endpoint
-        url: "http://127.0.0.1:8000/api/user/edit/",
-        method: "POST",
-
-        // params
-        data: {
-          name: name,
-          bio: bio,
-          grad_year: grad_year,
-          major: majors.filter((key, tag) => key),
-          interests: interests.filter((key, tag) => key)
+      axios.post("http://127.0.0.1:8000/api/user/edit/", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
       }).then((res) => {
         setIsLoading(false);
@@ -227,10 +229,10 @@ const CreateProfile = () => {
         id="upload-button"
       />
       
-      {selectedImage && (
+      {selectedImageURL && (
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
           <img
-            src={selectedImage}
+            src={selectedImageURL}
             alt="Preview"
             style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
           />

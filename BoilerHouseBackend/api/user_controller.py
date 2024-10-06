@@ -12,7 +12,8 @@ from django.core.mail import EmailMessage
 from .tokens import account_activation_token
 import json
 from django.db import IntegrityError
-
+import boto3
+import uuid
 from django.conf import settings
 import jwt
 from jwt import DecodeError, ExpiredSignatureError
@@ -55,23 +56,46 @@ def edit_user_obj(user, data):
     if not user:
         return {"error": "User Does Not Exist!", 'status': 400}
     # Since bio and interests are optional, pull them out if present
-    bio = ''
-    if 'bio' in data:
-        bio = data['bio']
-    interests = []
-    if 'interests' in data:
-        interests = data['interests']
-    print(user)
-    print(model_to_dict(user))
+    bio = user.bio
+    if data.get('bio'):
+        bio = data.get('bio')
+    interests = user.interests
+    if data.get('interests'):
+        interests = data.get('interests')
+    name = user.name
+    if data.get('name'):
+        name = data.get('name')
+    major = user.major
+    if data.get('major'):
+        major = json.dumps(data.get('major'))
+    grad_year = user.grad_year
+    if data.get('grad_year'):
+        grad_year = data.get('grad_year')
     # Attempt to create and save the user object
     load_dotenv()
     try:
-        user.name = data['name']
-        user.interests = json.dumps(interests)
-        user.major = json.dumps(data['major'])
+        user.name = name
+        user.interests =  interests
+        user.major = major
         user.bio = bio
-        user.grad_year = data['grad_year']
+        user.grad_year = grad_year
         user.created_profile = True
+        profile_picture = data.get('profile_picture')
+        if profile_picture: 
+            s3_client = boto3.client('s3',
+                        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
+            file_name = f'{user.username}/profile_picture/{uuid.uuid4()}.{profile_picture.name.split(".")[-1]}'
+            print("HELP")
+            s3_client.upload_fileobj(
+                profile_picture,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                file_name,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': profile_picture.content_type}
+            )
+            print("ASDASDASD")
+            user.profile_picture = f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}'
+        print(model_to_dict(user))
         user.save()
     except Exception as e:
         return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}

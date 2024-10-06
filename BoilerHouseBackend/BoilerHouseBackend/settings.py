@@ -22,6 +22,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_FROM="boilerhouse26@gmail.com"
 EMAIL_HOST_USER = "boilerhouse26@gmail.com"
 EMAIL_HOST_PASSWORD = "ulpa igbm ihkn upnz"
+AWS_STORAGE_BUCKET_NAME = 'boilerhousebucket'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
