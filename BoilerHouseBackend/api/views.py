@@ -114,14 +114,8 @@ def create_account(request):
 @api_view(['POST'])
 def edit_account(request):
     user = verify_token(request.headers.get('Authorization'))
-    data = {}
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return Response({"error": "Invalid JSON Document"}, status=422)
-    if ('name' not in data or 'grad_year' not in data or 'major' not in data):
-        return Response({"error": "Invalid Request Missing Parameters"}, status=400)
-    ret = edit_user_obj(user, data)
+
+    ret = edit_user_obj(user, request.data)
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
