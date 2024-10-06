@@ -3,7 +3,10 @@
 /boilerhouse/
 /Lib/
 /BoilerHouseBackend/__pycache__/
+<<<<<<< HEAD
 /BoilerHouseBackend/venv/
+=======
+>>>>>>> d05e9d6 (fix merge)
 /Scripts/
 /api/migrations/__pycache__/
 /tutorial-env/
