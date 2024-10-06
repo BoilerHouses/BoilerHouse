@@ -367,15 +367,45 @@ def get_club_information(request):
         for i in ret_club['officers']:
             user = User.objects.filter(pk=i).first()
             if user:
-                officer_list.append(i, user.name, user.profile_picture)
+                officer_list.append((i, user.name, user.profile_picture))
         member_list = []
         for i in ret_club['members']:
             user = User.objects.filter(pk=i).first()
             if user:
-                member_list.append(i, user.name, user.profile_picture)
+                member_list.append((i, user.name, user.profile_picture))
+
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
-        return Response({'club': model_to_dict(club)}, status=200)
+        return Response({'club': ret_club}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
+@api_view(['GET'])
+def get_all_users(request):
+  user = verify_token(request.headers.get('Authorization'))
+  if user == 'Invalid token':
+      return Response({'error': 'Invalid Auth Token'}, status=400)
+  if not user.is_admin:
+      return Response({'error': 'User is not an admin'}, status=400)
+  #get all users
+  all_users = User.objects.values('name', 'username')
+  return Response(all_users, status=200)
+
+
+@api_view(['GET'])
+def delete_user(request):
+    print(request.data)
+    user = verify_token(request.headers.get('Authorization'))
+    if not user.is_admin:
+        print("here1")
+        return Response({'error': 'User is not an admin'}, status=400)
+    if "username" not in request.query_params:
+        return Response({'error': 'username of user not included'}, status=400)
+    #delete user in database
+    user = User.objects.filter(username=request.query_params['username']).first()
+    pair = LoginPair.objects.filter(username = request.query_params['username']).first()
+    if user:
+        user.delete()
+    if pair:
+        pair.delete()
+    return Response("success", status=200)

@@ -23,6 +23,7 @@ const ClubInformation = () => {
     })
       .then((response) => {
         setClubData(response.data.club);
+        console.log(response.data.club)
         setIsLoading(false);
       })
       .catch((error) => {
