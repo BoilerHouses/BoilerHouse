@@ -9,7 +9,8 @@ import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
 import ResetPassword from "./routes/resetPassword";
-
+import ViewProfile from "./routes/viewProfile"
+import EditProfile from "./routes/editProfile";
 import CreateProfile from "./routes/createProfile";
 import {
   createBrowserRouter,
@@ -48,6 +49,14 @@ const router = createBrowserRouter([
       {
         path: "/create_profile",
         element: <CreateProfile/>
+      },
+      {
+        path: "/profile",
+        element: <ViewProfile/>
+      },
+      {
+        path: "/edit_profile",
+        element: <EditProfile/>
       },
       {
         path: "/activate/:pk/:token",
