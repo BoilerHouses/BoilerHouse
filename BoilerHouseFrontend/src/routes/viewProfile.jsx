@@ -5,14 +5,15 @@ import axios from 'axios';
 
 const ViewProfile = () => {
  // Hardcoded user data
- const user = {
+ const [user, setUser] = useState({
    name: 'John Doe',
    email: 'john.doe@example.com',
    bio: 'A passionate student majoring in Computer Science. Loves coding and outdoor adventures.',
-   graduationYear: 2025,
-   major: 'Computer Science',
+   grad_year: 2025,
+   major: ['Computer Science'],
    image: 'https://via.placeholder.com/120', // Sample profile image URL
- };
+   interests: ['Jai']
+ })
  const [loading, setLoading] = useState(false);
    useEffect(() => {
        const fetchProfile = async () => {
@@ -24,6 +25,7 @@ const ViewProfile = () => {
                    }
                })
                console.log(response.data)
+               setUser(response.data)
            }
        }
        fetchProfile()
@@ -54,7 +56,10 @@ const ViewProfile = () => {
            <strong>Major:</strong> {user.major}
            </p>
            <p>
-           <strong>Graduation Year:</strong> {user.graduationYear}
+           <strong>Graduation Year:</strong> {user.grad_year}
+           </p>
+           <p>
+           <strong>Interests:</strong> {user.interests}
            </p>
        </div>
        </div>
