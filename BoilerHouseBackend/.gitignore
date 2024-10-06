@@ -1,0 +1,11 @@
+/.venv/
+/api/__pycache__/
+/boilerhouse/
+/Lib/
+/BoilerHouseBackend/__pycache__/
+/Scripts/
+/api/migrations/__pycache__/
+/tutorial-env/
+/pyenv.cfg
+/api/.env
+

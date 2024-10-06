@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import certifi, os
+import secrets
 
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
@@ -21,10 +22,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_FROM="boilerhouse26@gmail.com"
 EMAIL_HOST_USER = "boilerhouse26@gmail.com"
 EMAIL_HOST_PASSWORD = "ulpa igbm ihkn upnz"
+AWS_STORAGE_BUCKET_NAME = 'boilerhousebucket'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 PASSWORD_RESET_TIMEOUT = 14400
+SECRET_KEY = secrets.token_urlsafe(50)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.

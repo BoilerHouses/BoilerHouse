@@ -1,7 +1,7 @@
 // VerifyAccount.jsx
 
-import React, { useEffect, useState } from 'react';
-import { useLocation, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { Button, Typography, Container, Paper } from '@mui/material';
 import axios from 'axios';
 import { NavLink } from 'react-router-dom';
@@ -10,7 +10,7 @@ const VerifyAccount = () => {
     const [loading, setLoading] = useState(true);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
-    const location = useLocation();
+    
 
     const {pk, token} = useParams()
 
@@ -30,6 +30,7 @@ const VerifyAccount = () => {
                     setError(true);
                 }
             } catch (err) {
+                console.log(err)
                 setError(true);
             } finally {
                 setLoading(false);
