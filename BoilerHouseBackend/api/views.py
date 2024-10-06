@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -59,8 +59,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         profile = User.create(username=user.username,
                            password=user.password,
-                           name='', bio='', interests=None, grad_year=-1,
-                           major='', is_admin=user.is_admin)
+                           name='', bio='', grad_year=-1, is_admin=user.is_admin)
         profile.save()
     else:
         user.delete()
@@ -90,6 +89,21 @@ def email_auth(request):
 def ping(request):
     return Response("Up and Running: " + str(datetime.now()))
 
+@api_view(['GET'])
+def get_user_profile(request):
+   token = request.headers.get('Authorization')
+   user = verify_token(token)
+   if user == "Invalid token":
+       return Response({'error':"Auth token invalid"}, status = 500)
+   data = {
+       "name":user.name,
+       "email":user.username,
+       "bio":user.bio,
+       "major": user.major,
+       "interests": user.interests,
+       "grad_year": user.grad_year,
+   }
+   return Response(data, status=200)
 
 @api_view(['GET'])
 def try_bucket(request):
@@ -135,21 +149,6 @@ def log_in(request):
 
 
 
-
-@api_view(['POST'])
-def create_account(request):
-    data = {}
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return Response({"error": "Invalid JSON Document"}, status=422)
-    if ('username' not in data or
-            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
-        return Response({"error": "Invalid Request Missing Parameters"}, status=400)
-    ret = create_user_obj(data)
-    if 'error' in ret:
-        return Response({'error': ret['error']}, status=ret['status'])
-    return Response(ret, status=200)
 
 
 @api_view(['POST'])

@@ -9,6 +9,8 @@ import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount"
 import CreateProfile from "./routes/createProfile";
+import ViewProfile from "./routes/viewProfile"
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -50,6 +52,9 @@ const router = createBrowserRouter([
       {
         path: "/activate/:pk/:token",
         element: <ActivateAccount/>
+      },{
+        path:"/profile",
+        element:<ViewProfile/>
       }
 
     ]
