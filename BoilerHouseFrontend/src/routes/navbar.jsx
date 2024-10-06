@@ -15,7 +15,7 @@ const Navbar = () => {
           <li><NavLink to="/login" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Login</NavLink></li>
           <li><NavLink to="/register" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</NavLink></li>
 
-          <li><a href="#profile" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</a></li>
+          <li><a href="/profile" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</a></li>
         </ul>
       </div>
     </nav>
