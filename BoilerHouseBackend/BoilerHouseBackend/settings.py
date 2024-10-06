@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import certifi, os
-from decouple import config
+import secrets
+
 
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
@@ -22,10 +23,12 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_FROM="boilerhouse26@gmail.com"
 EMAIL_HOST_USER = "boilerhouse26@gmail.com"
 EMAIL_HOST_PASSWORD = "ulpa igbm ihkn upnz"
+AWS_STORAGE_BUCKET_NAME = 'boilerhousebucket'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 PASSWORD_RESET_TIMEOUT = 14400
+SECRET_KEY = secrets.token_urlsafe(50)
 
 # AWS S3 Configuration
 AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')  # Read from .env

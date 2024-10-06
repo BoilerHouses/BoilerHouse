@@ -1,5 +1,5 @@
 Set up:
-1. Run all pip installs, including boto3, django, cryptocode, and maybe rest_framework
+1. Run all pip installs, including boto3, django, cryptocode, and maybe rest_framework, pyjwt
 2. Make sure you are in backend dir and run 'python makemigrations api'
 3. Also run 'python migrate'
 4. Take a look at sample requests in '/examples'

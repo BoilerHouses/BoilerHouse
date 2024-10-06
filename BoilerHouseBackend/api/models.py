@@ -12,6 +12,7 @@ class User(models.Model):
     bio = models.CharField(max_length=2048)
     interests = models.CharField(max_length=2048)
     created_profile = models.BooleanField(default=False)
+    profile_picture = models.CharField(max_length=2048, default='')
     grad_year = models.IntegerField(
         default=int(datetime.now().year),
         validators=[
