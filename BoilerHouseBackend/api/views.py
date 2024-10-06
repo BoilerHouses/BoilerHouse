@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token, reset_password_token
@@ -68,7 +68,7 @@ def get_user_profile(request):
 def try_bucket(request):
     try:
         return Response(find_buckets())
-    except Exception as ex:
+    except Exception as e:
         return Response({'error': "Internal Server Error: " + str(type(e)) + str(e)}, status=500)
     return Response(lst)
 
