@@ -11,6 +11,8 @@ from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv
 import os
+import cryptocode
+
 
 
 '''
@@ -92,9 +94,6 @@ def log_in(request):
     data = {"token":token, "profile": user.created_profile}
     return Response(data, status=200)
 
-
-
-
 @api_view(['POST'])
 def create_account(request):
     data = {}
@@ -139,7 +138,6 @@ def forgot_password(request):
 @api_view(['GET'])
 def activate_forgot_password(request, uidb64, token):
     user = None
-
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.filter(pk=uid).first()
@@ -153,3 +151,34 @@ def activate_forgot_password(request, uidb64, token):
         return Response("invalid reset password link", status=402) 
 
     return Response("verified password reset link", status=200) 
+
+@api_view(['GET'])
+def update_password(request, uidb64, token):
+    load_dotenv()
+    user = None
+    loginPair = None
+    if "newPassword" not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.filter(pk=uid).first()
+        loginPair = LoginPair.objects.filter(pk=uid).first()
+    except:
+        return Response("An error occurred", status=400)
+    
+    if user is None or loginPair is None:
+        return Response("Unable to reset password because requested user does not exist", status=401)
+    
+    if not reset_password_token.check_token(user, token):
+        return Response("invalid reset password link", status=403) 
+    
+    password = request.query_params['newPassword']
+    newPassword = cryptocode.encrypt(password, os.getenv("ENCRYPTION_KEY"))
+
+    user.password = newPassword
+    user.save()
+
+    loginPair.password = newPassword
+    loginPair.save()
+
+    return Response("password updated", status=200) 

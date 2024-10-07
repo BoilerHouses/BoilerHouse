@@ -10,9 +10,12 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
+  Alert,
 } from "@mui/material";
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { NavLink } from 'react-router-dom';
+
 
 import axios from "axios";
 
@@ -40,6 +43,7 @@ const ResetPassword = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  const [buttonText, setButtonText] = useState("Update Password");
 
   const { pk, token } = useParams();
 
@@ -90,9 +94,35 @@ const ResetPassword = () => {
     }
 
     if (err == false) {
-        alert('update password')
-    }
+      setIsLoading(true);
 
+      axios({
+        // create account endpoint
+        url: `http://127.0.0.1:8000/api/updatePassword/${pk}/${token}`,
+        method: "GET",
+
+        // params
+        params: {
+          newPassword: password,
+        },
+      })
+        // success
+        .then(() => {
+          setIsLoading(false);
+          setButtonText("Password Updated Successfully!");
+          const successAlert = document.querySelector("#success-alert");
+          successAlert.classList.remove("hidden");
+        })
+
+        // Catch errors if any
+        .catch(() => {
+          setIsLoading(false);
+
+          // other server error
+          const serverAlert = document.querySelector("#server-error-alert");
+          serverAlert.classList.remove("hidden");
+        });
+    }
   };
 
   useEffect(() => {
@@ -134,7 +164,7 @@ const ResetPassword = () => {
     <Container className="flex items-center justify-center min-h-screen">
       <Card className="w-full max-w-md">
         <CardContent>
-          {success ? (
+          {!error ? (
             <>
               <Typography
                 variant="h5"
@@ -152,6 +182,7 @@ const ResetPassword = () => {
                   value={password}
                   error={passwordError}
                   onChange={handlePasswordChange}
+                  disabled={buttonText === "Password Updated Successfully!"}
                   className="bg-white !my-3.5"
                   InputProps={{
                     endAdornment: (
@@ -177,34 +208,59 @@ const ResetPassword = () => {
                   value={confirmPassword}
                   error={confirmPasswordError}
                   onChange={handleConfirmPasswordChange}
+                  disabled={buttonText === "Password Updated Successfully!"}
                   className="bg-white !my-3.5"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
                           aria-label="toggle password visibility"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                           edge="end"
                         >
-                          {showConfirmPassword ? <Visibility /> : <VisibilityOff />}
+                          {showConfirmPassword ? (
+                            <Visibility />
+                          ) : (
+                            <VisibilityOff />
+                          )}
                         </IconButton>
                       </InputAdornment>
                     ),
                   }}
                   helperText={confirmPasswordHelperText}
                 />
+
+                <div id="server-error-alert" className="hidden">
+                  <Alert severity="error">
+                    A server error occurred. Please try again later.
+                  </Alert>
+                </div>
+
+                <div id="success-alert" className="hidden">
+                  <Alert severity="error">
+                    Password reset successfully! {" "}
+                    <NavLink to="/login">
+                      <span className="text-blue-500 underline">Back to login</span>
+                    </NavLink>
+                  </Alert>
+                </div>
+
                 <Button
                   type="submit"
                   variant="contained"
                   color="primary"
                   fullWidth
                   className="mt-4"
-                  disabled={isLoading}
+                  disabled={
+                    isLoading || buttonText === "Password Updated Successfully!"
+                  }
                 >
                   {isLoading ? (
                     <CircularProgress size={24} color="inherit" />
                   ) : (
-                    "Update Password"
+                    buttonText
                   )}
                 </Button>
               </form>

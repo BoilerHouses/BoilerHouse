@@ -9,6 +9,7 @@ import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
 import ResetPassword from "./routes/resetPassword";
+import Availability from "./routes/availability";
 
 import CreateProfile from "./routes/createProfile";
 import {
@@ -56,8 +57,11 @@ const router = createBrowserRouter([
       {
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
+      },
+      {
+        path: "/availability",
+        element: <Availability/>
       }
-
     ]
   },
 ]);
