@@ -12,6 +12,7 @@ class User(models.Model):
     bio = models.CharField(max_length=2048)
     interests = models.CharField(max_length=2048)
     created_profile = models.BooleanField(default=False)
+    profile_picture = models.CharField(max_length=2048, default='')
     grad_year = models.IntegerField(
         default=int(datetime.now().year),
         validators=[
@@ -67,3 +68,10 @@ class LoginPair(models.Model):
     def create(cls, username, password, is_admin):
         pair = cls(username=username, password=password, is_admin=is_admin)
         return pair
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/')
+
+    def __str__(self):
+        return self.user.username

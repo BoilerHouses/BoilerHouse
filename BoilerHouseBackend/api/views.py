@@ -1,12 +1,11 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, save_login_pair, generate_token, verify_token
+from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair, generate_token, verify_token, edit_user_obj
 from .bucket_controller import find_buckets
 import json
+import boto3
 from .tokens import account_activation_token
 from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
@@ -16,8 +15,13 @@ from django.core.mail import EmailMessage
 from django.forms.models import model_to_dict
 from django.http import HttpResponse
 from dotenv import load_dotenv, dotenv_values
+from django.conf import settings
+from .tokens import account_activation_token, reset_password_token
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
+from django.forms.models import model_to_dict
+from dotenv import load_dotenv
 import os
-
 
 
 '''
@@ -25,23 +29,7 @@ Look at the examples dir for examples of api requests, we can share a postman co
 
 General structure of a request: Do request validations and then call the method
 '''
-
-def activateEmail(request, user, to_email):
-    mail_subject = "Activate your user account."
-    message = render_to_string("activate_account.html", {
-        'user':user.name, 
-        'domain': 'localhost:5173',
-        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
-        'token':account_activation_token.make_token(user),
-        "protocol": 'https' if request.is_secure() else 'http'
-
-    })
-    email = EmailMessage(mail_subject, message, to={to_email})
-    if email.send():
-        return Response("email sent.")
-    else:
-        Response("email was not sent due to some error.")
-
+        
 @api_view(['GET'])
 def activate(request, uidb64, token):
     user = None
@@ -67,24 +55,6 @@ def activate(request, uidb64, token):
         return Response("unable to activate user", status=400) 
     return Response({"message": "Activated Account", "profile": model_to_dict(profile)}, status = 200)
 
-def email_auth(request):
-    # check if user already exists
-    # if it does, then don't create a new user object
-    if "email" not in request.query_params or "name" not in request.query_params:
-        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
-    
-    email = request.query_params['email']
-    name = request.query_params['name']
-    user = User.objects.filter(username=email).first()
-
-    if not user:
-        user = User()
-        user.username = email
-        user.name = name
-        user.save()
-
-    activateEmail(request, user, to_email=email)
-    return HttpResponse("email sent")
     
 @api_view(['GET'])
 def ping(request):
@@ -95,9 +65,8 @@ def ping(request):
 def try_bucket(request):
     try:
         return Response(find_buckets())
-    except Exception as ex:
+    except Exception as e:
         return Response({'error': "Internal Server Error: " + str(type(e)) + str(e)}, status=500)
-    return Response(lst)
 
 @api_view(['GET'])
 def get_user_profile(request):
@@ -147,7 +116,7 @@ def log_in(request):
     # generate JWT token for user
     user = User.objects.filter(username=ret['username']).first()
     token = generate_token(user)
-    data = {"token":token}
+    data = {"token":token, "profile": user.created_profile}
     return Response(data, status=200)
 
 
@@ -168,19 +137,45 @@ def create_account(request):
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
 
-
 @api_view(['POST'])
 def edit_account(request):
-    data = {}
-    try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return Response({"error": "Invalid JSON Document"}, status=422)
-    if ('email' not in data or
-            'name' not in data or 'grad_year' not in data or 'major' not in data or "is_admin" not in data):
-        return Response({"error": "Invalid Request Missing Parameters"}, status=400)
-    ret = edit_user_obj(data)
+    user = verify_token(request.headers.get('Authorization'))
+
+    ret = edit_user_obj(user, request.data)
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
 
+
+@api_view(['GET']) 
+def forgot_password(request):
+    if "email" not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    
+    email = request.query_params["email"]
+    user = User.objects.filter(username=email).first()
+
+    if not user:
+        return Response({"error": "That email is not associated with an account"}, status=401)
+
+    resetPasswordEmail(request, user, to_email=email)
+    return Response({"message": "Email sent successfully!"}, status=200)
+
+
+@api_view(['GET'])
+def activate_forgot_password(request, uidb64, token):
+    user = None
+
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.filter(pk=uid).first()
+    except:
+        return Response("An error occurred", status=400)
+    
+    if user is None:
+        return Response("Unable to reset password because requested user does not exist", status=401)
+    
+    if not reset_password_token.check_token(user, token):
+        return Response("invalid reset password link", status=402) 
+
+    return Response("verified password reset link", status=200) 

@@ -15,26 +15,28 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { NavLink, useNavigate } from "react-router-dom";
-
+import axios from "axios";
 
 const CreateProfile = () => {
     const [name, setName] = useState("")
     const [bio, setBio] = useState("")
-    const [grad_year, setGradYear] = useState("")
+    const [grad_year, setGradYear] = useState()
     const [majors, setMajors] = useState([])
     const [major, setMajor] = useState("")
     const [interest, setInterest] = useState("")
     const [interests, setInterests] = useState([])
     const [isLoading, setIsLoading] = useState(false);
     const [tagCount, setTagCount] = useState([])
-
     const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImageURL, setSelectedImageURL] = useState(null);
+
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
       if (file) {
         const imageUrl = URL.createObjectURL(file);
-        setSelectedImage(imageUrl);
+        setSelectedImageURL(imageUrl);
+        setSelectedImage(file)
      }
     };
 
@@ -75,9 +77,35 @@ const CreateProfile = () => {
 
     const handleSubmit = (event) => {
       event.preventDefault(); // Prevent page refresh
-      console.log(event)
       setIsLoading(true)
-      console.log(name)
+      if (majors.length == 0) {
+        alert("Must Enter a Major!")
+        setIsLoading(false)
+        return
+      }
+      const formData = new FormData();
+      if (selectedImage != null) {
+        formData.append('profile_picture', selectedImage)
+      }
+      formData.append('name', name);
+      formData.append('bio', bio);
+      formData.append('grad_year', grad_year);
+      formData.append('major', majors.filter((key, tag) => key));
+      formData.append('interests', interests.filter((key, tag) => key));
+      axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
+      axios.post("http://127.0.0.1:8000/api/user/edit/", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((res) => {
+        setIsLoading(false);
+        console.log(res)
+      })
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoading(false);
+        alert("error")
+      })
     }
     const handleNameChange = (event) => {
       setName(event.target.value)
@@ -86,7 +114,13 @@ const CreateProfile = () => {
       setBio(event.target.value)
     }
     const handleYearChange = (event) => {
-      setGradYear(event.target.value)
+      const year = parseInt(event.target.value, 10)
+      if (isNaN(year)) {
+        alert("Grad Year must be a number")
+        setGradYear(2026)
+      } else {
+        setGradYear(event.target.value)
+      }
     }
     const handleMajorChange = (event) => {
       setMajor(event.target.value)
@@ -100,6 +134,7 @@ const CreateProfile = () => {
       if (event.key == 'Enter') {
         event.preventDefault()
       }
+      
     }
 
     return (
@@ -141,7 +176,6 @@ const CreateProfile = () => {
                   label="Enter your Majors..."
                   name="majors"
                   value={major}
-                  required={true}
                   onKeyDown={handleAddTag}
                   onChange={handleMajorChange}
                   className="bg-white !mt-3.5"
@@ -195,10 +229,10 @@ const CreateProfile = () => {
         id="upload-button"
       />
       
-      {selectedImage && (
+      {selectedImageURL && (
         <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
           <img
-            src={selectedImage}
+            src={selectedImageURL}
             alt="Preview"
             style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
           />
@@ -210,7 +244,6 @@ const CreateProfile = () => {
         </Button>
       </label>
     </Box>
-              
               <Button
                   type="submit"
                   variant="contained"
