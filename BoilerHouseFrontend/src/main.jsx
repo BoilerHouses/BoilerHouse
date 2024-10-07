@@ -12,6 +12,7 @@ import ResetPassword from "./routes/resetPassword";
 import ViewProfile from "./routes/viewProfile"
 import EditProfile from "./routes/editProfile";
 import CreateProfile from "./routes/createProfile";
+import ClubCreation from "./routes/clubCreation";
 
 import {
   createBrowserRouter,
@@ -69,6 +70,10 @@ const router = createBrowserRouter([
       },{
         path:"/profile",
         element:<ViewProfile/>
+      },
+      {
+        path:"/clubcreation",
+        element:<ClubCreation/>
       }
 
     ]
