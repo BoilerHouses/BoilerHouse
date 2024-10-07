@@ -8,9 +8,10 @@ import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
+import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
-
 import CreateProfile from "./routes/createProfile";
+import ViewProfile from "./routes/viewProfile"
 import {
   createBrowserRouter,
   RouterProvider,
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterUser/>
+      },
+      {
+        path: "/registeradmin",
+        element: <RegisterUserAdmin/>
       },
       {
         path: "/login",
@@ -56,6 +61,9 @@ const router = createBrowserRouter([
       {
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
+      },{
+        path:"/viewProfile",
+        element: <ViewProfile/>
       }
 
     ]
