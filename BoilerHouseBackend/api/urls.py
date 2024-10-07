@@ -1,5 +1,6 @@
 from django.urls import path
-from .views import ping, try_bucket, log_in, create_account, register_account, activate, forgot_password, activate_forgot_password, edit_account, update_password
+from .views import ping, try_bucket, log_in, create_account, register_account, activate, forgot_password, activate_forgot_password, edit_account, update_password, get_user_profile
+
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
@@ -11,5 +12,6 @@ urlpatterns = [
     path('activate/<uidb64>/<token>', activate, name="activate"),
     path('forgotPassword/', forgot_password, name="forgotPassword"),
     path('forgotPassword/<uidb64>/<token>', activate_forgot_password, name="activateForgotPassword"),
-    path('updatePassword/<uidb64>/<token>', update_password, name="updatePassword")
+    path('updatePassword/<uidb64>/<token>', update_password, name="updatePassword"),
+    path('get_user_profile', get_user_profile, name="get_user_profile")
 ]

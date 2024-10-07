@@ -14,6 +14,7 @@ from pathlib import Path
 import certifi, os
 import secrets
 
+
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 # for email verification
@@ -29,6 +30,15 @@ EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400
 SECRET_KEY = secrets.token_urlsafe(50)
 
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID = config('AWS_ACCESS_KEY_ID')  # Read from .env
+AWS_SECRET_ACCESS_KEY = config('AWS_SECRET_ACCESS_KEY')  # Read from .env
+AWS_STORAGE_BUCKET_NAME = 'boilerhousebucket'  # Replace with your S3 bucket name
+AWS_S3_REGION_NAME = config('REGION')  # Read from .env
+AWS_S3_CUSTOM_DOMAIN = f'{AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com'
+
+# Default File Storage to S3
+DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Boto3'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -57,7 +67,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "api"
+    "api",
+    "storages",
 ]
 
 MIDDLEWARE = [

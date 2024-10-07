@@ -5,6 +5,17 @@ from .models import User, LoginPair
 from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair, generate_token, verify_token, edit_user_obj
 from .bucket_controller import find_buckets
 import json
+import boto3
+from .tokens import account_activation_token
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+from django.forms.models import model_to_dict
+from django.http import HttpResponse
+from dotenv import load_dotenv, dotenv_values
+from django.conf import settings
 from .tokens import account_activation_token, reset_password_token
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -56,9 +67,25 @@ def ping(request):
 def try_bucket(request):
     try:
         return Response(find_buckets())
-    except Exception as ex:
+    except Exception as e:
         return Response({'error': "Internal Server Error: " + str(type(e)) + str(e)}, status=500)
-    return Response(lst)
+
+@api_view(['GET'])
+def get_user_profile(request):
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if user == "Invalid token":
+        return Response({'error':"Auth token invalid"}, status = 500)
+    data = {
+        "name":user.name,
+        "email":user.username,
+        "bio":user.bio,
+        "major":json.loads(user.major),
+        "interests":json.loads(user.interests),
+        "grad_year":user.grad_year,
+    }
+    return Response(data, status=200)
+
 
 
 @api_view(['GET'])
@@ -108,7 +135,6 @@ def create_account(request):
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
-
 
 @api_view(['POST'])
 def edit_account(request):

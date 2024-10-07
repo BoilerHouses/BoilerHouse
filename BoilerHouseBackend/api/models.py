@@ -68,3 +68,10 @@ class LoginPair(models.Model):
     def create(cls, username, password, is_admin):
         pair = cls(username=username, password=password, is_admin=is_admin)
         return pair
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    profile_picture = models.ImageField(upload_to='profile_pictures/')
+
+    def __str__(self):
+        return self.user.username
