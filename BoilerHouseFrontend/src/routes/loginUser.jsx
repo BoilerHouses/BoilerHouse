@@ -34,17 +34,6 @@ const UserLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
- 
-  useEffect(() => {
-    const checkLogin = async () => {
-        
-      if(localStorage.getItem("token") != null) {
-        navigate('/profile')
-      }
-
-    }
-    checkLogin()
-  }, [])
 
   const handleEmailChange = (event) => {
     const newEmail = event.target.value;
