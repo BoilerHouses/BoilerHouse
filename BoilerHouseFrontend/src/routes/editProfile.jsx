@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -14,14 +14,15 @@ import {
   Box,
   CircularProgress,
 } from "@mui/material";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const CreateProfile = () => {
+const EditProfile = () => {
     const navigate = useNavigate()
-    const [name, setName] = useState("")
-    const [bio, setBio] = useState("")
-    const [grad_year, setGradYear] = useState()
+    const [name, setName] = useState(null)
+    const [username, setUserName] = useState(null)
+    const [bio, setBio] = useState(null)
+    const [grad_year, setGradYear] = useState(null)
     const [majors, setMajors] = useState([])
     const [major, setMajor] = useState("")
     const [interest, setInterest] = useState("")
@@ -31,6 +32,7 @@ const CreateProfile = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageURL, setSelectedImageURL] = useState(null);
 
+
   const handleImageChange = (event) => {
     const file = event.target.files[0];
       if (file) {
@@ -39,6 +41,41 @@ const CreateProfile = () => {
         setSelectedImage(file)
      }
     };
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            const token = localStorage.getItem("token")
+            if (token){
+                const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+                    headers:{
+                        'Authorization': token
+                    }
+                })
+                let user = response.data
+                user.major.forEach((majorElement) => {
+                    let a = majors.filter((key, tag) => key == majorElement)
+                    if (a.length > 0) {
+                        return
+                    }
+                    setMajors((prevTags) => [...prevTags, (tagCount, majorElement)]);
+                    setTagCount(tagCount + 1)
+                })
+                user.interests.forEach((interestElement) => {
+                    let a = interests.filter((key, tag) => key == interestElement)
+                    if (a.length > 0) {
+                        return
+                    }
+                    setInterests((prevTags) => [...prevTags, (tagCount, interestElement)]);
+                    setTagCount(tagCount + 1)
+                })
+                setUserName(user.email)
+                setBio(user.bio)
+                setGradYear(user.grad_year)
+                setName(user.name)
+            }
+        }
+        fetchProfile()
+    }, [])
 
 
     const handleAddTag = (event) => {
@@ -103,7 +140,6 @@ const CreateProfile = () => {
         }
       }).then((res) => {
         setIsLoading(false);
-        console.log(res)
         navigate('/profile')
       })
       // Catch errors if any
@@ -147,34 +183,42 @@ const CreateProfile = () => {
           <Card className="w-full max-w-md">
             <CardContent>
               <Typography variant="h5" component="h2" className="mb-4 text-center">
-                Create Profile
+                Edit Profile
               </Typography>
+              <p className="text-gray-700 mb-2">User: {username}</p>
               <form onSubmit={handleSubmit}  onKeyDown={handleStopSubmission} className="space-y-4">
                 <TextField
                   fullWidth
-                  label="Enter your Name..."
+                  label="Enter your new Name..."
                   name="name"
                   value={name}
-                  required={true}
                   onChange={handleNameChange}
                   className="bg-white !my-3.5"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
                 <TextField
                   fullWidth
-                  label="Enter a bio..."
+                  label="Enter a new bio..."
                   name="bio"
                   value={bio}
                   onChange={handleBioChange}
                   className="bg-white !my-3.5"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
                 <TextField
                   fullWidth
-                  label="Enter your Graduation Year..."
+                  label="Enter your new Graduation Year..."
                   name="grad_year"
                   value={grad_year}
-                  required={true}
                   onChange={handleYearChange}
                   className="bg-white !mt-3.5"
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
                 />
                 <TextField
                   fullWidth
@@ -269,4 +313,4 @@ const CreateProfile = () => {
         </div>
       );
 }
-export default CreateProfile;
+export default EditProfile;

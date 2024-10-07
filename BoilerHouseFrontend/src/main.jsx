@@ -10,10 +10,12 @@ import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
 import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
-import Availability from "./routes/availability";
+import ViewProfile from "./routes/viewProfile"
+import EditProfile from "./routes/editProfile";import Availability from "./routes/availability";
 
 import CreateProfile from "./routes/createProfile";
-import ViewProfile from "./routes/viewProfile"
+import ClubCreation from "./routes/clubCreation";
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -57,12 +59,27 @@ const router = createBrowserRouter([
         element: <CreateProfile/>
       },
       {
+        path: "/profile",
+        element: <ViewProfile/>
+      },
+      {
+        path: "/edit_profile",
+        element: <EditProfile/>
+      },
+      {
         path: "/activate/:pk/:token",
         element: <ActivateAccount/>
       },
       {
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
+      },{
+        path:"/profile",
+        element:<ViewProfile/>
+      },
+      {
+        path:"/clubcreation",
+        element:<ClubCreation/>
       },{
         path:"/viewProfile",
         element: <ViewProfile/>

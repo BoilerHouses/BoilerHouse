@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -122,6 +122,8 @@ const UserLogin = () => {
           console.log(res.data)
           if (!res.data.profile) {
             navigate('/create_profile')
+          } else {
+            navigate('/profile')
           }
         })
 

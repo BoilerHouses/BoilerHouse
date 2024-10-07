@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair
-from .user_controller import create_user_obj, find_user_obj, resetPasswordEmail, save_login_pair, generate_token, verify_token, edit_user_obj
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail
 from .bucket_controller import find_buckets
 import json
 import boto3
@@ -49,8 +49,7 @@ def activate(request, uidb64, token):
         user.is_active = True
         profile = User.create(username=user.username,
                            password=user.password,
-                           name='', bio='', interests=None, grad_year=-1,
-                           major='', is_admin=user.is_admin)
+                           name='', bio='', grad_year=-1, is_admin=user.is_admin)
         profile.save()
     else:
         user.delete()
@@ -62,6 +61,21 @@ def activate(request, uidb64, token):
 def ping(request):
     return Response("Up and Running: " + str(datetime.now()))
 
+@api_view(['GET'])
+def get_user_profile(request):
+   token = request.headers.get('Authorization')
+   user = verify_token(token)
+   if user == "Invalid token":
+       return Response({'error':"Auth token invalid"}, status = 500)
+   data = {
+       "name":user.name,
+       "email":user.username,
+       "bio":user.bio,
+       "major": user.major,
+       "interests": user.interests,
+       "grad_year": user.grad_year,
+   }
+   return Response(data, status=200)
 
 @api_view(['GET'])
 def try_bucket(request):
@@ -121,6 +135,9 @@ def log_in(request):
     data = {"token":token, "profile": user.created_profile}
     return Response(data, status=200)
 
+
+
+
 @api_view(['POST'])
 def create_account(request):
     data = {}
@@ -135,6 +152,7 @@ def create_account(request):
     if 'error' in ret:
         return Response({'error': ret['error']}, status=ret['status'])
     return Response(ret, status=200)
+
 
 @api_view(['POST'])
 def edit_account(request):
@@ -160,6 +178,22 @@ def forgot_password(request):
     resetPasswordEmail(request, user, to_email=email)
     return Response({"message": "Email sent successfully!"}, status=200)
 
+@api_view(['GET'])
+def get_user_profile(request):
+   token = request.headers.get('Authorization')
+   user = verify_token(token)
+   if user == "Invalid token":
+       return Response({'error':"Auth token invalid"}, status = 500)
+   data = {
+       "name":user.name,
+       "email":user.username,
+       "bio":user.bio,
+       "major": user.major,
+       "interests": user.interests,
+       "profile_picture": user.profile_picture,
+       "grad_year": user.grad_year,
+   }
+   return Response(data, status=200)
 
 @api_view(['GET'])
 def activate_forgot_password(request, uidb64, token):

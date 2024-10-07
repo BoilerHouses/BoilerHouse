@@ -1,0 +1,8 @@
+BoilerHouseBackend/api/migrations/
+BoilerHouseBackend/api/__pycache__/
+BoilerHouseBackend/BoilerHouseBackend/__pycache__/
+BoilerHouseBackend/env/bin
+BoilerHouseBackend/env/lib/python3.12/site-packages/
+BoilerHouseFrontend/node_modules/
+BoilerHouseBackend/env/pyvenv.cfg
+BoilerHouseBackend/.env
