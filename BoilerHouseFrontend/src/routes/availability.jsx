@@ -61,6 +61,10 @@ const Availability = () => {
     return selectedSlots.includes(`${day}-${time}`);
   };
 
+  const isDragged = (day, time) => {
+    return draggedSlots.includes(`${day}-${time}`);
+  };
+
   // Start drag action
   const handleMouseDown = (day, time) => {
     setIsDragging(true);
@@ -81,10 +85,10 @@ const Availability = () => {
     if (!isDragging) {
       return;
     }
-    // const slot = `${day}-${time}`;
-    // if (!draggedSlots.includes(slot)) {
-    //   setDraggedSlots((prev) => [...prev, slot]);
-    // }
+    const slot = `${day}-${time}`;
+    if (!draggedSlots.includes(slot)) {
+      setDraggedSlots((prev) => [...prev, slot]);
+    }
 
     let startX = startCoord[0]
     let startY = startCoord[1]
@@ -111,7 +115,6 @@ const Availability = () => {
       }
     }
     setDraggedSlots(slots);
-
   };
 
   // Finish drag action and update selected slots
@@ -137,7 +140,9 @@ const Availability = () => {
       });
 
       setSelectedSlots(output); 
+
     }
+    
     setDraggedSlots([]);
   };
  
@@ -162,7 +167,6 @@ const Availability = () => {
       }
     })
     console.log(days)
-
   }
 
   return (
@@ -183,11 +187,13 @@ const Availability = () => {
             {daysOfWeek.map((day) => (
               <div
                 key={day}
-                className={`border h-4 cursor-pointer 
-                  ${isSelected(day, time) ? "bg-blue-500" : "bg-gray-100"} 
-                  ${
-                    draggedSlots.includes(`${day}-${time}`) ? "bg-blue-300" : ""
-                  } 
+                className={`border h-4 cursor-pointer
+                  ${isDragged(day, time) ? "!bg-blue-300" : ""} 
+
+                  ${isSelected(day, time) ? "bg-blue-500" : "bg-gray-100"}  
+
+
+
                   hover:bg-blue-200`}
                 onMouseDown={() => handleMouseDown(day, time)}
                 onMouseOver={() => handleMouseOver(day, time)}
