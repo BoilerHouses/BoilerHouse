@@ -9,7 +9,7 @@ const ManageUsers = () => {
  const [searchTerm, setSearchTerm] = useState('');
  const navigate = useNavigate();
  const [users, setUsers] = useState([]);
-
+ const [error, setError] = useState(false)
 
  // fetch all users when view loads
  useEffect(() => {
@@ -26,6 +26,10 @@ const ManageUsers = () => {
        .catch(err => {
            console.log(err)
        })
+   }
+   else {
+        console.log("here")
+        setError(true)
    }
  }, [])
 
@@ -46,7 +50,6 @@ const ManageUsers = () => {
    const userConfirmed = window.confirm("Are you sure you want to delete this user?");
    if (userConfirmed) {
        const token = localStorage.getItem('token')
-       console.log(email)
        if (token){
            axios.get('http://127.0.0.1:8000/api/deleteUser', {
                params:{
@@ -73,6 +76,20 @@ const ManageUsers = () => {
        navigate(`/profile`)
  };
 
+ const UnauthorizedMessage = () => {
+    return (
+      <div className="h-screen flex items-center justify-center bg-gray-100">
+        <div className="bg-red-600 text-white text-2xl p-10 rounded-lg text-center">
+          You are not authorized to view this page
+        </div>
+      </div>
+    );
+  };
+
+  if (error){
+    return UnauthorizedMessage()
+  }
+  else {
 
  return (
    <div style={{ padding: '20px', minHeight: '100vh', backgroundColor: '#f4f6f8' }}>
@@ -157,7 +174,7 @@ const ManageUsers = () => {
        </div>
      </div>
    </div>
- );
+ );}
 };
 
 
