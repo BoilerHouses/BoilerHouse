@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
-from .models import User, LoginPair
+from .models import User, LoginPair, Club
 from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail
 from .bucket_controller import find_buckets
 import json
@@ -10,7 +10,10 @@ from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv
+from django.conf import settings
+import uuid
 import os
+import boto3
 
 
 '''
@@ -168,3 +171,41 @@ def activate_forgot_password(request, uidb64, token):
         return Response("invalid reset password link", status=402) 
 
     return Response("verified password reset link", status=200) 
+
+@api_view(['POST'])
+def save_club_information(request):
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if 'name' not in request.data or 'icon' not in request.data or 'description' not in request.data:
+        return Response("Missing parameters!", status=400)
+    data = request.data
+    if(Club.objects.filter(name=data.get('name')).exists()):
+        return Response("Club with that name already exists!", status=409)
+    load_dotenv()
+    club = None
+    try:
+        interests = []
+        i = 0
+        while(data.get(f'interest[{i}]')):
+            interests.append(data.get(f'interest[{i}]'))
+            i+=1
+        s3_client = boto3.client('s3',
+                        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+                        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
+        file_name = f'{data.get('name')}/icon/{uuid.uuid4()}.{data.get('icon').name.split(".")[-1]}'
+        s3_client.upload_fileobj(
+                data.get('icon'),
+                settings.AWS_STORAGE_BUCKET_NAME,
+                file_name,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': data.get('icon').content_type}
+        )
+        club = Club.create(name=data.get('name'), 
+                           description=data.get('description'), 
+                           interests=interests, 
+                           icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}', 
+                           officers=[user.pk], members=[user.pk])
+        club.save()
+        return Response({'club': model_to_dict(club)}, status=200)
+    except Exception as e:
+        return Response("Error: " + str(e), status=500)
+    

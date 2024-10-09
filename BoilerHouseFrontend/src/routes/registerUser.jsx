@@ -294,12 +294,6 @@ const UserRegistration = () => {
               />
             </div>
 
-            <FormControlLabel
-              control={<Checkbox />}
-              label="Create Admin Account"
-              onClick={toggleAdmin}
-            />
-
             <div id="email-already-exists-alert" className="hidden">
               <Alert severity="error">
                 An account with email {email} already exists.{" "}

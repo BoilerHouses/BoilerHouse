@@ -8,6 +8,7 @@ import {
   Chip,
   Box,
 } from "@mui/material";
+import axios from "axios";
 
 const ClubApplication = () => {
   const [clubName, setClubName] = useState("");
@@ -21,7 +22,7 @@ const ClubApplication = () => {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-      if (file && file.size <= 5120) {
+      if (file && file.size <= 5000000000) {
         const imageUrl = URL.createObjectURL(file);
         setSelectedImageURL(imageUrl);
         setSelectedImage(file)
@@ -59,22 +60,50 @@ const ClubApplication = () => {
     setDescription(e.target.value);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    // Simulate an API call
-    setTimeout(() => {
-      alert(`Club Name: ${clubName}, Description: ${description}`);
-      setIsLoading(false);
-    }, 1500);
-  };
 
   const handleStopSubmission = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
     }
   };
+
+  const handleSubmit = (event) => {
+    event.preventDefault(); // Prevent page refresh
+      setIsLoading(true)
+      if (interests.length == 0) {
+        alert("Must Enter at Least One Interest!")
+        setIsLoading(false)
+        return
+      }
+      const formData = new FormData();
+      if (selectedImage != null) {
+        formData.append('icon', selectedImage)
+      } else {
+        alert('Must Upload Icon!')
+        return
+      }
+
+      interests.filter((key, tag) => key).forEach((i, e) => {
+        formData.append(`interest[${e}]`, i)
+      })
+      formData.append('name', clubName);
+      formData.append('description', description);
+      axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
+      axios.post("http://127.0.0.1:8000/api/club/save/", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      }).then((res) => {
+        setIsLoading(false);
+        console.log(res)
+        alert('Application Submitted')
+      })
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoading(false);
+        alert("error")
+      })
+  }
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-yellow-500 to-white p-8" style={{ paddingTop: "2rem" }}>
@@ -108,7 +137,7 @@ const ClubApplication = () => {
                   color: "white",
                 },
               }}
-              required
+              required={true}
             />
           </Grid>
           <Grid item xs={12}>
@@ -130,7 +159,7 @@ const ClubApplication = () => {
                   color: "white",
                 },
               }}
-              required
+              required={true}
             />
           </Grid>
 
@@ -189,7 +218,7 @@ const ClubApplication = () => {
       )}
       <label htmlFor="upload-button" >
         <Button variant="contained" component="span" sx={{display: 'flex', justifyContent: 'center'}}>
-          Upload Image
+          Upload Club Icon
         </Button>
       </label>
           </Grid>
