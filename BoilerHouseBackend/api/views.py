@@ -168,3 +168,37 @@ def activate_forgot_password(request, uidb64, token):
         return Response("invalid reset password link", status=402) 
 
     return Response("verified password reset link", status=200) 
+
+@api_view(['GET'])
+def get_all_users(request):
+   user = verify_token(request.headers.get('Authorization'))
+   if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+   if not user.is_admin:
+       return Response({'error': 'User is not an admin'}, status=400)
+   #get all users
+   all_users = User.objects.values('name', 'username')
+   return Response(all_users, status=200)
+
+
+
+
+@api_view(['GET'])
+def delete_user(request):
+   print(request.data)
+   user = verify_token(request.headers.get('Authorization'))
+   if not user.is_admin:
+       print("here1")
+       return Response({'error': 'User is not an admin'}, status=400)
+
+
+   if "username" not in request.query_params:
+       return Response({'error': 'username of user not included'}, status=400)
+   #delete user in database
+   user = User.objects.filter(username=request.query_params['username']).first()
+   pair = LoginPair.objects.filter(username = request.query_params['username']).first()
+   if user:
+       user.delete()
+   if pair:
+       pair.delete()
+   return Response("success", status=200)
