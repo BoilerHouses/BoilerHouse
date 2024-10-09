@@ -13,4 +13,6 @@ urlpatterns = [
     path('activate/<uidb64>/<token>', activate, name="activate"),
     path('forgotPassword/', forgot_password, name="forgotPassword"),
     path('forgotPassword/<uidb64>/<token>', activate_forgot_password, name="activateForgotPassword"),
+    path('getAllUsers', get_all_users, name="getAllUsers"),
+    path('deleteUser', delete_user, name="deleteUser")
 ]
