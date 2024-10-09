@@ -33,7 +33,7 @@ const CreateProfile = () => {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-      if (file) {
+      if (file && file.size <= 5120) {
         const imageUrl = URL.createObjectURL(file);
         setSelectedImageURL(imageUrl);
         setSelectedImage(file)

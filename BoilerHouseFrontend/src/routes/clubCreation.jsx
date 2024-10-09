@@ -16,6 +16,19 @@ const ClubApplication = () => {
   const [interest, setInterest] = useState("");
   const [interests, setInterests] = useState([]);
   const [tagCount, setTagCount] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedImageURL, setSelectedImageURL] = useState(null);
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+      if (file && file.size <= 5120) {
+        const imageUrl = URL.createObjectURL(file);
+        setSelectedImageURL(imageUrl);
+        setSelectedImage(file)
+     } else {
+      alert('File too large or could not be found!')
+     }
+    };
 
   const handleClubNameChange = (e) => {
     setClubName(e.target.value);
@@ -157,6 +170,28 @@ const ClubApplication = () => {
                 />
               ))}
             </Box>
+            <input
+              accept="image/*"
+              type="file"
+              onChange={handleImageChange}
+              style={{ display: 'none' }}
+              id="upload-button"
+            />
+      
+      {selectedImageURL && (
+        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+          <img
+            src={selectedImageURL}
+            alt="Preview"
+            style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
+          />
+        </Box>
+      )}
+      <label htmlFor="upload-button" >
+        <Button variant="contained" component="span" sx={{display: 'flex', justifyContent: 'center'}}>
+          Upload Image
+        </Button>
+      </label>
           </Grid>
 
           <Grid item xs={12}>
