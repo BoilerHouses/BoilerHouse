@@ -11,7 +11,7 @@ import ActivateAccount from "./routes/activateAccount";
 import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
 import ViewProfile from "./routes/viewProfile"
-import EditProfile from "./routes/editProfile";import Availability from "./routes/availability";
+import EditProfile from "./routes/editProfile";
 import ClubInformation from "./routes/ClubInformation";
 import CreateProfile from "./routes/createProfile";
 import ClubCreation from "./routes/clubCreation";
@@ -21,7 +21,7 @@ import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
 import { AuthProvider } from "./routes/authProvider";
 
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
 import "./index.css";
 
@@ -102,7 +102,7 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  <AuthProvider>
-    <RouterProvider router={router} />
-  </AuthProvider>
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
 );

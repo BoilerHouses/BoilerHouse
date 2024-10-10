@@ -5,7 +5,7 @@ import axios from 'axios';
 import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
 import { Visibility } from '@mui/icons-material';
 import { visuallyHidden } from '@mui/utils';
-
+import Availability from './availability';
 import { AuthContext } from "./authProvider";
 import { useContext } from "react";
 
@@ -32,7 +32,7 @@ const ViewProfile = () => {
                        'Authorization': token,
                    },
                    params:{
-                        username:userId
+                        username: userId
                    }
                })
                console.log(response.data)

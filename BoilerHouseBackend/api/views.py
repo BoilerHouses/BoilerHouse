@@ -237,6 +237,15 @@ def approve_club(request):
         return Response({"error": str(ex)}, status=500)
 
 @api_view(['GET'])
+def verify(request):
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if user:
+        return Response({'admin': user.is_admin}, status=200)
+    else:
+        return Response({'error': 'Invalid Token'}, status=400)
+
+@api_view(['GET'])
 def deny_club(request):
     if 'club_id' not in request.query_params:
         return Response("Missing parameters!", status=400)
