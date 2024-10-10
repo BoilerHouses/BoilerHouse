@@ -69,7 +69,7 @@ const router = createBrowserRouter([
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
       },{
-        path:"/profile",
+        path:"/profile/:userId",
         element:<ViewProfile/>
       },
       {

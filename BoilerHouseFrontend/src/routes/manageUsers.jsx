@@ -24,7 +24,7 @@ const ManageUsers = () => {
            setUsers(response.data)
        })
        .catch(err => {
-           console.log(err)
+           setError(true)
        })
    }
    else {
@@ -73,7 +73,7 @@ const ManageUsers = () => {
 
  // Function to handle row click
  const handleRowClick = (user) => {
-       navigate(`/profile`)
+       navigate(`/profile/${user.username}`)
  };
 
  const UnauthorizedMessage = () => {

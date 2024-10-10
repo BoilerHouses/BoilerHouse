@@ -1,11 +1,12 @@
 // ViewProfile.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
 
 const ViewProfile = () => {
  // Hardcoded user data
  const navigate = useNavigate()
+ const { userId } = useParams();
  const [user, setUser] = useState({
    name: 'John Doe',
    email: 'john.doe@example.com',
@@ -22,7 +23,10 @@ const ViewProfile = () => {
            if (token){
                const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
                    headers:{
-                       'Authorization': token
+                       'Authorization': token,
+                   },
+                   params:{
+                        username:userId
                    }
                })
                console.log(response.data)

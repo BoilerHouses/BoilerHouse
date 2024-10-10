@@ -103,7 +103,7 @@ def log_in(request):
     # generate JWT token for user
     user = User.objects.filter(username=ret['username']).first()
     token = generate_token(user)
-    data = {"token":token, "profile": user.created_profile}
+    data = {"token":token, "profile": user.created_profile, "username":user.username}
     return Response(data, status=200)
 
 
@@ -140,6 +140,7 @@ def get_user_profile(request):
    user = verify_token(token)
    if user == "Invalid token":
        return Response({'error':"Auth token invalid"}, status = 500)
+   user = User.objects.filter(username=request.query_params['username']).first()
    data = {
        "name":user.name,
        "email":user.username,
