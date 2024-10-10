@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
-import json
 
 
 class User(models.Model):
@@ -21,6 +20,7 @@ class User(models.Model):
         ]
     )
     major = ArrayField(models.CharField(max_length=255))
+    availability = models.JSONField(default=dict)
 
 
     '''
@@ -60,5 +60,3 @@ class LoginPair(models.Model):
     def create(cls, username, password, is_admin):
         pair = cls(username=username, password=password, is_admin=is_admin)
         return pair
-
-
