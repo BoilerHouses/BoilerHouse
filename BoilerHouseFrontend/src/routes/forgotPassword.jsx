@@ -6,7 +6,7 @@ import {
   CardContent,
   Typography,
   CircularProgress,
-  Alert
+  Alert,
 } from "@mui/material";
 
 import { NavLink } from "react-router-dom";
@@ -55,9 +55,8 @@ const ForgotPassword = () => {
         },
       })
         // success
-        .then((res) => {
+        .then(() => {
           setButtonText("Email Sent!");
-
           setIsLoading(false);
         })
 
@@ -69,9 +68,7 @@ const ForgotPassword = () => {
           if (err.status == 401) {
             const noEmailAlert = document.querySelector("#no-email-alert");
             noEmailAlert.classList.remove("hidden");
-          }
-
-          else {
+          } else {
             const serverAlert = document.querySelector("#server-error-alert");
             serverAlert.classList.remove("hidden");
           }
@@ -124,9 +121,11 @@ const ForgotPassword = () => {
 
             <div id="no-email-alert" className="hidden">
               <Alert severity="error">
-                An account with email {email} does not exist. {" "}
+                An account with email {email} does not exist.{" "}
                 <NavLink to="/register">
-                  <span className="text-blue-500 underline">Register an account</span>
+                  <span className="text-blue-500 underline">
+                    Register an account
+                  </span>
                 </NavLink>
                 {" instead?"}
               </Alert>

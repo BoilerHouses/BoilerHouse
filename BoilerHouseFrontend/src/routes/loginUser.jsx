@@ -12,6 +12,8 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { NavLink, useNavigate } from "react-router-dom";
+import { AuthContext } from './authProvider';
+import { useContext } from 'react';
 
 import axios from "axios";
 
@@ -21,7 +23,9 @@ const isValidEmailAddress = (email) => {
 };
 
 const UserLogin = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { setIsLoggedIn } = useContext(AuthContext);
+
 
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState(false);
@@ -102,7 +106,7 @@ const UserLogin = () => {
 
     if (err === false) {
       setIsLoading(true);
-      
+
       axios({
         // create account endpoint
         url: "http://127.0.0.1:8000/api/loginUser/",
@@ -117,11 +121,12 @@ const UserLogin = () => {
         // success
         .then((res) => {
           setIsLoading(false);
-          localStorage.setItem('token', res.data.token)
+          setIsLoggedIn(true);
+          localStorage.setItem("token", res.data.token);
           if (!res.data.profile) {
-            navigate('/create_profile')
+            navigate("/create_profile");
           } else {
-            navigate('/profile')
+            navigate("/profile");
           }
         })
 

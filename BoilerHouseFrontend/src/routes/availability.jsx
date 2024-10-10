@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Box, Button } from "@mui/material";
+import { Box, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import axios from "axios";
 
 const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -53,6 +53,12 @@ const Availability = () => {
   const [startCoord, setStartCoord] = useState([-1, -1]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(false);
+
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+
   const [user, setUser] = useState("");
 
   // toggle mode
@@ -145,8 +151,16 @@ const Availability = () => {
     setDraggedSlots([]);
   };
 
+  const handleClose = (event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    setOpenSuccess(false);
+  };
+
   // get the times that are currently selected
   const getTimes = () => {
+    setIsProcessing(true);
     let slots = selectedSlots.sort();
     let days = [[], [], [], [], [], [], []];
 
@@ -165,23 +179,81 @@ const Availability = () => {
         days[slot[0]].push({ start: slot[1], end: slot[1] });
       }
     });
-    console.log(days);
+
+    days = {
+      Sun: days[0],
+      Mon: days[1],
+      Tue: days[2],
+      Wed: days[3],
+      Thu: days[4],
+      Fri: days[5],
+      Sat: days[6],
+    };
+    days = JSON.stringify(days);
+
+    axios({
+      // create account endpoint
+      url: "http://127.0.0.1:8000/api/setAvailability/",
+      method: "GET",
+
+      // params
+      params: {
+        email: user,
+        availability: days,
+      },
+    })
+      // success
+      .then(() => {
+        setIsProcessing(false);
+        setOpenSuccess(true);
+      })
+
+      // Catch errors if any
+      .catch(() => {
+        setIsProcessing(false);
+        setOpenError(true);
+      });
   };
 
   useEffect(() => {
     const fetchProfile = async () => {
       setIsLoading(true);
       const token = localStorage.getItem("token");
+
+      let response;
       if (token) {
-        const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
-          headers: {
-            Authorization: token,
-          },
-        });
+        try {
+          response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+            headers: {
+              Authorization: token,
+            },
+          });
+        } catch {
+          setError(true);
+        }
         // successfully retrieved user data, user is logged in
-        if (response.status === 200) {
+        // load in user availability
+        if (response && response.status === 200) {
           setUser(response.data.email);
           setIsLoggedIn(true);
+
+          const availability = response.data.availability;
+          for (const day in availability) {
+            const ranges = availability[day];
+            ranges.forEach((range) => {
+              const start = range.start;
+              const end = range.end;
+
+              const index = daysOfWeek.indexOf(day);
+
+              for (let i = start; i <= end; i++) {
+                const slot = getSlot(index, i);
+                if (!selectedSlots.includes(slot)) {
+                  setSelectedSlots((prevSlots) => [...prevSlots, slot]);
+                }
+              }
+            });
+          }
         }
       }
       setIsLoading(false);
@@ -198,6 +270,17 @@ const Availability = () => {
         alignItems="center"
       >
         Loading...
+      </Box>
+    </div>
+  ) : error ? (
+    <div className="flex items-center justify-center h-screen">
+      <Box
+        className="bg-red-500 text-white p-6 rounded shadow-lg"
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+      >
+        A server error occurred. Please try again.
       </Box>
     </div>
   ) : !isLoggedIn ? (
@@ -251,10 +334,42 @@ const Availability = () => {
             </React.Fragment>
           ))}
         </Box>
-        <Button className="items-center" onClick={getTimes}>
-          Set Availability
+        <div className="h-4"></div>
+        <Button
+          variant="contained"
+          color="primary"
+          fullWidth
+          disabled={isProcessing}
+          onClick={getTimes}
+        >
+          {isProcessing ? (
+            <CircularProgress size={24} color="inherit" />
+          ) : (
+            "Set Availability"
+          )}
         </Button>
       </div>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
+          Availability Set!
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={openError}
+        autoHideDuration={3000}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
+          A sever error occurred. Please try again.
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

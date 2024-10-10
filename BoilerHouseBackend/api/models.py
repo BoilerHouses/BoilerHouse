@@ -22,18 +22,14 @@ class User(models.Model):
     major = ArrayField(models.CharField(max_length=255))
     availability = models.JSONField(default=dict)
 
-
     '''
     Use the major and interest methods below to access/modify majors and interests
     '''
-
     # Constructor type method
     @classmethod
     def create(cls, username, password, name, bio, grad_year, is_admin):
         user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin, major=[], interests=[], created_profile=False)
         return user
-
-
 
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)

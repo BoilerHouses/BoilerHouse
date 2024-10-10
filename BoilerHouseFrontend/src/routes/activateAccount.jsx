@@ -1,5 +1,3 @@
-// VerifyAccount.jsx
-
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Button, Typography, Container, Paper } from '@mui/material';
@@ -11,7 +9,6 @@ const VerifyAccount = () => {
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     
-
     const {pk, token} = useParams()
 
     useEffect(() => {

@@ -3,7 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+import { AuthContext } from "./authProvider";
+import { useContext } from "react";
+
 const ViewProfile = () => {
+  const { setIsLoggedIn } = useContext(AuthContext);
+
   // Hardcoded user data
   const navigate = useNavigate();
   const [user, setUser] = useState({
@@ -18,9 +23,8 @@ const ViewProfile = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    setLoading(true);
-    
     const fetchProfile = async () => {
+      setLoading(true);
       const token = localStorage.getItem("token");
       if (token) {
         const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
@@ -29,16 +33,14 @@ const ViewProfile = () => {
           },
         });
         setUser(response.data);
+        setLoading(false);
       }
     };
     fetchProfile();
-    setLoading(false);
   }, []);
 
-  if (loading) {
-    return <div>Loading..</div>;
-  }
   return (
+    loading ? <div>Loading..</div> :
     <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
       {/* Edit Profile Button */}
       <button
@@ -76,6 +78,7 @@ const ViewProfile = () => {
       <button
         className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200"
         onClick={() => {
+          setIsLoggedIn(false);
           localStorage.removeItem("token");
           navigate("/");
         }}
