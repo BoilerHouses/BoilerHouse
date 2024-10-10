@@ -3,6 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
+import { Visibility } from '@mui/icons-material';
+import { visuallyHidden } from '@mui/utils';
 
 const ViewProfile = () => {
  // Hardcoded user data
@@ -45,7 +47,7 @@ const ViewProfile = () => {
    return (
        <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
        {/* Edit Profile Button */}
-       <button className="absolute top-4 right-4 bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+       <button className={localStorage.getItem('username') == userId ? "absolute top-4 right-4 bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600" : 'hidden'}
        onClick={() => {navigate('/edit_profile')}}>
            Edit Profile
        </button>
@@ -68,7 +70,8 @@ const ViewProfile = () => {
            <strong>Interests:</strong> {user.interests.join(', ')}
            </p>
        </div>
-       <button className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200"
+       <button className={localStorage.getItem('username') == userId ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200" : "hidden"  }
+        visibility={localStorage.getItem('username') == userId}
         onClick={() => {
             localStorage.removeItem('token')
             navigate('/')}}>
