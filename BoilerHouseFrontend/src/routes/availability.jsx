@@ -2,7 +2,32 @@ import React, { useState, useEffect } from "react";
 import { Box, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import axios from "axios";
 
-const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+
+// translates a coordinate into a time pair
+// (0, 0) => Sunday, 08:00
+
+const Availability = () => {
+  const [selectedSlots, setSelectedSlots] = useState([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [draggedSlots, setDraggedSlots] = useState([]);
+
+  const [startCoord, setStartCoord] = useState([-1, -1]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState(false);
+
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+
+  const [user, setUser] = useState("");
+
+  // toggle mode
+  // on: toggle slots ON
+  // off: toggle slots OFF
+  const [toggleMode, setToggleMode] = useState("on");
+  const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 const startHour = 8;
 const endHour = 22;
@@ -29,9 +54,6 @@ const getCoord = (day, time) => {
   const y = hour * (60 / interval) + minutes / interval;
   return [x, y];
 };
-
-// translates a coordinate into a time pair
-// (0, 0) => Sunday, 08:00
 const getSlot = (x, y) => {
   const day = daysOfWeek[x];
 
@@ -43,28 +65,8 @@ const getSlot = (x, y) => {
     "0"
   )}`;
 };
+const timeSlots = generateTimeSlots();
 
-const Availability = () => {
-  const timeSlots = generateTimeSlots();
-  const [selectedSlots, setSelectedSlots] = useState([]);
-  const [isDragging, setIsDragging] = useState(false);
-  const [draggedSlots, setDraggedSlots] = useState([]);
-
-  const [startCoord, setStartCoord] = useState([-1, -1]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState(false);
-
-  const [openSuccess, setOpenSuccess] = useState(false);
-  const [openError, setOpenError] = useState(false);
-
-  const [user, setUser] = useState("");
-
-  // toggle mode
-  // on: toggle slots ON
-  // off: toggle slots OFF
-  const [toggleMode, setToggleMode] = useState("on");
 
   const isSelected = (day, time) => {
     return selectedSlots.includes(`${day}-${time}`);
@@ -224,6 +226,9 @@ const Availability = () => {
       if (token) {
         try {
           response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+            params: {
+              username: localStorage.getItem('username')
+            },
             headers: {
               Authorization: token,
             },

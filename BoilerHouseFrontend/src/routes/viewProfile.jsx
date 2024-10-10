@@ -73,6 +73,7 @@ const ViewProfile = () => {
            <strong>Interests:</strong> {user.interests.join(', ')}
            </p>
        </div>
+       return <Availability/>
        <button className={localStorage.getItem('username') == userId ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200" : "hidden"  }
         visibility={localStorage.getItem('username') == userId}
         onClick={() => {
