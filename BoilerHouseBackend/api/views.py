@@ -362,7 +362,19 @@ def set_availability(request):
 def get_club_information(request):
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
-        print(model_to_dict(club))
+        ret_club = model_to_dict(club)
+        officer_list = []
+        for i in ret_club['officers']:
+            user = User.objects.filter(pk=i).first()
+            if user:
+                officer_list.append(i, user.name, user.profile_picture)
+        member_list = []
+        for i in ret_club['members']:
+            user = User.objects.filter(pk=i).first()
+            if user:
+                member_list.append(i, user.name, user.profile_picture)
+        ret_club['officers'] = officer_list
+        ret_club['members'] = member_list
         return Response({'club': model_to_dict(club)}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
