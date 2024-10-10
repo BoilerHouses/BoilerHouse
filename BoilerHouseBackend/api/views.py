@@ -195,6 +195,7 @@ def get_user_profile(request):
        "interests": user.interests,
        "profile_picture": user.profile_picture,
        "grad_year": user.grad_year,
+       "availability": user.availability
    }
    return Response(data, status=200)
 

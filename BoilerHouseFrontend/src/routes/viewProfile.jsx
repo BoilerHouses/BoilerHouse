@@ -6,6 +6,9 @@ import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
 import { Visibility } from '@mui/icons-material';
 import { visuallyHidden } from '@mui/utils';
 
+import { AuthContext } from "./authProvider";
+import { useContext } from "react";
+
 const ViewProfile = () => {
  // Hardcoded user data
  const navigate = useNavigate()

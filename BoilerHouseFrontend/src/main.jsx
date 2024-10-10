@@ -18,47 +18,46 @@ import ClubCreation from "./routes/clubCreation";
 import ManageUsers from "./routes/manageUsers";
 import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
+import Availability from "./routes/availability";
+import { AuthProvider } from "./routes/authProvider";
 
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import "./index.css";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Navbar/>,
-    errorElement: <ErrorPage/>,
+    element: <Navbar />,
+    errorElement: <ErrorPage />,
     children: [
       {
         index: true,
-        element: <LandingPage/>
+        element: <LandingPage />,
       },
       {
         path: "/register",
-        element: <RegisterUser/>
+        element: <RegisterUser />,
       },
       {
         path: "/registeradmin",
-        element: <RegisterUserAdmin/>
+        element: <RegisterUserAdmin />,
       },
       {
         path: "/login",
-        element: <UserLogin/>
+        element: <UserLogin />,
       },
       {
         path: "/forgot_password",
-        element: <ForgotPassword/>
+        element: <ForgotPassword />,
       },
       {
         path: "/verify_account",
-        element: <VerifyAccount/>
+        element: <VerifyAccount />,
       },
       {
         path: "/create_profile",
-        element: <CreateProfile/>
+        element: <CreateProfile />,
       },
       {
         path: "/profile/:userId",
@@ -66,11 +65,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/edit_profile",
-        element: <EditProfile/>
+        element: <EditProfile />,
       },
       {
         path: "/activate/:pk/:token",
-        element: <ActivateAccount/>
+        element: <ActivateAccount />,
       },
       {
         path: "/reset_password/:pk/:token",
@@ -96,14 +95,14 @@ const router = createBrowserRouter([
       },
       {
         path: "/availability",
-        element: <Availability/>
-      }
-    ]
+        element: <Availability />,
+      },
+    ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
-  // <React.StrictMode>
-  <RouterProvider router={router} />
-  // </React.StrictMode>
+  <AuthProvider>
+    <RouterProvider router={router} />
+  </AuthProvider>
 );
