@@ -99,9 +99,8 @@ const ClubInformation = () => {
                 style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
               >
                 <img
-                  src={profile[2]}
+                  src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
                   className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-                  alt={profile[1]}
                 />
                 <span className="ml-4 text-black font-semibold">{profile[1]}</span>
               </div>
@@ -120,9 +119,8 @@ const ClubInformation = () => {
                 style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
               >
                 <img
-                  src={profile[2]}
+                  src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
                   className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-                  alt={profile[1]}
                 />
                 <span className="ml-4 text-black font-semibold">{profile[1]}</span>
               </div>
@@ -203,9 +201,8 @@ const ClubInformation = () => {
             style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
           >
             <img
-              src={profile[2]}
+              src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
               className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-              alt={profile[1]}
             />
             <span className="ml-4 text-black font-semibold">{profile[1]}</span>
           </div>
@@ -224,9 +221,8 @@ const ClubInformation = () => {
             style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
           >
             <img
-              src={profile[2]}
+              src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
               className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-              alt={profile[1]}
             />
             <span className="ml-4 text-black font-semibold">{profile[1]}</span>
           </div>

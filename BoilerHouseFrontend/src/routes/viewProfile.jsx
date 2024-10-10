@@ -51,7 +51,7 @@ const ViewProfile = () => {
 
 
        <div className="flex items-center mb-4">
-           <img src={user.profile_picture} alt="Profile" className="w-24 h-24 rounded-full mr-6" /> {/* Increased size */}
+           <img src={user.profile_picture || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'} alt="Profile" className="w-24 h-24 rounded-full mr-6" /> {/* Increased size */}
            <h1 className="text-4xl font-bold">{user.name}</h1> {/* Increased font size */}
        </div>
 
