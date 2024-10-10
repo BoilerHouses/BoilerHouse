@@ -11,15 +11,23 @@ const Navbar = () => {
           <span className="text-yellow-500">House</span>
         </NavLink>
         <ul className="flex space-x-8 text-lg">
-          <li><NavLink to="/clubcreation" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Create a Club</NavLink></li>
-          <li><NavLink to="/login" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Login</NavLink></li>
-          <li><NavLink to="/register" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</NavLink></li>
+          <li><NavLink to="/clubcreation"
+                       className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Create
+            a Club</NavLink></li>
+          <li><NavLink to="/login"
+                       className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Login</NavLink>
+          </li>
+          <li><NavLink to="/register"
+                       className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</NavLink>
+          </li>
+          <li><NavLink to={`/profile/${localStorage.getItem('username')}`}
+                       className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</NavLink>
+          </li>
 
-          <li><a href="/profile" className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</a></li>
         </ul>
       </div>
     </nav>
-    <Outlet />
+      <Outlet/>
     </>
   );
 }
