@@ -358,3 +358,12 @@ def set_availability(request):
 
     return Response(status=200) 
 
+@api_view(['GET'])
+def get_club_information(request):
+    try:
+        club = Club.objects.filter(pk=request.query_params['club_id']).first()
+        print(model_to_dict(club))
+        return Response({'club': model_to_dict(club)}, status=200)
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+

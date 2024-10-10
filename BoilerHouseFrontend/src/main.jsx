@@ -12,7 +12,7 @@ import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
 import ViewProfile from "./routes/viewProfile"
 import EditProfile from "./routes/editProfile";import Availability from "./routes/availability";
-
+import ClubInformation from "./routes/ClubInformation";
 import CreateProfile from "./routes/createProfile";
 import ClubCreation from "./routes/clubCreation";
 import ManageUsers from "./routes/manageUsers";
@@ -88,6 +88,10 @@ const router = createBrowserRouter([
       },{
         path:"/clubs",
         element: <ViewClubs/>
+      },
+      {
+        path:"/club/:clubId",
+        element: <ClubInformation/>
       },
       {
         path: "/availability",
