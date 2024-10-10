@@ -2,7 +2,6 @@ from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
-import json
 
 
 class User(models.Model):
@@ -21,6 +20,7 @@ class User(models.Model):
         ]
     )
     major = ArrayField(models.CharField(max_length=255))
+    availability = models.JSONField(default=dict)
 
 
     '''
@@ -32,6 +32,20 @@ class User(models.Model):
     def create(cls, username, password, name, bio, grad_year, is_admin):
         user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin, major=[], interests=[], created_profile=False)
         return user
+
+class Club(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.CharField(max_length=2048)
+    interests = ArrayField(models.CharField(max_length=255))
+    icon = models.CharField(max_length=2048, default='')
+    gallery = ArrayField(models.CharField(max_length=2048, default=''))
+    is_approved = models.BooleanField(default=False)
+    officers = ArrayField(models.IntegerField())
+    members = ArrayField(models.IntegerField())
+    @classmethod
+    def create(cls, name, description, interests, officers, members, icon):
+        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=[])
+        return club
 
 
 
@@ -46,27 +60,3 @@ class LoginPair(models.Model):
     def create(cls, username, password, is_admin):
         pair = cls(username=username, password=password, is_admin=is_admin)
         return pair
-
-class Club(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    description = models.TextField(blank=True)
-    admin = models.ForeignKey(User, on_delete=models.CASCADE, related_name="admin_of_clubs")
-    members = models.ManyToManyField(User, through="ClubMembership", related_name="clubs")
-    
-    def __str__(self):
-        return self.name
-
-
-# New ClubMembership Model
-class ClubMembership(models.Model):
-    ROLE_CHOICES = [
-        ('admin', 'Admin'),
-        ('member', 'Member'),
-    ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    club = models.ForeignKey(Club, on_delete=models.CASCADE)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    joined_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"{self.user.name} - {self.club.name} ({self.role})"

@@ -8,9 +8,11 @@ import ForgotPassword from "./routes/forgotPassword";
 import LandingPage from "./routes/landingPage";
 import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
+import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
 import ViewProfile from "./routes/viewProfile"
-import EditProfile from "./routes/editProfile";
+import EditProfile from "./routes/editProfile";import Availability from "./routes/availability";
+
 import CreateProfile from "./routes/createProfile";
 import ClubCreation from "./routes/clubCreation";
 import ManageUsers from "./routes/manageUsers";
@@ -36,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "/register",
         element: <RegisterUser/>
+      },
+      {
+        path: "/registeradmin",
+        element: <RegisterUserAdmin/>
       },
       {
         path: "/login",
@@ -79,8 +85,14 @@ const router = createBrowserRouter([
       {
         path:"/manageUsers",
         element:<ManageUsers/>
+      },{
+        path:"/viewProfile",
+        element: <ViewProfile/>
+      },
+      {
+        path: "/availability",
+        element: <Availability/>
       }
-
     ]
   },
 ]);
