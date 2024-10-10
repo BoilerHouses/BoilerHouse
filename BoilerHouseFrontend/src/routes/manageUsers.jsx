@@ -10,33 +10,36 @@ import axios from 'axios';
 
 
 const ManageUsers = () => {
-const [searchTerm, setSearchTerm] = useState('');
-const navigate = useNavigate();
-const [users, setUsers] = useState([]);
-const [error, setError] = useState(false)
+ const [searchTerm, setSearchTerm] = useState('');
+ const navigate = useNavigate();
+ const [users, setUsers] = useState([]);
+ const [error, setError] = useState(false)
+
+ // fetch all users when view loads
+ useEffect(() => {
+   const token = localStorage.getItem('token')
+   if (token){
+       axios.get('http://127.0.0.1:8000/api/getAllUsers', {
+           headers:{
+               'Authorization':token
+           }
+       })
+       .then(response => {
+           setUsers(response.data)
+       })
+       .catch(err => {
+           setError(true)
+       })
+   }
+   else {
+        console.log("here")
+        setError(true)
+   }
+ }, [])
 
 
-// fetch all users when view loads
-useEffect(() => {
-  const token = localStorage.getItem('token')
-  if (token){
-      axios.get('http://127.0.0.1:8000/api/getAllUsers', {
-          headers:{
-              'Authorization':token
-          }
-      })
-      .then(response => {
-          setUsers(response.data)
-      })
-      .catch(err => {
-          setError(true)
-      })
-  }
-  else {
-       console.log("here")
-       setError(true)
-  }
-}, [])
+
+ 
 
 
 
