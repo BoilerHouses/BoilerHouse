@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   CircularProgress,
@@ -10,6 +10,7 @@ import {
 } from '@mui/material';
 
 const ClubInformation = () => {
+  const navigate = useNavigate()
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [clubData, setClubData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -37,6 +38,10 @@ const ClubInformation = () => {
       setIsLoading(false);
     });
   }, [clubId]);
+
+  const handleMemberProfile = (event) => {
+    navigate(`/profile/${event.target.getAttribute('index')}`)
+  }
 
   if (isLoading) {
     return <CircularProgress />;
@@ -77,6 +82,9 @@ const ClubInformation = () => {
           </Typography>
     
           {/* Interests */}
+          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+            Tags:
+          </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
             {clubData.interests && clubData.interests.map((interest, index) => (
               <Chip
@@ -94,7 +102,9 @@ const ClubInformation = () => {
           <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
             {clubData.officers.map((profile, index) => (
               <div
+                index={profile[3]}
                 key={index}
+                onClick={handleMemberProfile}
                 className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
                 style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
               >
@@ -114,7 +124,9 @@ const ClubInformation = () => {
           <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
             {clubData.members.map((profile, index) => (
               <div
+                index={profile[3]}
                 key={index}
+                onClick={handleMemberProfile}
                 className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
                 style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
               >
@@ -196,7 +208,10 @@ const ClubInformation = () => {
       <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.officers.map((profile, index) => (
           <div
+            index={profile[3]}
             key={index}
+            onClick={handleMemberProfile}
+
             className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
             style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
           >
@@ -216,7 +231,9 @@ const ClubInformation = () => {
       <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
+            index={profile[3]}
             key={index}
+            onClick={handleMemberProfile}
             className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
             style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
           >

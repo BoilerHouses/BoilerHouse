@@ -17,6 +17,7 @@ import CreateProfile from "./routes/createProfile";
 import ClubCreation from "./routes/clubCreation";
 import ManageUsers from "./routes/manageUsers";
 import ViewClubs from "./routes/viewClubs";
+import ViewApplications from "./routes/viewApplications";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -85,6 +86,9 @@ const router = createBrowserRouter([
       },{
         path:"/clubs",
         element: <ViewClubs/>
+      },{
+        path:"/approveClubs",
+        element: <ViewApplications/>
       },
       {
         path:"/club/:clubId",

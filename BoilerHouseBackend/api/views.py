@@ -267,7 +267,12 @@ def get_all_clubs(request):
     if not user.is_admin and approved == 'False':
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
-    clubs = [{'icon': model_to_dict(x)['icon'], 'name': model_to_dict(x)['name']} for x in club_list]
+    clubs = []
+    for x in club_list:
+        t = model_to_dict(x)
+        t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
+        t['k'] = x.pk
+        clubs.append(t)
     return Response({'clubs': clubs}, 200)
 
 @api_view(['GET'])
@@ -335,12 +340,12 @@ def get_club_information(request):
         for i in ret_club['officers']:
             user = User.objects.filter(pk=i).first()
             if user:
-                officer_list.append((i, user.name, user.profile_picture))
+                officer_list.append((i, user.name, user.profile_picture, user.username))
         member_list = []
         for i in ret_club['members']:
             user = User.objects.filter(pk=i).first()
             if user:
-                member_list.append((i, user.name, user.profile_picture))
+                member_list.append((i, user.name, user.profile_picture, user.username))
 
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list

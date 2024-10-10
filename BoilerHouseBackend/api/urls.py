@@ -1,11 +1,7 @@
 from django.urls import path
 from .views import ping, try_bucket, log_in, register_account, activate
 from .views import forgot_password, activate_forgot_password, edit_account
-<<<<<<< HEAD
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, update_password, get_club_information, get_all_users, delete_user
-=======
-from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, update_password, get_club_information, delete_user, get_all_users
->>>>>>> 6bc18a5eae60b692f9dce401ded089bf1050b374
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
