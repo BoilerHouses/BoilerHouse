@@ -176,6 +176,8 @@ def activate_forgot_password(request, uidb64, token):
 def save_club_information(request):
     token = request.headers.get('Authorization')
     user = verify_token(token)
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
     if 'name' not in request.data or 'icon' not in request.data or 'description' not in request.data:
         return Response("Missing parameters!", status=400)
     data = request.data
@@ -192,7 +194,9 @@ def save_club_information(request):
         s3_client = boto3.client('s3',
                         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
                         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
-        file_name = f'{data.get('name')}/icon/{uuid.uuid4()}.{data.get('icon').name.split(".")[-1]}'
+        name = data.get('name')
+        icon = data.get('icon')
+        file_name = f'{name}/icon/{uuid.uuid4()}.{icon.name.split(".")[-1]}'
         s3_client.upload_fileobj(
                 data.get('icon'),
                 settings.AWS_STORAGE_BUCKET_NAME,
@@ -208,6 +212,20 @@ def save_club_information(request):
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as e:
         return Response("Error: " + str(e), status=500)
+
+@api_view(['GET'])
+def get_all_clubs(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'approved' not in request.query_params:
+        return Response({'error': 'Missing Parameters'}, status=400)
+    approved = request.query_params['approved']
+    if not user.is_admin and not approved:
+        return Response({'error': 'Cannot Access this Resource'}, status=403)
+    club_list = Club.objects.filter(is_approved=approved)
+    clubs = [{'icon': model_to_dict(x).icon, 'name': model_to_dict(x).name} for x in club_list]
+    return Response({'clubs': clubs}, 200)
     
 @api_view(['GET'])
 def get_all_users(request):
