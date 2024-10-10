@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   TextField,
   Button,
@@ -118,8 +118,6 @@ const UserLogin = () => {
         .then((res) => {
           setIsLoading(false);
           localStorage.setItem('token', res.data.token)
-          alert("successfuly logged in");
-          console.log(res.data)
           if (!res.data.profile) {
             navigate('/create_profile')
           } else {

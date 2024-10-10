@@ -14,8 +14,7 @@ import {
 } from "@mui/material";
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { NavLink } from 'react-router-dom';
-
+import { NavLink } from "react-router-dom";
 
 import axios from "axios";
 
@@ -46,6 +45,7 @@ const ResetPassword = () => {
   const [buttonText, setButtonText] = useState("Update Password");
 
   const { pk, token } = useParams();
+
 
   const handlePasswordChange = (event) => {
     const newPassword = event.target.value;
@@ -239,10 +239,12 @@ const ResetPassword = () => {
                 </div>
 
                 <div id="success-alert" className="hidden">
-                  <Alert severity="error">
-                    Password reset successfully! {" "}
+                  <Alert severity="success">
+                    Password reset successfully!{" "}
                     <NavLink to="/login">
-                      <span className="text-blue-500 underline">Back to login</span>
+                      <span className="text-blue-500 underline">
+                        Back to login
+                      </span>
                     </NavLink>
                   </Alert>
                 </div>

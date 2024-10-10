@@ -242,3 +242,29 @@ def update_password(request, uidb64, token):
     loginPair.save()
 
     return Response("password updated", status=200) 
+
+
+@api_view(['GET'])
+def set_availability(request):
+    if "email" not in request.query_params or "availability" not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    
+    email = request.query_params['email']
+    user = User.objects.filter(username=email).first()
+
+    if not user:
+        return Response({"error": "User does not exist"}, status=404)
+
+    availability_json = request.query_params['availability']
+
+    # Try parsing JSON data
+    try:
+        availability_json = json.loads(availability_json) 
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON format"}, status=403)
+    
+    user.availability = availability_json
+    user.save()
+
+    return Response(status=200) 
+
