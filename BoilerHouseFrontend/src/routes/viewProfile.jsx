@@ -50,7 +50,7 @@ const ViewProfile = () => {
    return (
        <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
        {/* Edit Profile Button */}
-       <button className={localStorage.getItem('username') == userId ? "absolute top-4 right-4 bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600" : 'hidden'}
+       <button className={localStorage.getItem('username') == userId ? "absolute top-4 right-4 bg-orange-500 text-white font-bold py-2 px-4 rounded hover:bg-orange-600" : 'hidden'}
        onClick={() => {navigate('/edit_profile')}}>
            Edit Profile
        </button>
@@ -74,7 +74,7 @@ const ViewProfile = () => {
            </p>
        </div>
        return <Availability/>
-       <button className={localStorage.getItem('username') == userId ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200" : "hidden"  }
+       <button className={localStorage.getItem('username') == userId ? "absolute top-20 right-4 bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
         visibility={localStorage.getItem('username') == userId}
         onClick={() => {
             localStorage.removeItem('token')
