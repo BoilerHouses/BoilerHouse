@@ -12,9 +12,14 @@ import {
 const ViewApplications = () => {
     const [clubList, setClubList] = useState([])
     const [isLoading, setIsLoading] = useState(false)
+    const [searchTerm, setSearchTerm] = useState('')
+    const filteredClubs = clubList.filter(item =>
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.owner.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     const navigate = useNavigate()
     useEffect(() => {
         // Fetch club information when the component loads
+        setIsLoading(true)
         axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
         axios.get(`http://127.0.0.1:8000/api/clubs/`, {
           params: {
@@ -23,7 +28,6 @@ const ViewApplications = () => {
         })  
         .then((response) => {
           setClubList(response.data.clubs);
-          console.log(response.data);
           setIsLoading(false);
         })
         .catch((error) => {
@@ -39,12 +43,35 @@ const ViewApplications = () => {
       if (isLoading) {
         return <CircularProgress />;
       }
+      if(filteredClubs.length == 0) {
+        return(
+            <div className="flex flex-col items-center justify-center">
+                    <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-[75%] p-3 mb-5 border border-gray-300 rounded mt-5"  
+                    />
+                    <div className="flex justify-center h-screen">
+                        <p className="text-black text-center font-bold rounded-md">No clubs that match search criteria are pending approval</p>
+                    </div>
+                </div>
+        );
+      }
       return (
         <div className="flex flex-col items-center justify-center">
+            <input
+                        type="text"
+                        placeholder="Search..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-[75%] p-3 mb-5 border border-gray-300 rounded mt-5"  
+                    />
             <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-                Clubs Applications ({clubList.length}):
+                Clubs Applications ({filteredClubs.length}):
             </Typography>
-                {clubList.map((club) => (
+                {filteredClubs.map((club) => (
                     <div
                         index={club.k}
                         key={club.k}

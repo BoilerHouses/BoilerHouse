@@ -43,6 +43,48 @@ const ClubInformation = () => {
     navigate(`/profile/${event.target.getAttribute('index')}`)
   }
 
+  const handleApproval = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/approve/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        club_id: clubId
+      }
+    })
+    .then((response) => {
+      console.log(response.data.club)
+      setClubData(response.data.club);
+      setIsLoading(false);
+      alert('success')
+    })
+    .catch((error) => {
+      console.error("There was an error fetching the club data!", error);
+      setIsLoading(false);
+    });
+  }
+
+  const handleDeny = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/delete/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        club_id: clubId
+      }
+    })
+    .then((response) => {
+      setIsLoading(false);
+      navigate(`/clubs`)
+    })
+    .catch((error) => {
+      console.error("There was an error fetching the club data!", error);
+      setIsLoading(false);
+    });
+  }
+
   if (isLoading) {
     return <CircularProgress />;
   }
@@ -52,6 +94,7 @@ const ClubInformation = () => {
   }
   if (clubData.gallery.length == 0) {
     return (
+        
         <Box
           sx={{
             padding: 4,
@@ -59,6 +102,16 @@ const ClubInformation = () => {
             minHeight: '100vh', // Full height to cover the page
           }}
         >
+          <div className='relative'>
+            <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+                onClick={handleApproval}>
+                Approve 
+              </button>
+              <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
+                onClick={handleDeny}>
+                Deny
+              </button>
+          </div>
           {/* Club Icon */}
           <Avatar
             src={clubData.icon}
@@ -94,11 +147,12 @@ const ClubInformation = () => {
               />
             ))}
           </Box>
-    
+          
           {/* Officers Section */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
             Officers ({clubData.officers.length}):
           </Typography>
+          
           <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
             {clubData.officers.map((profile, index) => (
               <div
@@ -158,6 +212,7 @@ const ClubInformation = () => {
               ))}
             </div>
           </div>
+          
         </Box>
       );
   }
@@ -170,6 +225,16 @@ const ClubInformation = () => {
         minHeight: '100vh', // Full height to cover the page
       }}
     >
+      <div className='relative'>
+            <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+                onClick={handleApproval}>
+                Approve 
+              </button>
+              <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
+                onClick={handleDeny}>
+                Deny
+              </button>
+          </div>
       {/* Club Icon */}
       <Avatar
         src={clubData.icon}
@@ -225,7 +290,7 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Members Section */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):

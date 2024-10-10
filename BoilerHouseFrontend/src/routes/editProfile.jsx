@@ -47,6 +47,9 @@ const EditProfile = () => {
             const token = localStorage.getItem("token")
             if (token){
                 const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+                    params: {
+                      username: localStorage.getItem('username')
+                    },
                     headers:{
                         'Authorization': token
                     }
@@ -140,7 +143,7 @@ const EditProfile = () => {
         }
       }).then((res) => {
         setIsLoading(false);
-        navigate('/profile')
+        navigate(`/profile/${localStorage.getItem('username')}/`)
       })
       // Catch errors if any
       .catch((err) => {

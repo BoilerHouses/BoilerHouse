@@ -215,6 +215,45 @@ def activate_forgot_password(request, uidb64, token):
 
     return Response("verified password reset link", status=200) 
 
+@api_view(['GET'])
+def approve_club(request):
+    if 'club_id' not in request.query_params:
+        return Response("Missing parameters!", status=400)
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if not user.is_admin:
+        return Response({'error': 'Cannot Access this Resource'}, status=403)
+    club = Club.objects.filter(pk=request.query_params['club_id']).first()
+    if not club:
+        return Response("No such club!", status=404)
+    try:
+        club.is_approved = True
+        club.save()
+        return Response({'club': model_to_dict(club)}, status=200)
+    except Exception as ex:
+        return Response({"error": str(ex)}, status=500)
+
+@api_view(['GET'])
+def deny_club(request):
+    if 'club_id' not in request.query_params:
+        return Response("Missing parameters!", status=400)
+    token = request.headers.get('Authorization')
+    user = verify_token(token)
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if not user.is_admin:
+        return Response({'error': 'Cannot Access this Resource'}, status=403)
+    club = Club.objects.filter(pk=request.query_params['club_id']).first()
+    if not club:
+        return Response("No such club!", status=404)
+    try:
+        club.delete()
+        return Response(status=200)
+    except Exception as ex:
+        return Response({"error": str(ex)}, status=500)
+
 @api_view(['POST'])
 def save_club_information(request):
     token = request.headers.get('Authorization')

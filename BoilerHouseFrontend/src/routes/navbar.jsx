@@ -20,6 +20,9 @@ const Navbar = () => {
           <li><NavLink to="/register"
                        className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Register</NavLink>
           </li>
+          <li><NavLink to={`/clubs`}
+                       className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Clubs</NavLink>
+          </li>
           <li><NavLink to={`/profile/${localStorage.getItem('username')}`}
                        className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold">Profile</NavLink>
           </li>

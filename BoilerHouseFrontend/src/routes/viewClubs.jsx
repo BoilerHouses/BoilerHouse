@@ -14,13 +14,14 @@ import {
 } from "@mui/material";
 
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 import axios from "axios";
 
 const ViewClubs = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [data, setData] = useState([])
+    const navigate = useNavigate()
     const filteredData = data.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
@@ -42,30 +43,37 @@ const ViewClubs = () => {
         };
         fetchProfile();
       }, []);
+
+      const handleClick = (event) => {
+        navigate(`/club/${event.target.getAttribute('index')}`)
+      }
       
       if (filteredData.length > 0) {
         return (
-            <div className="container mx-auto p-5 max-w-3xl">
-            <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 mb-5 border border-gray-300 rounded"  
-            />
-            <div className="grid grid-cols-2 gap-5 overflow-y-auto max-h-96">
-                {filteredData.map(item => (
-                <div
-                    key={item.name}
-                    className="relative h-48 rounded-lg bg-cover bg-center border border-gray-600	"
-                    style={{ backgroundImage: `url("${item.icon}")` }}
-                >
-                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
-                    <span>{item.name}</span>
-                    </div>
+            <div className="container mx-auto p-5 max-w-[80%]">
+                <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full p-3 mb-5 border border-gray-300 rounded"  
+                />
+                <div className="grid grid-cols-2 gap-5 overflow-y-auto h-[70%] text-align-center bg-gray-200 rounded-lg border border-black p-5">
+                    {filteredData.map(item => (
+                        <div
+                            key={item.name}
+                            index={item.id}
+                            className="relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+                            style={{ backgroundImage: `url("${item.icon}")` }}
+                            onClick={handleClick}
+                        >
+                            <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
+                                <span>{item.name}</span>
+                            </div>
+                        </div>
+                    ))}
                 </div>
-                ))}
-            </div>
+
             </div>
         );
       } else {

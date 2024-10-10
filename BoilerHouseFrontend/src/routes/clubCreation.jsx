@@ -9,6 +9,8 @@ import {
   Box,
 } from "@mui/material";
 import axios from "axios";
+import { NavLink, useNavigate } from "react-router-dom";
+
 
 const ClubApplication = () => {
   const [clubName, setClubName] = useState("");
@@ -19,7 +21,7 @@ const ClubApplication = () => {
   const [tagCount, setTagCount] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageURL, setSelectedImageURL] = useState(null);
-
+  const navigate = useNavigate()
   const handleImageChange = (event) => {
     const file = event.target.files[0];
       if (file && file.size <= 5000000000) {
@@ -80,6 +82,7 @@ const ClubApplication = () => {
         formData.append('icon', selectedImage)
       } else {
         alert('Must Upload Icon!')
+        setIsLoading(false)
         return
       }
 
