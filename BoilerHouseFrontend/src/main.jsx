@@ -16,7 +16,7 @@ import EditProfile from "./routes/editProfile";import Availability from "./route
 import CreateProfile from "./routes/createProfile";
 import ClubCreation from "./routes/clubCreation";
 import ManageUsers from "./routes/manageUsers";
-
+import ViewClubs from "./routes/viewClubs";
 import {
   createBrowserRouter,
   RouterProvider,
@@ -74,9 +74,6 @@ const router = createBrowserRouter([
       {
         path: "/reset_password/:pk/:token",
         element: <ResetPassword/> 
-      },{
-        path:"/profile",
-        element:<ViewProfile/>
       },
       {
         path:"/clubcreation",
@@ -88,6 +85,9 @@ const router = createBrowserRouter([
       },{
         path:"/viewProfile",
         element: <ViewProfile/>
+      },{
+        path:"/clubs",
+        element: <ViewClubs/>
       },
       {
         path: "/availability",

@@ -1,6 +1,7 @@
 from django.urls import path
 from .views import ping, try_bucket, log_in, register_account, activate
-from .views import forgot_password, activate_forgot_password, edit_account, get_user_profile, save_club_information, get_all_clubs, set_availability
+from .views import forgot_password, activate_forgot_password, edit_account
+from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, update_password
 
 urlpatterns = [
     path('ping/', ping, name='ping'),

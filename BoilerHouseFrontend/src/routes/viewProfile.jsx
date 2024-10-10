@@ -65,37 +65,6 @@ const ViewProfile = () => {
            <strong>Interests:</strong> {user.interests.join(', ')}
            </p>
        </div>
-       <button className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200" 
-        onClick={() => {
-          navigate("/edit_profile");
-        }}
-      >
-        Edit Profile
-      </button>
-
-      <div className="flex items-center mb-4">
-        <img
-          src={user.profile_picture}
-          alt="Profile"
-          className="w-24 h-24 rounded-full mr-6"
-        />{" "}
-        {/* Increased size */}
-        <h1 className="text-4xl font-bold">{user.name}</h1>{" "}
-        {/* Increased font size */}
-      </div>
-
-      <p className="italic mb-4">{user.bio}</p>
-      <div className="text-gray-800">
-        <p>
-          <strong>Major:</strong> {user.major.join(", ")}
-        </p>
-        <p>
-          <strong>Graduation Year:</strong> {user.grad_year}
-        </p>
-        <p>
-          <strong>Interests:</strong> {user.interests.join(", ")}
-        </p>
-      </div>
       <button
         className="bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-200"
         onClick={() => {

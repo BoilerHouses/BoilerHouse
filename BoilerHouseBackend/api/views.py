@@ -263,10 +263,10 @@ def get_all_clubs(request):
     if 'approved' not in request.query_params:
         return Response({'error': 'Missing Parameters'}, status=400)
     approved = request.query_params['approved']
-    if not user.is_admin and not approved:
+    if not user.is_admin and approved == 'False':
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
-    clubs = [{'icon': model_to_dict(x).icon, 'name': model_to_dict(x).name} for x in club_list]
+    clubs = [{'icon': model_to_dict(x)['icon'], 'name': model_to_dict(x)['name']} for x in club_list]
     return Response({'clubs': clubs}, 200)
     
 @api_view(['GET'])
