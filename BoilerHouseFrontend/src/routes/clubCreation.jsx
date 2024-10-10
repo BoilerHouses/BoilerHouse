@@ -21,17 +21,31 @@ const ClubApplication = () => {
   const [tagCount, setTagCount] = useState(0);
   const [selectedImage, setSelectedImage] = useState(null);
   const [selectedImageURL, setSelectedImageURL] = useState(null);
-  const navigate = useNavigate()
+  const [galleryImages, setGalleryImages] = useState([]);
+  const [galleryPreviews, setGalleryPreviews] = useState([]);
+  const navigate = useNavigate();
+
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-      if (file && file.size <= 5000000000) {
-        const imageUrl = URL.createObjectURL(file);
-        setSelectedImageURL(imageUrl);
-        setSelectedImage(file)
-     } else {
-      alert('File too large or could not be found!')
-     }
-    };
+    if (file && file.size <= 5000000000) {
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImageURL(imageUrl);
+      setSelectedImage(file);
+    } else {
+      alert("File too large or could not be found!");
+    }
+  };
+
+  const handleGalleryChange = (event) => {
+    const files = Array.from(event.target.files);
+    if (files.length > 10) {
+      alert("You can only upload up to 10 images.");
+      return;
+    }
+    const imagePreviews = files.map((file) => URL.createObjectURL(file));
+    setGalleryImages(files);
+    setGalleryPreviews(imagePreviews);
+  };
 
   const handleClubNameChange = (e) => {
     setClubName(e.target.value);
@@ -62,7 +76,6 @@ const ClubApplication = () => {
     setDescription(e.target.value);
   };
 
-
   const handleStopSubmission = (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
@@ -71,47 +84,51 @@ const ClubApplication = () => {
 
   const handleSubmit = (event) => {
     event.preventDefault(); // Prevent page refresh
-      setIsLoading(true)
-      if (interests.length == 0) {
-        alert("Must Enter at Least One Interest!")
-        setIsLoading(false)
-        return
-      }
-      const formData = new FormData();
-      if (selectedImage != null) {
-        formData.append('icon', selectedImage)
-      } else {
-        alert('Must Upload Icon!')
-        setIsLoading(false)
-        return
-      }
+    setIsLoading(true);
+    if (interests.length === 0) {
+      alert("Must Enter at Least One Interest!");
+      setIsLoading(false);
+      return;
+    }
+    const formData = new FormData();
+    if (selectedImage != null) {
+      formData.append("icon", selectedImage);
+    } else {
+      alert("Must Upload Icon!");
+      setIsLoading(false);
+      return;
+    }
 
-      interests.filter((key, tag) => key).forEach((i, e) => {
-        formData.append(`interest[${e}]`, i)
-      })
-      formData.append('name', clubName);
-      formData.append('description', description);
-      axios.defaults.headers.common["Authorization"] = localStorage.getItem("token")
-      axios.post("http://127.0.0.1:8000/api/club/save/", formData, {
+    interests.forEach((interest, index) => {
+      formData.append(`interest[${index}]`, interest);
+    });
+    formData.append("name", clubName);
+    formData.append("description", description);
+    galleryImages.forEach((image, index) => {
+      formData.append(`gallery[${index}]`, image);
+    });
+
+    axios.defaults.headers.common["Authorization"] = localStorage.getItem("token");
+    axios
+      .post("http://127.0.0.1:8000/api/club/save/", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      }).then((res) => {
-        setIsLoading(false);
-        console.log(res)
-        alert('Application Submitted')
-        navigate('/clubs')
+          "Content-Type": "multipart/form-data",
+        },
       })
-      // Catch errors if any
+      .then((res) => {
+        setIsLoading(false);
+        console.log(res);
+        alert("Application Submitted");
+        navigate("/clubs");
+      })
       .catch((err) => {
         setIsLoading(false);
-        alert("error")
-      })
-  }
+        alert("error");
+      });
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-yellow-500 to-white p-8" style={{ paddingTop: "2rem" }}>
-      {/* Large Heading for Club Application */}
       <Typography
         variant="h2"
         component="h1"
@@ -121,7 +138,6 @@ const ClubApplication = () => {
         Club Application
       </Typography>
 
-      {/* Form Fields */}
       <form onSubmit={handleSubmit} onKeyDown={handleStopSubmission} className="w-full max-w-lg">
         <Grid container spacing={4}>
           <Grid item xs={12}>
@@ -141,7 +157,7 @@ const ClubApplication = () => {
                   color: "white",
                 },
               }}
-              required={true}
+              required
             />
           </Grid>
           <Grid item xs={12}>
@@ -163,11 +179,10 @@ const ClubApplication = () => {
                   color: "white",
                 },
               }}
-              required={true}
+              required
             />
           </Grid>
 
-          {/* Interest Input Field */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -207,24 +222,51 @@ const ClubApplication = () => {
               accept="image/*"
               type="file"
               onChange={handleImageChange}
-              style={{ display: 'none' }}
+              style={{ display: "none" }}
               id="upload-button"
             />
-      
-      {selectedImageURL && (
-        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-          <img
-            src={selectedImageURL}
-            alt="Preview"
-            style={{ maxWidth: '100%', maxHeight: '300px', objectFit: 'contain' }}
-          />
-        </Box>
-      )}
-      <label htmlFor="upload-button" >
-        <Button variant="contained" component="span" sx={{display: 'flex', justifyContent: 'center'}}>
-          Upload Club Icon
-        </Button>
-      </label>
+
+            {selectedImageURL && (
+              <Box sx={{ mt: 2, display: "flex", justifyContent: "center" }}>
+                <img
+                  src={selectedImageURL}
+                  alt="Preview"
+                  style={{ maxWidth: "100%", maxHeight: "300px", objectFit: "contain" }}
+                />
+              </Box>
+            )}
+            <label htmlFor="upload-button">
+              <Button variant="contained" component="span" sx={{ display: "flex", justifyContent: "center" }}>
+                Upload Club Icon
+              </Button>
+            </label>
+          </Grid>
+
+          <Grid item xs={12}>
+            <input
+              accept="image/*"
+              multiple
+              type="file"
+              onChange={handleGalleryChange}
+              style={{ display: "none" }}
+              id="gallery-upload"
+            />
+            <label htmlFor="gallery-upload">
+              <Button variant="contained" component="span" sx={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+                Upload Gallery Images (Max 10)
+              </Button>
+            </label>
+
+            <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center" }}>
+              {galleryPreviews.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`Gallery Preview ${index}`}
+                  style={{ width: "150px", height: "150px", margin: "0.5rem", objectFit: "cover", borderRadius: "8px" }}
+                />
+              ))}
+            </Box>
           </Grid>
 
           <Grid item xs={12}>
@@ -237,15 +279,29 @@ const ClubApplication = () => {
               style={{
                 backgroundColor: "#ff4081",
                 fontSize: "1.2rem",
-                padding: "12px",
+                letterSpacing: "1px",
+                fontWeight: "bold",
+                color: "white",
               }}
-              disabled={isLoading}
             >
-              {isLoading ? <CircularProgress size={24} color="inherit" /> : "Submit Application"}
+              {isLoading ? <CircularProgress color="inherit" /> : "Submit"}
             </Button>
           </Grid>
         </Grid>
       </form>
+
+      <NavLink to="/clubs">
+        <Typography
+          variant="body2"
+          sx={{
+            mt: 2,
+            color: "#fff",
+            textDecoration: "underline",
+          }}
+        >
+          Go back to Clubs List
+        </Typography>
+      </NavLink>
     </div>
   );
 };
