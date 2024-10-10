@@ -60,7 +60,7 @@ const router = createBrowserRouter([
         element: <CreateProfile/>
       },
       {
-        path: "/profile",
+        path: "/profile/:userId",
         element: <ViewProfile/>
       },
       {
@@ -82,9 +82,6 @@ const router = createBrowserRouter([
       {
         path:"/manageUsers",
         element:<ManageUsers/>
-      },{
-        path:"/viewProfile",
-        element: <ViewProfile/>
       },{
         path:"/clubs",
         element: <ViewClubs/>

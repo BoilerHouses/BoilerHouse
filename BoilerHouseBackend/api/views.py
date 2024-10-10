@@ -186,6 +186,7 @@ def get_user_profile(request):
    user = verify_token(token)
    if user == "Invalid token":
        return Response({'error':"Auth token invalid"}, status = 500)
+   user = User.objects.filter(username=request.query_params['username']).first()
    data = {
        "name":user.name,
        "email":user.username,
