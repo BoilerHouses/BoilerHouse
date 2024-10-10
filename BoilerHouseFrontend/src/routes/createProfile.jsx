@@ -104,7 +104,7 @@ const CreateProfile = () => {
       }).then((res) => {
         setIsLoading(false);
         console.log(res)
-        navigate('/profile')
+        navigate('/clubs')
       })
       // Catch errors if any
       .catch((err) => {

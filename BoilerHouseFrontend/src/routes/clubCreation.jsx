@@ -97,6 +97,7 @@ const ClubApplication = () => {
         setIsLoading(false);
         console.log(res)
         alert('Application Submitted')
+        navigate('/clubs')
       })
       // Catch errors if any
       .catch((err) => {

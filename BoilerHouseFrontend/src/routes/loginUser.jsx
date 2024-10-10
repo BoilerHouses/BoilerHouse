@@ -124,7 +124,7 @@ const UserLogin = () => {
           if (!res.data.profile) {
             navigate('/create_profile')
           } else {
-            navigate('/profile')
+            navigate('/clubs')
           }
          })         
 
