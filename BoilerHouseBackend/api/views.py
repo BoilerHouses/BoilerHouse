@@ -337,6 +337,7 @@ def get_all_clubs(request):
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
     clubs = []
+    print(club_list)
     for x in club_list:
         t = model_to_dict(x)
         t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
