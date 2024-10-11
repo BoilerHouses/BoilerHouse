@@ -232,7 +232,7 @@ def approve_club(request):
     try:
         club.is_approved = True
         #send email to user saying their club was approved
-        send_club_approved_email(User.objects.filter(pk=club.officers.first()), club.name)
+        send_club_approved_email(User.objects.filter(pk=club.officers[0]).first(), club.name)
         club.save()
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as ex:

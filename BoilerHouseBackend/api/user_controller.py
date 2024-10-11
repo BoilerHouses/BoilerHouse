@@ -103,7 +103,7 @@ def send_club_approved_email(user, club_name):
     try:
         mail_subject = "Club Approved!"
         message = render_to_string("club_approved.html", {
-            'user': user.name,
+            'user': user.username,
             'club_name': club_name,
         })
         email = EmailMessage(mail_subject, message, to={user.username})
