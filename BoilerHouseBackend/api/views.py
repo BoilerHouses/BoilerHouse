@@ -295,7 +295,11 @@ def save_club_information(request):
                 file_name,
                 ExtraArgs={'ACL': 'public-read', 'ContentType': data.get('icon').content_type}
         )
-        gallery_images = request.FILES.getlist('gallery')
+        gallery_images = []
+        i = 0
+        while(data.get(f'gallery[{i}]')):
+            gallery_images.append(data.get(f'gallery[{i}]'))
+            i+=1
         print(gallery_images)
         print("HI")
         gallery_image_urls = []
@@ -309,7 +313,7 @@ def save_club_information(request):
             )
             gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
         
-        #print(gallery_image_urls)
+        print(gallery_image_urls)
 
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
@@ -317,8 +321,10 @@ def save_club_information(request):
                            officers=[user.pk], 
                            members=[user.pk], 
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
-                           gallery = gallery_image_urls)
+                           gallery=gallery_image_urls)
+        
         #club.gallery = gallery_image_urls 
+        print("debug")
         club.save()
         #print(model_to_dict(club))
         return Response({'club': model_to_dict(club)}, status=200)
@@ -419,6 +425,7 @@ def get_club_information(request):
 
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
+        print(ret_club)
         return Response({'club': ret_club}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
