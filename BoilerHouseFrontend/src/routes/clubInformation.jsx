@@ -58,6 +58,7 @@ const ClubInformation = () => {
       setClubData(response.data.club);
       setIsLoading(false);
       alert('success')
+      navigate(`/clubs`)
     })
     .catch((error) => {
       console.error("There was an error fetching the club data!", error);
