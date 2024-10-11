@@ -86,13 +86,17 @@ const ViewProfile = () => {
           </p>
         </div>
 
-        <div  className="flex justify-center">
+        <div className="flex justify-center">
           <p>
-            <strong className="text-xl flex text-center mb-4">Set Availabilty</strong>
+            <strong className={localStorage.getItem("username") == userId ? "text-xl flex text-center mb-4" : "hidden"}>
+              Set Availabilty
+            </strong>
           </p>
         </div>
 
-        <Availability />
+        <Availability
+          className={localStorage.getItem("username") == userId ? "" : "hidden"}
+        />
         <button
           className={
             localStorage.getItem("username") == userId
