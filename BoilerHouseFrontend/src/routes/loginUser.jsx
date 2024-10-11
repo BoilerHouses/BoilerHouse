@@ -123,8 +123,6 @@ const UserLogin = () => {
           setIsLoading(false);
           localStorage.setItem('token', res.data.token)
           localStorage.setItem('username', res.data.username)
-          alert("successfuly logged in");
-          console.log(res.data)
           if (!res.data.profile) {
             navigate("/create_profile");
           } else {
