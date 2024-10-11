@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair, Club
-from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -231,6 +231,8 @@ def approve_club(request):
         return Response("No such club!", status=404)
     try:
         club.is_approved = True
+        #send email to user saying their club was approved
+        send_club_approved_email(User.objects.filter(pk=club.officers.first()), club.name)
         club.save()
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as ex:
