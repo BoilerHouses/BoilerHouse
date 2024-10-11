@@ -35,7 +35,6 @@ const ViewProfile = () => {
                         username: userId
                    }
                })
-               console.log(response.data)
                setUser(response.data)
            }
        }
@@ -75,7 +74,7 @@ const ViewProfile = () => {
        </div>
        return <Availability/>
        <button className={localStorage.getItem('username') == userId ? "absolute top-20 right-4 bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
-        visibility={localStorage.getItem('username') == userId}
+        visibility={(localStorage.getItem('username') === userId).toString()}
         onClick={() => {
             localStorage.removeItem('token')
             navigate('/')}}>

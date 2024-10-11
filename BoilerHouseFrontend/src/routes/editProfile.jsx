@@ -29,72 +29,35 @@ const EditProfile = () => {
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
-      if (file && file.size <= 5000000000) {
-        const imageUrl = URL.createObjectURL(file);
-        setSelectedImageURL(imageUrl);
-        setSelectedImage(file)
-     }
-    };
+    if (file && file.size <= 5000000000) {
+      const imageUrl = URL.createObjectURL(file);
+      setSelectedImageURL(imageUrl);
+      setSelectedImage(file);
+    }
+  };
 
-    useEffect(() => {
-        const fetchProfile = async () => {
-            const token = localStorage.getItem("token")
-            if (token){
-                const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
-                    params: {
-                      username: localStorage.getItem('username')
-                    },
-                    headers:{
-                        'Authorization': token
-                    }
-                })
-                let user = response.data
-                user.major.forEach((majorElement) => {
-                    let a = majors.filter((key, tag) => key == majorElement)
-                    if (a.length > 0) {
-                        return
-                    }
-                    setMajors((prevTags) => [...prevTags, (tagCount, majorElement)]);
-                    setTagCount(tagCount + 1)
-                })
-                user.interests.forEach((interestElement) => {
-                    let a = interests.filter((key, tag) => key == interestElement)
-                    if (a.length > 0) {
-                        return
-                    }
-                    setInterests((prevTags) => [...prevTags, (tagCount, interestElement)]);
-                    setTagCount(tagCount + 1)
-                })
-                setUserName(user.email)
-                setBio(user.bio)
-                setGradYear(user.grad_year)
-                setName(user.name)
-            }
-        }
-        fetchProfile()
-    }, [])
-
-
-    const handleAddTag = (event) => {
-        if (event.key === 'Enter' && major) {
-            let a = majors.filter((key, tag) => key == major)
-            if (a.length > 0) {
-              setMajor('')
-              return
-            }
-            setMajors((prevTags) => [...prevTags, (tagCount, major)]);
-            setTagCount(tagCount + 1)
-            setMajor('');
-        }
-    };
-
-    const handleAddInterest = (event) => {
-      if (event.key === 'Enter' && interest) {
-          let a = interests.filter((key, tag) => key == interest)
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+          params: {
+            username: localStorage.getItem("username"),
+          },
+          headers: {
+            Authorization: token,
+          },
+        });
+        let user = response.data;
+        user.major.forEach((majorElement) => {
+          let a = majors.filter((key, tag) => key == majorElement);
           if (a.length > 0) {
             return;
           }
-          user.interests.forEach((interestElement) => {
+          setMajors((prevTags) => [...prevTags, (tagCount, majorElement)]);
+          setTagCount(tagCount + 1);
+        });
+        user.interests.forEach((interestElement) => {
           let a = interests.filter((key, tag) => key == interestElement);
           if (a.length > 0) {
             return;
@@ -111,6 +74,34 @@ const EditProfile = () => {
         setName(user.name);
       }
     };
+    fetchProfile();
+  }, []);
+
+  const handleAddTag = (event) => {
+    if (event.key === "Enter" && major) {
+      let a = majors.filter((key, tag) => key == major);
+      if (a.length > 0) {
+        setMajor("");
+        return;
+      }
+      setMajors((prevTags) => [...prevTags, (tagCount, major)]);
+      setTagCount(tagCount + 1);
+      setMajor("");
+    }
+  };
+
+  const handleAddInterest = (event) => {
+    if (event.key === 'Enter' && interest) {
+      let a = interests.filter((key, tag) => key == interest)
+      if (a.length > 0) {
+        setInterest('')
+        return
+      }
+      setInterests((prevTags) => [...prevTags, (tagCount, interest)]);
+      setTagCount(tagCount + 1)
+      setInterest('');
+  }
+  };
 
   const handleDeleteTag = (tagToDelete) => {
     setMajors((prevTags) => prevTags.filter((key, tag) => tag !== tagToDelete));
@@ -157,7 +148,7 @@ const EditProfile = () => {
       })
       .then((res) => {
         setIsLoading(false);
-        navigate(`/profile/${localStorage.getItem('username')}/`)
+        navigate(`/profile/${localStorage.getItem("username")}/`);
       })
       // Catch errors if any
       .catch((err) => {
@@ -172,13 +163,7 @@ const EditProfile = () => {
     setBio(event.target.value);
   };
   const handleYearChange = (event) => {
-    const year = parseInt(event.target.value, 10);
-    if (isNaN(year)) {
-      alert("Grad Year must be a number");
-      setGradYear(2026);
-    } else {
-      setGradYear(event.target.value);
-    }
+    setGradYear(event.target.value);
   };
   const handleMajorChange = (event) => {
     setMajor(event.target.value);
@@ -233,6 +218,7 @@ const EditProfile = () => {
               fullWidth
               label="Enter your new Graduation Year..."
               name="grad_year"
+              type="number"
               value={grad_year}
               onChange={handleYearChange}
               className="bg-white !mt-3.5"
