@@ -45,7 +45,7 @@ const LandingPage = () => {
 
           <div className="bg-gray-900 p-8 rounded-lg shadow-lg">
             <h2 className="text-2xl font-semibold mb-4 text-yellow-500">
-              Why Choose Us?
+              Example Clubs
             </h2>
             <ul className="list-disc list-inside text-white">
               <li>example</li>
@@ -54,12 +54,7 @@ const LandingPage = () => {
         </div>
 
         <div className="mt-16 text-center">
-          <NavLink
-            to="/register"
-            className="bg-yellow-500 text-black font-bold py-3 px-8 rounded-full hover:bg-yellow-600 transition duration-300"
-          >
-            Get Started
-          </NavLink>
+
         </div>
       </div>
     </div>
