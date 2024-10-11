@@ -93,10 +93,9 @@ const ViewProfile = () => {
             </strong>
           </p>
         </div>
-
-        <Availability
-          className={localStorage.getItem("username") == userId ? "" : "hidden"}
-        />
+        <div className={localStorage.getItem("username") == userId ? "" : "hidden"}>
+            <Availability/>
+        </div>        
         <button
           className={
             localStorage.getItem("username") == userId
