@@ -6,7 +6,7 @@ import {
   CircularProgress,
   Grid,
   Chip,
-  Box,
+  Box, Alert,
 } from "@mui/material";
 import axios from "axios";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -123,12 +123,13 @@ const ClubApplication = () => {
       })
       .catch((err) => {
         setIsLoading(false);
-        alert("error");
+        const serverAlert = document.querySelector("#server-error-alert");
+        serverAlert.classList.remove("hidden");
       });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-yellow-500 to-white p-8" style={{ paddingTop: "2rem" }}>
+    <div className="flex flex-col items-center justify-center min-h-screen  from-yellow-500 to-white p-8" style={{ paddingTop: "2rem" }}>
       <Typography
         variant="h2"
         component="h1"
@@ -148,13 +149,13 @@ const ClubApplication = () => {
               value={clubName}
               onChange={handleClubNameChange}
               InputLabelProps={{
-                style: { color: "white", fontSize: "1.2rem" },
+                style: { color: "black", fontSize: "1.2rem" },
               }}
               InputProps={{
                 style: {
                   backgroundColor: "rgba(255, 255, 255, 0.2)",
                   borderRadius: "8px",
-                  color: "white",
+                  color: "black",
                 },
               }}
               required
@@ -170,13 +171,13 @@ const ClubApplication = () => {
               multiline
               rows={4}
               InputLabelProps={{
-                style: { color: "white", fontSize: "1.2rem" },
+                style: { color: "black", fontSize: "1.2rem" },
               }}
               InputProps={{
                 style: {
                   backgroundColor: "rgba(255, 255, 255, 0.2)",
                   borderRadius: "8px",
-                  color: "white",
+                  color: "black",
                 },
               }}
               required
@@ -193,13 +194,13 @@ const ClubApplication = () => {
               onChange={handleInterestChange}
               variant="filled"
               InputLabelProps={{
-                style: { color: "white", fontSize: "1.2rem" },
+                style: { color: "black", fontSize: "1.2rem" },
               }}
               InputProps={{
                 style: {
                   backgroundColor: "rgba(255, 255, 255, 0.2)",
                   borderRadius: "8px",
-                  color: "white",
+                  color: "black",
                 },
               }}
             />
@@ -210,7 +211,7 @@ const ClubApplication = () => {
                   label={key}
                   onDelete={() => handleDeleteInterest(tag)}
                   sx={{
-                    backgroundColor: "rgba(255, 255, 255, 0.4)",
+                    backgroundColor: "lightblue",
                     color: "black",
                     borderRadius: "16px",
                     margin: "4px",
@@ -270,21 +271,26 @@ const ClubApplication = () => {
           </Grid>
 
           <Grid item xs={12}>
+            <div id="server-error-alert" className="hidden">
+              <Alert severity="error">
+                A server error occurred. Please try again later.
+              </Alert>
+            </div>
             <Button
-              type="submit"
-              variant="contained"
-              color="secondary"
-              fullWidth
-              className="mt-4"
-              style={{
-                backgroundColor: "#ff4081",
-                fontSize: "1.2rem",
-                letterSpacing: "1px",
-                fontWeight: "bold",
-                color: "white",
-              }}
+                type="submit"
+                variant="contained"
+                color="secondary"
+                fullWidth
+                className="mt-4"
+                style={{
+                  backgroundColor: "#ff4081",
+                  fontSize: "1.2rem",
+                  letterSpacing: "1px",
+                  fontWeight: "bold",
+                  color: "white",
+                }}
             >
-              {isLoading ? <CircularProgress color="inherit" /> : "Submit"}
+              {isLoading ? <CircularProgress color="inherit"/> : "Submit"}
             </Button>
           </Grid>
         </Grid>
@@ -292,11 +298,11 @@ const ClubApplication = () => {
 
       <NavLink to="/clubs">
         <Typography
-          variant="body2"
-          sx={{
-            mt: 2,
-            color: "#fff",
-            textDecoration: "underline",
+            variant="body2"
+            sx={{
+              mt: 2,
+              color: "#fff",
+              textDecoration: "underline",
           }}
         >
           Go back to Clubs List
