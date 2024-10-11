@@ -1,12 +1,38 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { NavLink } from "react-router-dom";
+import axios from "axios";
 
 const LandingPage = () => {
   const words = ["Club", "Community", "House", "Place"];
   const [currentWord, setCurrentWord] = useState(words[0]);
 
+  const [clubNames, setClubNames] = useState([]);
+
+  const [isLoadingClubs, setIsLoadingClubs] = useState(false);
+
   useEffect(() => {
+    const fetchClubs = async () => {
+      setClubNames([]);
+      setIsLoadingClubs(true);
+      const response = await axios.get(
+        "http://127.0.0.1:8000/api/clubs/examples/"
+      );
+      const clubs = response.data.clubs;
+
+      if (clubs.length > 0) {
+        clubs.forEach((club) => {
+          if (!clubNames.includes(club.name)) {
+            setClubNames((prev) => [...prev, club.name]);
+          }
+        });
+      } else {
+        setClubNames(["No Clubs Found"]);
+      }
+
+      setIsLoadingClubs(false);
+    };
+    fetchClubs();
+
     const interval = setInterval(() => {
       setCurrentWord((prevWord) => {
         const currentIndex = words.indexOf(prevWord);
@@ -48,14 +74,16 @@ const LandingPage = () => {
               Example Clubs
             </h2>
             <ul className="list-disc list-inside text-white">
-              <li>example</li>
+              {isLoadingClubs
+                ? "Loading..."
+                : clubNames.map((club, index) => {
+                    return <li key={index}>{club}</li>;
+                  })}
             </ul>
           </div>
         </div>
 
-        <div className="mt-16 text-center">
-
-        </div>
+        <div className="mt-16 text-center"></div>
       </div>
     </div>
   );
