@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { NavLink } from "react-router-dom";
 
 const LandingPage = () => {
-  const words = ["Club", "Community", "House"];
+  const words = ["Club", "Community", "House", "Place"];
   const [currentWord, setCurrentWord] = useState(words[0]);
 
   useEffect(() => {

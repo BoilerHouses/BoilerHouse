@@ -295,12 +295,32 @@ def save_club_information(request):
                 file_name,
                 ExtraArgs={'ACL': 'public-read', 'ContentType': data.get('icon').content_type}
         )
+        gallery_images = request.FILES.getlist('gallery')
+        print(gallery_images)
+        print("HI")
+        gallery_image_urls = []
+        for image in gallery_images:
+            gallery_file_name = f'{name}/gallery/{uuid.uuid4()}_{image.name.split(".")[-1]}'
+            s3_client.upload_fileobj(
+                image,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                gallery_file_name,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': image.content_type}
+            )
+            gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
+        
+        #print(gallery_image_urls)
+
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
                            interests=interests, 
-                           icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}', 
-                           officers=[user.pk], members=[user.pk])
+                           officers=[user.pk], 
+                           members=[user.pk], 
+                           icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
+                           gallery = gallery_image_urls)
+        #club.gallery = gallery_image_urls 
         club.save()
+        #print(model_to_dict(club))
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as e:
         return Response("Error: " + str(e), status=500)
