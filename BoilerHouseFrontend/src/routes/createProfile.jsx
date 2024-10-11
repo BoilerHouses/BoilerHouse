@@ -129,13 +129,7 @@ const CreateProfile = () => {
     setBio(event.target.value);
   };
   const handleYearChange = (event) => {
-    const year = parseInt(event.target.value, 10);
-    if (isNaN(year)) {
-      alert("Grad Year must be a number");
-      setGradYear(2026);
-    } else {
-      setGradYear(event.target.value);
-    }
+    setGradYear(event.target.value);    
   };
   const handleMajorChange = (event) => {
     setMajor(event.target.value);
@@ -186,6 +180,7 @@ const CreateProfile = () => {
               name="grad_year"
               value={grad_year}
               required={true}
+              type="number"
               onChange={handleYearChange}
               className="bg-white !mt-3.5"
             />
