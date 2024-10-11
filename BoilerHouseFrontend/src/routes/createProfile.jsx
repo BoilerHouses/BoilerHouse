@@ -5,16 +5,12 @@ import {
   Card,
   CardContent,
   Typography,
-  IconButton,
-  InputAdornment,
-  FormControlLabel,
-  Checkbox,
   Alert,
   Chip,
   Box,
   CircularProgress,
 } from "@mui/material";
-import { NavLink, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const CreateProfile = () => {

@@ -1,20 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import {
-  Typography,
-  Container,
-  Card,
-  CardContent,
-  TextField,
-  Button,
-  CircularProgress,
-  InputAdornment,
-  IconButton,
-  Alert,
-} from "@mui/material";
-
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { NavLink, useNavigate } from "react-router-dom";
+;import { useNavigate } from "react-router-dom";
 
 import axios from "axios";
 
@@ -26,7 +11,7 @@ const ViewClubs = () => {
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     useEffect(() => {    
-        const fetchProfile = async () => {
+        const fetchClubs = async () => {
           const token = localStorage.getItem("token");
           if (token) {
             const response = await axios.get("http://127.0.0.1:8000/api/clubs/", {
@@ -41,7 +26,7 @@ const ViewClubs = () => {
             setData(response.data.clubs)
           }
         };
-        fetchProfile();
+        fetchClubs();
       }, []);
 
       const handleClick = (event) => {

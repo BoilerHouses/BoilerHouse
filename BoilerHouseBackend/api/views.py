@@ -326,7 +326,7 @@ def save_club_information(request):
                            gallery=gallery_image_urls)
         
         #club.gallery = gallery_image_urls 
-        print("debug")
+        # print("debug")
         club.save()
         #print(model_to_dict(club))
         return Response({'club': model_to_dict(club)}, status=200)
@@ -345,7 +345,17 @@ def get_all_clubs(request):
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
     clubs = []
-    print(club_list)
+    for x in club_list:
+        t = model_to_dict(x)
+        t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
+        t['k'] = x.pk
+        clubs.append(t)
+    return Response({'clubs': clubs}, 200)
+
+@api_view(['GET'])
+def get_example_clubs(request):
+    club_list = Club.objects.filter(is_approved=True)
+    clubs = []
     for x in club_list:
         t = model_to_dict(x)
         t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
