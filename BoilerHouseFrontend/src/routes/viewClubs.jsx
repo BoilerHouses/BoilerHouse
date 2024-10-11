@@ -5,13 +5,15 @@ import axios from "axios";
 
 const ViewClubs = () => {
     const [searchTerm, setSearchTerm] = useState('');
-    const [data, setData] = useState([])
-    const navigate = useNavigate()
+    const [data, setData] = useState([]);
+    const [isLoadingClubs, setIsLoadingClubs] = useState(false);
+    const navigate = useNavigate();
     const filteredData = data.filter(item =>
         item.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
     useEffect(() => {    
         const fetchClubs = async () => {
+          setIsLoadingClubs(true);
           const token = localStorage.getItem("token");
           if (token) {
             const response = await axios.get("http://127.0.0.1:8000/api/clubs/", {
@@ -22,8 +24,8 @@ const ViewClubs = () => {
                 approved: 'True'
               }
             });
-            console.log(response.data)
-            setData(response.data.clubs)
+            setData(response.data.clubs);
+            setIsLoadingClubs(false);
           }
         };
         fetchClubs();
@@ -72,7 +74,7 @@ const ViewClubs = () => {
                     className="w-full p-3 mb-5 border border-gray-300 rounded"  
                 />
                 <div className="flex justify-center h-screen">
-                     <p className="text-black text-center font-bold rounded-md">No clubs found matching criteria</p>
+                     <p className="text-black text-center font-bold rounded-md">{isLoadingClubs ? "Loading..." : "No clubs found matching criteria"}</p>
                 </div>
             </div>
         );

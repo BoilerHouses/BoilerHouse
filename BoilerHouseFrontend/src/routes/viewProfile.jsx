@@ -21,9 +21,11 @@ const ViewProfile = () => {
     profile_picture: "https://via.placeholder.com/120", // Sample profile image URL
     interests: ["Jai"],
   });
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const fetchProfile = async () => {
+      setIsLoading(true);
       const token = localStorage.getItem("token");
       if (token) {
         const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
@@ -35,12 +37,13 @@ const ViewProfile = () => {
           },
         });
         setUser(response.data);
+        setIsLoading(false);
       }
     };
     fetchProfile();
   }, []);
 
-  if (loading) {
+  if (isLoading) {
     return <div>Loading..</div>;
   } else {
     return (
