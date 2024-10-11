@@ -99,6 +99,21 @@ def activate_email(request, user):
     except Exception as e:
         return "error"
 
+def send_club_approved_email(user, club_name):
+    try:
+        mail_subject = "Club Approved!"
+        message = render_to_string("club_approved.html", {
+            'user': user.name,
+            'club_name': club_name,
+        })
+        email = EmailMessage(mail_subject, message, to={user.username})
+        if email.send():
+            return "working"
+        else:
+            return "error"
+    except Exception as e:
+        return "error"
+
 def resetPasswordEmail(request, user, to_email):
     mail_subject = "Reset your password."
 
