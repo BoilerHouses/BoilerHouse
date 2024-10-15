@@ -1,7 +1,7 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MaxValueValidator, MinValueValidator
 from datetime import datetime
-import json
 
 
 class User(models.Model):
@@ -10,7 +10,7 @@ class User(models.Model):
     password = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
     bio = models.CharField(max_length=2048)
-    interests = models.CharField(max_length=2048)
+    interests = ArrayField(models.CharField(max_length=255))
     created_profile = models.BooleanField(default=False)
     profile_picture = models.CharField(max_length=2048, default='')
     grad_year = models.IntegerField(
@@ -19,43 +19,31 @@ class User(models.Model):
             MinValueValidator(2024)
         ]
     )
-    major = models.CharField(max_length=2048)
-
+    major = ArrayField(models.CharField(max_length=255))
+    availability = models.JSONField(default=dict)
 
     '''
     Use the major and interest methods below to access/modify majors and interests
     '''
-
     # Constructor type method
     @classmethod
-    def create(cls, username, password, name, bio, interests, grad_year, major, is_admin):
-        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin, created_profile=False)
-        if interests:
-            user.set_interests(interests)
-        else:
-            user.set_interests([])
-        user.set_major(major)
-
+    def create(cls, username, password, name, bio, grad_year, is_admin):
+        user = cls(username=username, password=password, name=name, bio=bio, grad_year=grad_year, is_admin=is_admin, major=[], interests=[], created_profile=False)
         return user
 
-    def get_majors(self):
-        return json.loads(self.major)
-
-    def add_major(self, major):
-        self.major = json.dumps(json.loads(self.major).append(major))
-
-    def set_major(self, majors):
-        self.major = json.dumps(majors)
-
-    def get_interests(self):
-        return json.loads(self.interests)
-
-    def add_interest(self, interest):
-        self.interests = json.dumps(json.loads(self.interests).append(interest))
-
-    def set_interests(self, interest):
-        self.interests = json.dumps(interest)
-
+class Club(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    description = models.CharField(max_length=2048)
+    interests = ArrayField(models.CharField(max_length=255))
+    icon = models.CharField(max_length=2048, default='')
+    gallery = ArrayField(models.CharField(max_length=2048, default=''))
+    is_approved = models.BooleanField(default=False)
+    officers = ArrayField(models.IntegerField())
+    members = ArrayField(models.IntegerField())
+    @classmethod
+    def create(cls, name, description, interests, officers, members, icon, gallery):
+        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=gallery)
+        return club
 
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)

@@ -1,0 +1,11 @@
+BoilerHouseBackend/api/migrations/
+BoilerHouseBackend/api/__pycache__/
+BoilerHouseBackend/BoilerHouseBackend/__pycache__/
+BoilerHouseBackend/boilerhouse/
+BoilerHouseBackend/lib/
+BoilerHouseBackend/Scripts/
+BoilerHouseBackend/api/.env
+BoilerHouseBackend/tutorial-env/
+BoilerHouseFrontend/node_modules/
+BoilerHouseBackend/env/pyvenv.cfg
+BoilerHouseBackend/.env

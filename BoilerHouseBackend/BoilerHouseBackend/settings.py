@@ -14,6 +14,7 @@ from pathlib import Path
 import certifi, os
 import secrets
 
+
 os.environ['SSL_CERT_FILE'] = certifi.where()
 
 # for email verification
@@ -29,6 +30,9 @@ EMAIL_USE_TLS = True
 PASSWORD_RESET_TIMEOUT = 14400
 SECRET_KEY = secrets.token_urlsafe(50)
 
+
+# Default File Storage to S3
+DEFAULT_FILE_STORAGE = 'storages.backends.s3.S3Boto3'
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -54,11 +58,13 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     "rest_framework",
     "corsheaders",
-    "api"
-]
+    "api",
+    "storages"
+    ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -151,5 +157,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
 ]

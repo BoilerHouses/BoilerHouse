@@ -40,8 +40,12 @@ const UserRegistration = () => {
   const [confirmPasswordHelperText, setConfirmPasswordHelperText] =
     useState("");
 
+  const [adminKey, setAdminKey] = useState(""); // Admin key state
+  const [adminKeyError, setAdminKeyError] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAdminKey, setShowAdminKey] = useState(false); // Admin key visibility toggle
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -51,15 +55,12 @@ const UserRegistration = () => {
     email: "",
     password: "",
     confirmPassword: "",
+    adminKey: "",
   });
 
   const handleEmailChange = (event) => {
-    const emailAlert = document.querySelector("#email-already-exists-alert");
-    emailAlert.classList.add("hidden");
-
     const newEmail = event.target.value;
     setEmail(newEmail);
-
     setFormData({ ...formData, email: newEmail });
 
     if (!isValidEmailAddress(newEmail)) {
@@ -101,17 +102,19 @@ const UserRegistration = () => {
     }
   };
 
+  const handleAdminKeyChange = (event) => {
+    const newAdminKey = event.target.value;
+    setAdminKey(newAdminKey);
+    setFormData({ ...formData, adminKey: newAdminKey });
+
+    if (newAdminKey.trim() === "") {
+      setAdminKeyError(true);
+    } else {
+      setAdminKeyError(false);
+    }
+  };
 
   const handleSubmit = (e) => {
-    const serverAlert = document.querySelector("#server-error-alert");
-    serverAlert.classList.add("hidden");
-
-    const adminKeyAlert = document.querySelector("#admin-key-alert");
-    adminKeyAlert.classList.add("hidden");
-
-    const emailAlert = document.querySelector("#email-already-exists-alert");
-    emailAlert.classList.add("hidden");
-
     e.preventDefault();
 
     let err = false;
@@ -136,51 +139,37 @@ const UserRegistration = () => {
       err = true;
     }
 
+    if (adminKey.trim() === "") {
+      setAdminKeyError(true);
+      err = true;
+    }
+
     if (err === false) {
       setIsLoading(true);
 
       let params = {
         email: formData.email,
         password: formData.password,
+        adminKey: formData.adminKey,
       };
 
       axios({
-        // create account endpoint
         url: "http://127.0.0.1:8000/api/registerAccount/",
         method: "GET",
-
-        // params
         params: params,
       })
-        // success
         .then((res) => {
           setIsLoading(false);
-
           navigate("/verify_account", { state: { data: res.data } });
         })
-
-        // Catch errors if any
         .catch((err) => {
           setIsLoading(false);
-
-          // email already exists
-          if (err.status == 409) {
-            const emailAlert = document.querySelector(
-              "#email-already-exists-alert"
-            );
-            emailAlert.classList.remove("hidden");
-          }
-
-          // admin key is incorrect
-          else if (err.status == 401) {
-            const adminKeyAlert = document.querySelector("#admin-key-alert");
-            adminKeyAlert.classList.remove("hidden");
-          }
-
-          // other server error
-          else {
-            const serverAlert = document.querySelector("#server-error-alert");
-            serverAlert.classList.remove("hidden");
+          if (err.status === 409) {
+            document.querySelector("#email-already-exists-alert").classList.remove("hidden");
+          } else if (err.status === 401) {
+            document.querySelector("#admin-key-alert").classList.remove("hidden");
+          } else {
+            document.querySelector("#server-error-alert").classList.remove("hidden");
           }
         });
     }
@@ -191,7 +180,7 @@ const UserRegistration = () => {
       <Card className="w-full max-w-md">
         <CardContent>
           <Typography variant="h5" component="h2" className="mb-4 text-center">
-            Register
+            Register Admin
           </Typography>
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
@@ -254,8 +243,30 @@ const UserRegistration = () => {
               }}
               helperText={confirmPasswordHelperText}
             />
-
-            
+            <TextField
+              fullWidth
+              label="Admin Key"
+              name="adminKey"
+              type={showAdminKey ? "text" : "password"} // Toggle between text and password types
+              value={adminKey}
+              onChange={handleAdminKeyChange}
+              error={adminKeyError}
+              className="bg-white !mt-3.5"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle admin key visibility"
+                      onClick={() => setShowAdminKey(!showAdminKey)} // Toggle admin key visibility
+                      edge="end"
+                    >
+                      {showAdminKey ? <Visibility /> : <VisibilityOff />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              helperText={adminKeyError ? "Admin Key is required" : ""}
+            />
 
             <div id="email-already-exists-alert" className="hidden">
               <Alert severity="error">
@@ -269,27 +280,24 @@ const UserRegistration = () => {
 
             <div id="server-error-alert" className="hidden">
               <Alert severity="error">
-                A server error occurred. Please try again later.
+                A server error has occurred. Please try again later.
               </Alert>
             </div>
 
             <div id="admin-key-alert" className="hidden">
-              <Alert severity="error">Admin key is incorrect.</Alert>
+              <Alert severity="error">
+                The admin key you entered is incorrect.
+              </Alert>
             </div>
 
             <Button
               type="submit"
               variant="contained"
-              color="primary"
               fullWidth
               className="mt-4"
               disabled={isLoading}
             >
-              {isLoading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Register"
-              )}
+              {isLoading ? <CircularProgress size={24} /> : "Register"}
             </Button>
           </form>
         </CardContent>

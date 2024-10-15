@@ -20,54 +20,32 @@ from jwt import DecodeError, ExpiredSignatureError
 
 
 # Create User Object
-def create_user_obj(data):
-    # Check if user account already exists
-    if User.objects.filter(email=data["email"]).exists():
-        return {"error": "User Already Exists!", 'status': 400}
-    # Since bio and interests are optional, pull them out if present
-    bio = ''
-    if 'bio' in data:
-        bio = data['bio']
-    interests = None
-    if 'interests' in data:
-        interests = data['interests']
-
-    # Attempt to create and save the user object
-    load_dotenv()
-    pair = LoginPair.objects.filter(email=data['email']).first()
-    if not pair:
-        return {'error': "User not found", "status": 404}
-    try:
-        user = User.create(email=data['email'],
-                           password=model_to_dict(pair)['password'],
-                           name=data['name'], bio=bio, interests=interests, grad_year=data['grad_year'],
-                           major=data['major'], is_admin=data['is_admin'])
-        user.save()
-    except Exception as e:
-        return {'error': "Internal Server Error: " + str(type(e)) + str(e), "status": 500}
-    # Decrypt password and return it
-    ret_obj = model_to_dict(user)
-    ret_obj['password'] = cryptocode.decrypt(ret_obj['password'], os.getenv("ENCRYPTION_KEY"))
-    return ret_obj
-
-# Create User Object
 def edit_user_obj(user, data):
     # Check if user account already exists
     if not user:
         return {"error": "User Does Not Exist!", 'status': 400}
     # Since bio and interests are optional, pull them out if present
     bio = user.bio
+    print(data)
     if data.get('bio'):
         bio = data.get('bio')
+    i = 0
     interests = user.interests
-    if data.get('interests'):
-        interests = data.get('interests')
+    if (data.get(f'interest[{i}]')):
+        interests = []
+    while(data.get(f'interest[{i}]')):
+        interests.append(data.get(f'interest[{i}]'))
+        i+=1
     name = user.name
     if data.get('name'):
         name = data.get('name')
     major = user.major
-    if data.get('major'):
-        major = json.dumps(data.get('major'))
+    i = 0
+    if (data.get(f'major[{i}]')):
+        major = []
+    while(data.get(f'major[{i}]')):
+        major.append(data.get(f'major[{i}]'))
+        i+=1
     grad_year = user.grad_year
     if data.get('grad_year'):
         grad_year = data.get('grad_year')
@@ -75,7 +53,7 @@ def edit_user_obj(user, data):
     load_dotenv()
     try:
         user.name = name
-        user.interests =  interests
+        user.interests = interests
         user.major = major
         user.bio = bio
         user.grad_year = grad_year
@@ -86,14 +64,12 @@ def edit_user_obj(user, data):
                         aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
                         aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"))
             file_name = f'{user.username}/profile_picture/{uuid.uuid4()}.{profile_picture.name.split(".")[-1]}'
-            print("HELP")
             s3_client.upload_fileobj(
                 profile_picture,
                 settings.AWS_STORAGE_BUCKET_NAME,
                 file_name,
                 ExtraArgs={'ACL': 'public-read', 'ContentType': profile_picture.content_type}
             )
-            print("ASDASDASD")
             user.profile_picture = f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}'
         print(model_to_dict(user))
         user.save()
@@ -114,6 +90,21 @@ def activate_email(request, user):
             'token': account_activation_token.make_token(user),
             "protocol": 'https' if request.is_secure() else 'http'
 
+        })
+        email = EmailMessage(mail_subject, message, to={user.username})
+        if email.send():
+            return "working"
+        else:
+            return "error"
+    except Exception as e:
+        return "error"
+
+def send_club_approved_email(user, club_name):
+    try:
+        mail_subject = "Club Approved!"
+        message = render_to_string("club_approved.html", {
+            'user': user.username,
+            'club_name': club_name,
         })
         email = EmailMessage(mail_subject, message, to={user.username})
         if email.send():
