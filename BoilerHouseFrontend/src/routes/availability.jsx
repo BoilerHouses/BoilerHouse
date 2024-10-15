@@ -372,7 +372,7 @@ const timeSlots = generateTimeSlots();
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          A sever error occurred. Please try again.
+          A server error occurred. Please try again.
         </Alert>
       </Snackbar>
     </div>

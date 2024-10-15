@@ -41,8 +41,8 @@ class Club(models.Model):
     officers = ArrayField(models.IntegerField())
     members = ArrayField(models.IntegerField())
     @classmethod
-    def create(cls, name, description, interests, officers, members, icon):
-        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=[])
+    def create(cls, name, description, interests, officers, members, icon, gallery):
+        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=gallery)
         return club
 
 class LoginPair(models.Model):

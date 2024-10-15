@@ -16,10 +16,10 @@ const VerifyAccount = () => {
           An email has been sent to {accountData.username}. Click on the link to verify your email.
         </p>
         
-        <img 
+        {/* <img 
           className="w-full h-64 object-contain my-6" 
           src="../../public/not_found.jpg" 
-        />
+        /> */}
 
       </div>
     </div>

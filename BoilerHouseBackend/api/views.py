@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair, Club
-from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -231,6 +231,8 @@ def approve_club(request):
         return Response("No such club!", status=404)
     try:
         club.is_approved = True
+        #send email to user saying their club was approved
+        send_club_approved_email(User.objects.filter(pk=club.officers[0]).first(), club.name)
         club.save()
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as ex:
@@ -295,12 +297,38 @@ def save_club_information(request):
                 file_name,
                 ExtraArgs={'ACL': 'public-read', 'ContentType': data.get('icon').content_type}
         )
+        gallery_images = []
+        i = 0
+        while(data.get(f'gallery[{i}]')):
+            gallery_images.append(data.get(f'gallery[{i}]'))
+            i+=1
+        print(gallery_images)
+        print("HI")
+        gallery_image_urls = []
+        for image in gallery_images:
+            gallery_file_name = f'{name}/gallery/{uuid.uuid4()}_{image.name.split(".")[-1]}'
+            s3_client.upload_fileobj(
+                image,
+                settings.AWS_STORAGE_BUCKET_NAME,
+                gallery_file_name,
+                ExtraArgs={'ACL': 'public-read', 'ContentType': image.content_type}
+            )
+            gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
+        
+        print(gallery_image_urls)
+
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
                            interests=interests, 
-                           icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}', 
-                           officers=[user.pk], members=[user.pk])
+                           officers=[user.pk], 
+                           members=[user.pk], 
+                           icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
+                           gallery=gallery_image_urls)
+        
+        #club.gallery = gallery_image_urls 
+        # print("debug")
         club.save()
+        #print(model_to_dict(club))
         return Response({'club': model_to_dict(club)}, status=200)
     except Exception as e:
         return Response("Error: " + str(e), status=500)
@@ -316,6 +344,17 @@ def get_all_clubs(request):
     if not user.is_admin and approved == 'False':
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
+    clubs = []
+    for x in club_list:
+        t = model_to_dict(x)
+        t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
+        t['k'] = x.pk
+        clubs.append(t)
+    return Response({'clubs': clubs}, 200)
+
+@api_view(['GET'])
+def get_example_clubs(request):
+    club_list = Club.objects.filter(is_approved=True)
     clubs = []
     for x in club_list:
         t = model_to_dict(x)
@@ -398,6 +437,7 @@ def get_club_information(request):
 
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
+        print(ret_club)
         return Response({'club': ret_club}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
