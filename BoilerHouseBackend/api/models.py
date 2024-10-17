@@ -38,8 +38,8 @@ class Club(models.Model):
     icon = models.CharField(max_length=2048, default='')
     gallery = ArrayField(models.CharField(max_length=2048, default=''))
     is_approved = models.BooleanField(default=False)
-    officers = models.ManyToManyField(User)
-    members = models.ManyToManyField(User)
+    officers = models.ManyToManyField(User, related_name='officer_list')
+    members = models.ManyToManyField(User, related_name='member_list')
     @classmethod
     def create(cls, name, description, interests, officers, members, icon, gallery):
         club = cls(name=name, description=description, interests=interests, icon=icon, gallery=gallery)
