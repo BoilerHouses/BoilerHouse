@@ -428,15 +428,10 @@ def get_club_information(request):
         ret_club = model_to_dict(club)
         officer_list = []
         for i in ret_club['officers']:
-            user = User.objects.filter(pk=i).first()
-            if user:
-                officer_list.append((i, user.name, user.profile_picture, user.username))
+            officer_list.append((i.pk, i.name, i.profile_picture, i.username))
         member_list = []
         for i in ret_club['members']:
-            user = User.objects.filter(pk=i).first()
-            if user:
-                member_list.append((i, user.name, user.profile_picture, user.username))
-
+            member_list.append((i.pk, i.name, i.profile_picture, i.username))
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         print(ret_club)
