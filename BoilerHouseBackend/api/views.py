@@ -313,21 +313,22 @@ def save_club_information(request):
             )
             gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
         
-
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
                            interests=interests, 
-                           officers=[user], 
-                           members=[user], 
+                           owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
-        
         #club.gallery = gallery_image_urls 
         # print("debug")
         club.save()
         #print(model_to_dict(club))
-        return Response({'club': model_to_dict(club)}, status=200)
+        ret_club = model_to_dict(club)
+        ret_club['officers'] = [model_to_dict(x) for x in ret_club['officers']]
+        ret_club['members'] = [model_to_dict(x) for x in ret_club['members']]
+        return Response({'club': ret_club}, status=200)
     except Exception as e:
+        print(e)
         return Response("Error: " + str(e), status=500)
 
 @api_view(['GET'])
@@ -343,10 +344,12 @@ def get_all_clubs(request):
     club_list = Club.objects.filter(is_approved=approved)
     clubs = []
     for x in club_list:
+        if (x.officers.count() <= 0):
+            continue
         t = model_to_dict(x)
-        t['officer'] = [model_to_dict(x) for a in x.officers.all()]
-        t['members'] = [model_to_dict(x) for a in x.members.all()]
-        t['owner'] = t['officer'][0]
+        t['officers'] = []
+        t['members'] = []
+        t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -357,8 +360,8 @@ def get_example_clubs(request):
     clubs = []
     for x in club_list:
         t = model_to_dict(x)
-        t['officer'] = [model_to_dict(x) for a in x.officers.all()]
-        t['owner'] = t['officer'][0]
+        t['officers'] = [model_to_dict(x) for a in x.officers.all()]
+        t['owner'] = t['officers'][0]
         t['members'] = [model_to_dict(x) for a in x.members.all()]
 
         t['k'] = x.pk

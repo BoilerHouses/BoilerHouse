@@ -41,11 +41,11 @@ class Club(models.Model):
     officers = models.ManyToManyField(User, related_name='officer_list')
     members = models.ManyToManyField(User, related_name='member_list')
     @classmethod
-    def create(cls, name, description, interests, officers, members, icon, gallery):
+    def create(cls, name, description, interests, owner, icon, gallery):
         club = cls(name=name, description=description, interests=interests, icon=icon, gallery=gallery)
-        club.officers.add(o for o in officers)
-        club.members.add(o for o in members)
         club.save()
+        club.officers.add(owner)
+        club.members.add(owner)
         return club
 
 class LoginPair(models.Model):
