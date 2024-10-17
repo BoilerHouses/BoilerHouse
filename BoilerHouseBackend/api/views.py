@@ -317,8 +317,8 @@ def save_club_information(request):
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
                            interests=interests, 
-                           officers=[user.pk], 
-                           members=[user.pk], 
+                           officers=[user], 
+                           members=[user], 
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
         
