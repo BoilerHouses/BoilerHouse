@@ -302,8 +302,6 @@ def save_club_information(request):
         while(data.get(f'gallery[{i}]')):
             gallery_images.append(data.get(f'gallery[{i}]'))
             i+=1
-        print(gallery_images)
-        print("HI")
         gallery_image_urls = []
         for image in gallery_images:
             gallery_file_name = f'{name}/gallery/{uuid.uuid4()}_{image.name.split(".")[-1]}'
@@ -315,7 +313,6 @@ def save_club_information(request):
             )
             gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
         
-        print(gallery_image_urls)
 
         club = Club.create(name=data.get('name'), 
                            description=data.get('description'), 
@@ -347,7 +344,9 @@ def get_all_clubs(request):
     clubs = []
     for x in club_list:
         t = model_to_dict(x)
-        t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
+        t['officer'] = [model_to_dict(x) for a in x.officers.all()]
+        t['members'] = [model_to_dict(x) for a in x.members.all()]
+        t['owner'] = t['officer'][0]
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -358,7 +357,10 @@ def get_example_clubs(request):
     clubs = []
     for x in club_list:
         t = model_to_dict(x)
-        t['owner'] = User.objects.filter(pk=x.officers[0]).first().username
+        t['officer'] = [model_to_dict(x) for a in x.officers.all()]
+        t['owner'] = t['officer'][0]
+        t['members'] = [model_to_dict(x) for a in x.members.all()]
+
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
