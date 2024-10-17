@@ -13,6 +13,7 @@ const ClubInformation = () => {
   const navigate = useNavigate()
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [clubData, setClubData] = useState(null);
+  const [joined, setJoined] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const defaultPhotos = ['https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg', 
                         'https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg',
@@ -24,6 +25,9 @@ const ClubInformation = () => {
   useEffect(() => {
     // Fetch club information when the component loads
     axios.get(`http://127.0.0.1:8000/api/club/`, {
+      headers:{
+        'Authorization': token,
+      },
       params: {
         club_id: clubId
       }
@@ -56,12 +60,35 @@ const ClubInformation = () => {
     .then((response) => {
       console.log(response.data.club)
       setClubData(response.data.club);
+      setJoined(response.data.joined == 'True')
       setIsLoading(false);
       alert('success')
       navigate(`/clubs`)
     })
     .catch((error) => {
       console.error("There was an error fetching the club data!", error);
+      setIsLoading(false);
+    });
+  }
+
+  const handleJoin = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/join/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        club_id: clubData.name
+      }
+    })
+    .then((response) => {
+      console.log(response.data.club)
+      setClubData(response.data.club);
+      setJoined(true)
+      setIsLoading(false);
+    })
+    .catch((error) => {
+      console.error("There was an error joining club!", error);
       setIsLoading(false);
     });
   }
@@ -230,6 +257,10 @@ const ClubInformation = () => {
             <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
                 onClick={handleApproval}>
                 Approve 
+              </button>
+              <button className={(clubData.is_approved && joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+                onClick={h}>
+                Join Club 
               </button>
               <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
                 onClick={handleDeny}>

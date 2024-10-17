@@ -363,10 +363,35 @@ def get_example_clubs(request):
         t['officers'] = [model_to_dict(x) for a in x.officers.all()]
         t['owner'] = t['officers'][0]
         t['members'] = [model_to_dict(x) for a in x.members.all()]
-
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
+
+@api_view(['GET'])
+def join_club(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'club_name' not in request.query_params:
+        return Response({'error': 'Missing Parameters'}, status=400)
+    
+    club = Club.objects.filter(name=request.query_params['club_name'])
+    if (not club.is_approved):
+        return Response({'error': 'Club is not Active!'}, status=400)
+    if (user not in club.members.all()):
+        club.members.add(user)
+    club.save()
+    ret_club = model_to_dict(club)
+    officer_list = []
+    for i in ret_club['officers']:
+        officer_list.append((i.pk, i.name, i.profile_picture, i.username))
+    member_list = []
+    for i in ret_club['members']:
+        inClub = ((i.username == user.username) or inClub)
+        member_list.append((i.pk, i.name, i.profile_picture, i.username))
+    ret_club['officers'] = officer_list
+    ret_club['members'] = member_list
+    return Response({'club': ret_club}, 200)
 
 @api_view(['GET'])
 def update_password(request, uidb64, token):
@@ -426,6 +451,10 @@ def set_availability(request):
 
 @api_view(['GET'])
 def get_club_information(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    inClub = False
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
         ret_club = model_to_dict(club)
@@ -434,11 +463,12 @@ def get_club_information(request):
             officer_list.append((i.pk, i.name, i.profile_picture, i.username))
         member_list = []
         for i in ret_club['members']:
+            inClub = ((i.username == user.username) or inClub)
             member_list.append((i.pk, i.name, i.profile_picture, i.username))
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         print(ret_club)
-        return Response({'club': ret_club}, status=200)
+        return Response({'club': ret_club, "joined": inClub}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
