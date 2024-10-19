@@ -1,7 +1,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { CircularProgress, Typography, Box, Chip, Avatar, Button } from "@mui/material";
+import {
+  CircularProgress,
+  Typography,
+  Box,
+  Chip,
+  Avatar,
+  Button,
+} from "@mui/material";
+
+import MeetingCalendar from "./meetingCalendar";
 
 const ClubInformation = () => {
   const navigate = useNavigate();
@@ -181,181 +190,6 @@ const ClubInformation = () => {
     return <Typography variant="h6">Club not found!</Typography>;
   }
 
-  if (clubData.gallery.length == 0) {
-    return (
-        
-        <Box
-          sx={{
-            padding: 4,
-            backgroundColor: '#d0d8da', // Darker light gray background
-            minHeight: '100vh', // Full height to cover the page
-          }}
-        >
-          <div className='relative'>
-            <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
-                onClick={handleApproval}>
-                Approve 
-              </button>
-              <button className={(clubData.is_approved && !joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
-                onClick={handleJoin}>
-                Join Club 
-              </button>
-              <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
-                onClick={handleDeny}>
-                Deny
-              </button>
-          </div>
-          {/* Club Icon */}
-          <Avatar
-            src={clubData.icon}
-            alt={clubData.name}
-            sx={{
-              width: 120,
-              height: 120,
-              marginBottom: 4,
-              border: '2px solid #d1d5db', // Light border around avatar
-            }}
-          />
-    
-          {/* Club Name */}
-          <Typography variant="h3" component="h1" gutterBottom color="black">
-            {clubData.name}
-          </Typography>
-    
-          {/* Club Description */}
-          <Typography variant="h6" gutterBottom color="black">
-            {clubData.description}
-          </Typography>
-
-          {/* Club Culture */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Culture:
-          </Typography>
-          <Typography variant="body1" gutterBottom color="black">
-            {clubData.culture || "No culture information provided."}
-          </Typography>
-
-          {/* Club Time Commitment */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Time Commitment:
-          </Typography>
-          <Typography variant="body1" gutterBottom color="black">
-            {clubData.time_commitment || "No time commitment information provided."}
-          </Typography>
-    
-          {/* Interests */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Tags:
-          </Typography>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', mt: 2 }}>
-            {clubData.interests && clubData.interests.map((interest, index) => (
-              <Chip
-                key={index}
-                label={interest}
-                sx={{ margin: '4px', backgroundColor: '#facc15', color: 'black' }} // Yellow-500
-              />
-            ))}
-          </Box>
-          
-          {/* Officers Section */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Officers ({clubData.officers.length}):
-          </Typography>
-          
-          <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
-            {clubData.officers.map((profile, index) => (
-              <div
-                index={profile[3]}
-                key={index}
-                onClick={handleMemberProfile}
-                className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
-                style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
-              >
-                <img
-                  index={profile[3]}
-                  src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-                />
-                <span className="ml-4 text-black font-semibold"  index={profile[3]}>{profile[1]}</span>
-              </div>
-            ))}
-          </div>
-    
-          {/* Members Section */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Members ({clubData.members.length}):
-          </Typography>
-          <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
-            {clubData.members.map((profile, index) => (
-              <div
-                index={profile[3]}
-                key={index}
-                onClick={handleMemberProfile}
-                className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
-                style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
-              >
-                <img
-                  index={profile[3]}
-                  src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
-                  className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-                />
-                <span className="ml-4 text-black font-semibold" index={profile[3]}>{profile[1]}</span>
-              </div>
-            ))}
-          </div>
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black" className={(officer && clubData.pending_members.length>0) ? 'black' : 'hidden'}>
-        Pending Members ({clubData.pending_members.length}):
-      </Typography>
-      <div className={(officer && clubData.pending_members.length>0) ? "overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2" : 'hidden'}>
-        {clubData.pending_members.map((profile, index) => (
-          <div
-            index={profile[3]}
-            key={index}
-            onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
-            style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
-          >
-            <img
-              index={profile[3]}
-              src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
-              className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-            />
-            <span className="ml-4 text-black font-semibold" index={profile[3]}>{profile[1]}</span>
-            <button className={"bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"}
-              index={profile[3] + '...'}
-              onClick={handleMemberAdd}>
-                Approve
-            </button>
-            <button className={"bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"}
-                index={profile[3] + '...'}
-                onClick={handleMemberDel}>
-                Deny
-            </button>
-          </div>
-        ))}
-      </div>
-          {/* Photos Gallery Section */}
-          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-            Photo Gallery
-          </Typography>
-          <div className="overflow-x-auto bg-gray-200 p-4 rounded-lg w-1/1">
-            <div className="flex space-x-4">
-              {defaultPhotos && defaultPhotos.map((photo, index) => (
-                <div key={index} className="min-w-[200px]">
-                  <img
-                    src={photo}
-                    alt={`Photo ${index + 1}`}
-                    className="rounded-lg shadow-md h-[150px] object-cover"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-          
-        </Box>
-      );
-  }
-
   return (
     <Box
       sx={{
@@ -408,16 +242,15 @@ const ClubInformation = () => {
         }}
       />
 
-      {/* Create meetings section*/}
-      <div className="absolute right-4">
-        <Button
-          variant="contained"
-          color="primary"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Create New Meeting
-        </Button>
-      </div>
+      {/* Club Name */}
+      <Typography variant="h3" component="h1" gutterBottom color="black">
+        {clubData.name}
+      </Typography>
+
+      {/* Club Description */}
+      <Typography variant="h6" gutterBottom color="black">
+        {clubData.description}
+      </Typography>
 
       {/* Club Culture */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
@@ -434,8 +267,6 @@ const ClubInformation = () => {
       <Typography variant="body1" gutterBottom color="black">
         {clubData.time_commitment || "No time commitment information provided."}
       </Typography>
-
-      
 
       {/* Interests */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
@@ -570,8 +401,8 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-
       {/* Photos Gallery Section */}
+
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
           Photo Gallery
