@@ -34,6 +34,8 @@ class User(models.Model):
 class Club(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.CharField(max_length=2048)
+    culture = models.CharField(max_length=2048)
+    time_commitment = models.CharField(max_length=255, default='')
     interests = ArrayField(models.CharField(max_length=255))
     icon = models.CharField(max_length=2048, default='')
     gallery = ArrayField(models.CharField(max_length=2048, default=''))
@@ -44,8 +46,8 @@ class Club(models.Model):
     useQuestions = models.BooleanField(default=False)
     questionnaire = models.JSONField(default=dict)
     @classmethod
-    def create(cls, name, description, interests, owner, icon, gallery):
-        club = cls(name=name, description=description, interests=interests, icon=icon, gallery=gallery)
+    def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
+        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
         club.save()
         club.officers.add(owner)
         club.members.add(owner)
