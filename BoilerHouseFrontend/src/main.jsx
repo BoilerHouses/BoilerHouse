@@ -19,6 +19,9 @@ import ManageUsers from "./routes/manageUsers";
 import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
+import EditClub from "./routes/editClub";
+import Questionnaire from "./routes/createQuestionnaire";
+import Questions from "./routes/fillQuestions";
 import { AuthProvider } from "./routes/authProvider";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -100,6 +103,18 @@ const router = createBrowserRouter([
       {
         path: "/availability",
         element: <Availability />,
+      },
+      {
+        path: "/club/:clubID/edit",
+        element: <EditClub/>,
+      },
+      {
+        path: "/createQuestions/:clubId",
+        element: <Questionnaire />,
+      },
+      {
+        path: "/questions/:clubId",
+        element: <Questions />,
       },
     ],
   },
