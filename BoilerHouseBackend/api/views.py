@@ -232,9 +232,9 @@ def approve_club(request):
     try:
         club.is_approved = True
         #send email to user saying their club was approved
-        send_club_approved_email(User.objects.filter(pk=club.officers[0]).first(), club.name)
+        send_club_approved_email(list(club.officers.all())[0], club.name)
         club.save()
-        return Response({'club': model_to_dict(club)}, status=200)
+        return Response({'Approved'}, status=200)
     except Exception as ex:
         return Response({"error": str(ex)}, status=500)
 
@@ -313,9 +313,12 @@ def save_club_information(request):
             )
             gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
         
+        
         club = Club.create(name=data.get('name'), 
-                           description=data.get('description'), 
+                           description=data.get('description'),
                            interests=interests, 
+                           culture=data.get('culture'),
+                           time_commitment=data.get('time_commitment'),
                            owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
@@ -326,6 +329,7 @@ def save_club_information(request):
         ret_club = model_to_dict(club)
         ret_club['officers'] = [model_to_dict(x) for x in ret_club['officers']]
         ret_club['members'] = [model_to_dict(x) for x in ret_club['members']]
+        ret_club['pending_members'] = []
         return Response({'club': ret_club}, status=200)
     except Exception as e:
         print(e)
@@ -349,6 +353,7 @@ def get_all_clubs(request):
         t = model_to_dict(x)
         t['officers'] = []
         t['members'] = []
+        t['pending_members'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         clubs.append(t)
@@ -360,9 +365,10 @@ def get_example_clubs(request):
     clubs = []
     for x in club_list:
         t = model_to_dict(x)
-        t['officers'] = [model_to_dict(x) for a in x.officers.all()]
+        t['officers'] = [model_to_dict(a) for a in x.officers.all()]
         t['owner'] = t['officers'][0]
-        t['members'] = [model_to_dict(x) for a in x.members.all()]
+        t['members'] = [model_to_dict(a) for a in x.members.all()]
+        t['pending_membesr'] = [model_to_dict(a) for a in x.pending_members.all()]
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -375,11 +381,11 @@ def join_club(request):
     if 'club_name' not in request.query_params:
         return Response({'error': 'Missing Parameters'}, status=400)
     
-    club = Club.objects.filter(name=request.query_params['club_name'])
+    club = Club.objects.filter(name=request.query_params['club_name']).first()
     if (not club.is_approved):
         return Response({'error': 'Club is not Active!'}, status=400)
-    if (user not in club.members.all()):
-        club.members.add(user)
+    if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
+        club.pending_members.add(user)
     club.save()
     ret_club = model_to_dict(club)
     officer_list = []
@@ -387,10 +393,13 @@ def join_club(request):
         officer_list.append((i.pk, i.name, i.profile_picture, i.username))
     member_list = []
     for i in ret_club['members']:
-        inClub = ((i.username == user.username) or inClub)
         member_list.append((i.pk, i.name, i.profile_picture, i.username))
+    pending_list = []
+    for i in ret_club['pending_members']:
+        pending_list.append((i.pk, i.name, i.profile_picture, i.username))
     ret_club['officers'] = officer_list
     ret_club['members'] = member_list
+    ret_club['pending_members'] = pending_list
     return Response({'club': ret_club}, 200)
 
 @api_view(['GET'])
@@ -455,20 +464,28 @@ def get_club_information(request):
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     inClub = False
+    isOfficer = False
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
         ret_club = model_to_dict(club)
         officer_list = []
         for i in ret_club['officers']:
+            isOfficer = ((i.username == user.username) or isOfficer)
             officer_list.append((i.pk, i.name, i.profile_picture, i.username))
         member_list = []
         for i in ret_club['members']:
             inClub = ((i.username == user.username) or inClub)
             member_list.append((i.pk, i.name, i.profile_picture, i.username))
+        pending_list = []
+        for i in ret_club['pending_members']:
+            inClub = ((i.username == user.username) or inClub)
+            pending_list.append((i.pk, i.name, i.profile_picture, i.username))
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
+        ret_club['pending_members'] = pending_list
         print(ret_club)
-        return Response({'club': ret_club, "joined": inClub}, status=200)
+        print(inClub, isOfficer)
+        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
@@ -483,6 +500,24 @@ def get_all_users(request):
    all_users = User.objects.values('name', 'username')
    return Response(all_users, status=200)
 
+@api_view(['GET'])
+def modify_user_to_club(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'club' not in request.query_params or 'user' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=request.query_params['club']).first()
+    if user.username not in [x.username for x in list(club.officers.all())]:
+        return Response({"error": "Invalid Permissions, cannot access club!"}, status=403)
+    if not club or request.query_params['user'] not in [x.username for x in list(club.pending_members.all())]:
+        return Response({"error": "User or Club does not exist"}, status=404)
+    member = User.objects.filter(username=request.query_params['user']).first()
+    club.pending_members.remove(member)
+    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
+        club.members.add(member)
+    club.save()
+    return Response("Sucess!", 200)
 
 
 

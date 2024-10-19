@@ -7,6 +7,10 @@ import {
   Grid,
   Chip,
   Box, Alert,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from "@mui/material";
 import axios from "axios";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -24,6 +28,8 @@ const ClubApplication = () => {
   const [galleryImages, setGalleryImages] = useState([]);
   const [galleryPreviews, setGalleryPreviews] = useState([]);
   const navigate = useNavigate();
+  const [culture, setCulture] = useState("");
+  const [timeCommitment, setTimeCommitment] = useState("");
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -62,6 +68,14 @@ const ClubApplication = () => {
       setTagCount(tagCount + 1);
       setInterest("");
     }
+  };
+
+  const handleCultureChange = (e) => {
+    setCulture(e.target.value);
+  };
+
+  const handleTimeCommitmentChange = (e) => {
+    setTimeCommitment(e.target.value);
   };
 
   const handleDeleteInterest = (tagToDelete) => {
@@ -104,6 +118,8 @@ const ClubApplication = () => {
     });
     formData.append("name", clubName);
     formData.append("description", description);
+    formData.append("culture", culture);
+    formData.append("time_commitment", timeCommitment);
     galleryImages.forEach((image, index) => {
       formData.append(`gallery[${index}]`, image);
     });
@@ -182,6 +198,44 @@ const ClubApplication = () => {
               }}
               required
             />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Club Culture"
+              variant="filled"
+              value={culture}
+              onChange={handleCultureChange}
+              InputLabelProps={{
+                style: { color: "black", fontSize: "1.2rem" },
+              }}
+              InputProps={{
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "8px",
+                  color: "black",
+                },
+              }}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth variant="filled">
+              <InputLabel style={{ color: "black", fontSize: "1.2rem" }}>Time Commitment (per week)</InputLabel>
+              <Select
+                value={timeCommitment}
+                onChange={handleTimeCommitmentChange}
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "8px",
+                  color: "black",
+                }}
+              >
+                <MenuItem value={"1-5 hours"}>1-5 hours</MenuItem>
+                <MenuItem value={"6-10 hours"}>6-10 hours</MenuItem>
+                <MenuItem value={"11-15 hours"}>11-15 hours</MenuItem>
+                <MenuItem value={"16+ hours"}>16+ hours</MenuItem>
+              </Select>
+            </FormControl>
           </Grid>
 
           <Grid item xs={12}>
