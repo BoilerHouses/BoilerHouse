@@ -34,7 +34,7 @@ class User(models.Model):
 class Club(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.CharField(max_length=2048)
-    culture = models.CharField(max_length=2048)
+    culture = models.CharField(max_length=2048, default='')
     time_commitment = models.CharField(max_length=255, default='')
     interests = ArrayField(models.CharField(max_length=255))
     icon = models.CharField(max_length=2048, default='')
