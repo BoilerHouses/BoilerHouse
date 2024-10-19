@@ -19,6 +19,8 @@ import ManageUsers from "./routes/manageUsers";
 import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
+import Questionnaire from "./routes/createQuestionnaire";
+import Questions from "./routes/fillQuestions";
 import { AuthProvider } from "./routes/authProvider";
 import SendEmail from "./routes/sendEmail.jsx"
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
@@ -100,7 +102,15 @@ const router = createBrowserRouter([
       {
         path:"sendEmail",
         element: <SendEmail/>
-      }
+      },
+      {
+        path: "/createQuestions/:clubId",
+      element: <Questionnaire />,
+      },
+      {
+        path: "/questions/:clubId",
+      element: <Questions />,
+      },
     ],
   },
 ]);
