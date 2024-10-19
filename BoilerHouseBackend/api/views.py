@@ -550,3 +550,4 @@ def get_clubs_for_officer(request):
     if clubs.count() == 0:
         return Response({'error': 'user is not a club officer'}, status = 400)
     return Response(clubs, status=200)
+
