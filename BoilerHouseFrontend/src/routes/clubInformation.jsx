@@ -228,8 +228,20 @@ const ClubInformation = () => {
           </Typography>
 
           {/* Club Culture */}
+          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+            Culture:
+          </Typography>
+          <Typography variant="body1" gutterBottom color="black">
+            {clubData.culture || "No culture information provided."}
+          </Typography>
 
           {/* Club Time Commitment */}
+          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+            Time Commitment:
+          </Typography>
+          <Typography variant="body1" gutterBottom color="black">
+            {clubData.time_commitment || "No time commitment information provided."}
+          </Typography>
     
           {/* Interests */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
@@ -407,15 +419,23 @@ const ClubInformation = () => {
         </Button>
       </div>
 
-      {/* Club Name */}
-      <Typography variant="h3" component="h1" gutterBottom color="black">
-        {clubData.name}
+      {/* Club Culture */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Culture:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.culture || "No culture information provided."}
       </Typography>
 
-      {/* Club Description */}
-      <Typography variant="h6" gutterBottom color="black">
-        {clubData.description}
+      {/* Club Time Commitment */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Time Commitment:
       </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.time_commitment || "No time commitment information provided."}
+      </Typography>
+
+      
 
       {/* Interests */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
