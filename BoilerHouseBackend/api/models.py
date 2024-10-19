@@ -40,6 +40,7 @@ class Club(models.Model):
     is_approved = models.BooleanField(default=False)
     officers = models.ManyToManyField(User, related_name='officer_list')
     members = models.ManyToManyField(User, related_name='member_list')
+    pending_members = models.ManyToManyField(User, related_name='pending_list')
     @classmethod
     def create(cls, name, description, interests, owner, icon, gallery):
         club = cls(name=name, description=description, interests=interests, icon=icon, gallery=gallery)
