@@ -20,6 +20,7 @@ import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
 import Questionnaire from "./routes/createQuestionnaire";
+import Questions from "./routes/fillQuestions";
 import { AuthProvider } from "./routes/authProvider";
 
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
       {
         path: "/createQuestions/:clubId",
       element: <Questionnaire />,
+      },
+      {
+        path: "/questions/:clubId",
+      element: <Questions />,
       },
     ],
   },

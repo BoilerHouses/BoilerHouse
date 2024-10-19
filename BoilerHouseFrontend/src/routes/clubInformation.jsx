@@ -129,6 +129,10 @@ const ClubInformation = () => {
   };
 
   const handleJoin = (event) => {
+    if(clubData.useQuestions) {
+      navigate(`/questions/${clubId}`)
+      return;
+    }
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/club/join/`, {
@@ -196,9 +200,13 @@ const ClubInformation = () => {
                 onClick={handleApproval}>
                 Approve 
               </button>
-              <button className={(clubData.is_approved && !joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+              <button className={(clubData.is_approved && joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
                 onClick={handleJoin}>
                 Join Club 
+              </button>
+              <button className={(officer && joined && clubData.is_approved) ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600" : "hidden"  }
+                onClick={(event) => {navigate(`/createQuestions/${clubId}`)}}>
+                Edit Questionnaire 
               </button>
               <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
                 onClick={handleDeny}>

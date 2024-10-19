@@ -58,6 +58,14 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
+                to="/clubcreation"
+                className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
+              >
+                Create a Club
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
                 to="/approveClubs"
                 className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
               >

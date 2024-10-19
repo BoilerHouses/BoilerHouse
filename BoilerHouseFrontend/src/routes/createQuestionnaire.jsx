@@ -1,9 +1,32 @@
-import React, { useState } from 'react';
-import {useParams} from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import {useParams, useNavigate} from 'react-router-dom'
+import axios from "axios";
 const Questionnaire = () => {
+  const navigate = useNavigate();
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [questions, setQuestions] = useState([{ text: "What's your name?", required: false }]);
-  const [on, setOn] = useState(true);
+  const [on, setOn] = useState(false);
+
+  useEffect(() => {
+    // Fetch club information when the component loads
+    const token = localStorage.getItem("token");
+    axios
+      .get(`http://127.0.0.1:8000/api/club/questions/fetch`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          club: clubId,
+        },
+      })
+      .then((response) => {
+        setQuestions(response.data.questions)
+        setOn(response.data.on)
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the club data!", error);
+      });
+  }, [clubId]);
 
   const handleQuestionChange = (index, value) => {
     const newQuestions = [...questions];
@@ -32,12 +55,12 @@ const Questionnaire = () => {
 
   const handleSubmit = (event) => {
     const token = localStorage.getItem('token')
-    data = {
+    const data = {
         club: clubId,
         useQuestions: on,
         questions: questions
     }
-    axios.post(`http://127.0.0.1:8000/api/club/questions/save`, data, {
+    axios.post(`http://127.0.0.1:8000/api/club/questions/save/`, data, {
       headers:{
         'Authorization': token,
       },
@@ -45,7 +68,7 @@ const Questionnaire = () => {
     })
     .then((response) => {
         alert('Success!')
-      navigate(`/clubs`)
+        navigate(`/club/${clubId}`)
     })
     .catch((error) => {
       console.error("There was an error fetching the club data!", error);
@@ -89,7 +112,8 @@ const Questionnaire = () => {
       >
         + Add Question
       </button>
-      <button className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition my-5">
+      <button className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition my-5"
+        onClick={handleSubmit}>
         Submit
       </button>
       <label className="flex items-center mr-2">

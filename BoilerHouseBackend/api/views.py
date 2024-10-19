@@ -491,6 +491,7 @@ def get_club_information(request):
 
 @api_view(['POST'])
 def set_questions(request):
+    print("HI")
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
        return Response({'error': 'Invalid Auth Token'}, status=400)
@@ -519,7 +520,7 @@ def get_questions(request):
     club = Club.objects.filter(pk=request.query_params['club']).first()
     if not club:
         return Response({"error": "Club does not exist"}, status=404)
-    return Response({'questions': club.questionnaire}, status=200)
+    return Response({'questions': club.questionnaire, 'on': club.useQuestions}, status=200)
 
 
 @api_view(['GET'])
