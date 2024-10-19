@@ -200,7 +200,7 @@ const ClubInformation = () => {
                 onClick={handleApproval}>
                 Approve 
               </button>
-              <button className={(clubData.is_approved && joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+              <button className={(clubData.is_approved && !joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
                 onClick={handleJoin}>
                 Join Club 
               </button>
