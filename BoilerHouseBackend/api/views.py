@@ -537,3 +537,13 @@ def delete_user(request):
    if pair:
        pair.delete()
    return Response("success", status=200)
+
+@api_view(['GET'])
+def get_clubs_for_officer(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    clubs = user.officer_list.all().values_list('name', flat=True)
+    if clubs.count() == 0:
+        return Response({'error': 'user is not a club officer'}, status = 400)
+    return Response(clubs, status=200)
