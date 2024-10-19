@@ -48,7 +48,7 @@ class Club(models.Model):
     responses = ArrayField(models.JSONField(default=dict))
     @classmethod
     def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
-        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
+        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery, responses=[])
         club.save()
         club.officers.add(owner)
         club.members.add(owner)
