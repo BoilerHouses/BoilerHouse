@@ -43,6 +43,9 @@ class Club(models.Model):
     officers = models.ManyToManyField(User, related_name='officer_list')
     members = models.ManyToManyField(User, related_name='member_list')
     pending_members = models.ManyToManyField(User, related_name='pending_list')
+    useQuestions = models.BooleanField(default=False)
+    questionnaire = models.JSONField(default=dict)
+    responses = ArrayField(models.JSONField(default=dict))
     @classmethod
     def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
         club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
