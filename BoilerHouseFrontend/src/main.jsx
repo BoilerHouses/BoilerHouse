@@ -10,7 +10,7 @@ import VerifyAccount from "./routes/verifyAccount";
 import ActivateAccount from "./routes/activateAccount";
 import RegisterUserAdmin from "./routes/registerUserAdmin";
 import ResetPassword from "./routes/resetPassword";
-import ViewProfile from "./routes/viewProfile"
+import ViewProfile from "./routes/viewProfile";
 import EditProfile from "./routes/editProfile";
 import ClubInformation from "./routes/ClubInformation";
 import CreateProfile from "./routes/createProfile";
@@ -20,6 +20,8 @@ import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
 import { AuthProvider } from "./routes/authProvider";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
@@ -61,7 +63,7 @@ const router = createBrowserRouter([
       },
       {
         path: "/profile/:userId",
-        element: <ViewProfile/>
+        element: <ViewProfile />,
       },
       {
         path: "/edit_profile",
@@ -73,25 +75,27 @@ const router = createBrowserRouter([
       },
       {
         path: "/reset_password/:pk/:token",
-        element: <ResetPassword/> 
+        element: <ResetPassword />,
       },
       {
-        path:"/clubcreation",
-        element:<ClubCreation/>
+        path: "/clubcreation",
+        element: <ClubCreation />,
       },
       {
-        path:"/manageUsers",
-        element:<ManageUsers/>
-      },{
-        path:"/clubs",
-        element: <ViewClubs/>
-      },{
-        path:"/approveClubs",
-        element: <ViewApplications/>
+        path: "/manageUsers",
+        element: <ManageUsers />,
       },
       {
-        path:"/club/:clubId",
-        element: <ClubInformation/>
+        path: "/clubs",
+        element: <ViewClubs />,
+      },
+      {
+        path: "/approveClubs",
+        element: <ViewApplications />,
+      },
+      {
+        path: "/club/:clubId",
+        element: <ClubInformation />,
       },
       {
         path: "/availability",
@@ -102,7 +106,9 @@ const router = createBrowserRouter([
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
+  <LocalizationProvider dateAdapter={AdapterDayjs}>
     <AuthProvider>
       <RouterProvider router={router} />
     </AuthProvider>
+  </LocalizationProvider>
 );

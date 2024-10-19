@@ -24,15 +24,15 @@ function MeetingCalendar() {
   };
 
   return (
-    <div className="flex items-center justify-center">
+    <div className="flex absolute items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg min-w-52 min-h-52 p-4 relative">
-        <h1 className="text-2xl font-bold mb-4">Select Meeting Days</h1>
+        <h1 className="text-2xl font-bold mb-4">Create New Meeting</h1>
         <DatePicker
           label="Select Day of Meeting"
           defaultValue={dayjs()}
           className="mb-4"
         />
-        <TimePicker label="Basic time picker" />
+        <TimePicker label="Select Meeting Time" />
         <div className="mt-4">
           <Button
             variant="contained"

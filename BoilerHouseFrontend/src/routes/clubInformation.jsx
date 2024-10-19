@@ -1,14 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import {
-  CircularProgress,
-  Typography,
-  Box,
-  Chip,
-  Avatar,
-  Button,
-} from "@mui/material";
+import { CircularProgress, Typography, Box, Chip, Avatar } from "@mui/material";
 
 import MeetingCalendar from "./meetingCalendar";
 
@@ -46,7 +39,6 @@ const ClubInformation = () => {
         setIsLoading(false);
         setJoined(response.data.joined);
         setOfficer(response.data.officer);
-        console.log(response.data.officer);
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -182,6 +174,11 @@ const ClubInformation = () => {
       });
   };
 
+  const toggleCreateMeeting = () => {
+    const createMeeting = document.querySelector("#create-meeting-menu");
+    createMeeting.classList.toggle("hidden");
+  }
+
   if (isLoading) {
     return <CircularProgress />;
   }
@@ -219,6 +216,21 @@ const ClubInformation = () => {
         >
           Join Club
         </button>
+        <button
+          className={
+            officer
+              ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
+          onClick={toggleCreateMeeting}
+        >
+          Create Meeting
+        </button>
+
+        <div className="hidden" id="create-meeting-menu">
+          <MeetingCalendar />
+        </div>
+
         <button
           className={
             !clubData.is_approved
