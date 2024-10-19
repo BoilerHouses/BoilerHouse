@@ -486,6 +486,39 @@ def get_club_information(request):
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
+@api_view(['POST'])
+def set_questions(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'club' not in data or 'useQuestions' not in data or 'questions' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=data['club']).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    club.useQuestions = data['useQuestions']
+    club.questionnaire = data['questions']
+    club.save()
+    return Response({'questions': club.questionnaire}, status=200)
+
+@api_view(['GET'])
+def get_questions(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'club' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=request.query_params['club']).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    return Response({'questions': club.questionnaire}, status=200)
+
+
 @api_view(['GET'])
 def get_all_users(request):
    user = verify_token(request.headers.get('Authorization'))
