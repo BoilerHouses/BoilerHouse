@@ -13,6 +13,8 @@ const ClubInformation = () => {
   const navigate = useNavigate()
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [clubData, setClubData] = useState(null);
+  const [joined, setJoined] = useState(false);
+  const [officer, setOfficer] = useState(false)
   const [isLoading, setIsLoading] = useState(true);
   const defaultPhotos = ['https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg', 
                         'https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg',
@@ -23,7 +25,11 @@ const ClubInformation = () => {
                         'https://st.depositphotos.com/2001755/3622/i/450/depositphotos_36220949-stock-photo-beautiful-landscape.jpg']
   useEffect(() => {
     // Fetch club information when the component loads
+    const token = localStorage.getItem('token')
     axios.get(`http://127.0.0.1:8000/api/club/`, {
+      headers:{
+        'Authorization': token,
+      },
       params: {
         club_id: clubId
       }
@@ -32,6 +38,9 @@ const ClubInformation = () => {
       setClubData(response.data.club);
       console.log(response.data.club);
       setIsLoading(false);
+      console.log(response.data)
+      setJoined(response.data.joined)
+      setOfficer(response.data.officer)
     })
     .catch((error) => {
       console.error("There was an error fetching the club data!", error);
@@ -40,7 +49,53 @@ const ClubInformation = () => {
   }, [clubId]);
 
   const handleMemberProfile = (event) => {
+    
+    if (event.target.getAttribute('index').substring(event.target.getAttribute('index').length - 3) === '...') {
+      return;
+    }
     navigate(`/profile/${event.target.getAttribute('index')}`)
+  }
+
+  const handleMemberAdd = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/join/approval/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        user: event.target.getAttribute('index').substring(0, event.target.getAttribute('index').length - 3),
+        club: clubId,
+        approved: 'Y'
+      }
+    })
+    .then((response) => {
+      window.location.reload();
+    })
+    .catch((error) => {
+      console.error("There was an error with approval!", error);
+      setIsLoading(false);
+    });
+  }
+
+  const handleMemberDel = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/join/approval/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        user: event.target.getAttribute('index').substring(0, event.target.getAttribute('index').length - 3),
+        club: clubId,
+        approved: 'N'
+      }
+    })
+    .then((response) => {
+      window.location.reload();
+    })
+    .catch((error) => {
+      console.error("There was an error with approval!", error);
+      setIsLoading(false);
+    });
   }
 
   const handleApproval = (event) => {
@@ -62,6 +117,29 @@ const ClubInformation = () => {
     })
     .catch((error) => {
       console.error("There was an error fetching the club data!", error);
+      setIsLoading(false);
+    });
+  }
+
+  const handleJoin = (event) => {
+    const token = localStorage.getItem('token')
+    axios.get(`http://127.0.0.1:8000/api/club/join/`, {
+      headers:{
+        'Authorization': token,
+      },
+      params: {
+        club_name: clubData.name
+      }
+    })
+    .then((response) => {
+      console.log(response.data.club)
+      setClubData(response.data.club)
+      setJoined(true)
+      setIsLoading(false);
+    })
+    .catch((error) => {
+      console.error("There was an error joining club!", error);
+      alert("There was an error joining club!", error)
       setIsLoading(false);
     });
   }
@@ -107,6 +185,10 @@ const ClubInformation = () => {
             <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
                 onClick={handleApproval}>
                 Approve 
+              </button>
+              <button className={(clubData.is_approved && !joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+                onClick={handleJoin}>
+                Join Club 
               </button>
               <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
                 onClick={handleDeny}>
@@ -195,7 +277,37 @@ const ClubInformation = () => {
               </div>
             ))}
           </div>
-    
+          <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black" className={(officer && clubData.pending_members.length>0) ? 'black' : 'hidden'}>
+        Pending Members ({clubData.pending_members.length}):
+      </Typography>
+      <div className={(officer && clubData.pending_members.length>0) ? "overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2" : 'hidden'}>
+        {clubData.pending_members.map((profile, index) => (
+          <div
+            index={profile[3]}
+            key={index}
+            onClick={handleMemberProfile}
+            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
+          >
+            <img
+              index={profile[3]}
+              src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
+              className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+            />
+            <span className="ml-4 text-black font-semibold" index={profile[3]}>{profile[1]}</span>
+            <button className={"bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"}
+              index={profile[3] + '...'}
+              onClick={handleMemberAdd}>
+                Approve
+            </button>
+            <button className={"bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"}
+                index={profile[3] + '...'}
+                onClick={handleMemberDel}>
+                Deny
+            </button>
+          </div>
+        ))}
+      </div>
           {/* Photos Gallery Section */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
             Photo Gallery
@@ -230,6 +342,10 @@ const ClubInformation = () => {
             <button className={!clubData.is_approved ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
                 onClick={handleApproval}>
                 Approve 
+              </button>
+              <button className={(clubData.is_approved && !joined) ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600" : "hidden"  }
+                onClick={handleJoin}>
+                Join Club 
               </button>
               <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
                 onClick={handleDeny}>
@@ -311,6 +427,37 @@ const ClubInformation = () => {
               className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
             />
             <span className="ml-4 text-black font-semibold" index={profile[3]}>{profile[1]}</span>
+          </div>
+        ))}
+      </div>
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black" className={officer ? 'black' : 'hidden'}>
+        Pending Members ({clubData.pending_members.length}):
+      </Typography>
+      <div className={officer ? "overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2" : 'hidden'}>
+        {clubData.pending_members.map((profile, index) => (
+          <div
+            index={profile[3]}
+            key={index}
+            onClick={handleMemberProfile}
+            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            style={{ maxWidth: 'calc(100% - 8px)', overflow: 'hidden' }} // Prevent overflow
+          >
+            <img
+              index={profile[3]}
+              src={profile[2] || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS7mMNz8YCBvYmnr3BQUPX__YsC_WtDuAevwg&s'}
+              className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+            />
+            <span className="ml-4 text-black font-semibold" index={profile[3]}>{profile[1]}</span>
+            <button className={"bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"}
+              index={profile[3] + '...'}
+              onClick={handleMemberAdd}>
+                Approve
+            </button>
+            <button className={"bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"}
+                index={profile[3] + '...'}
+                onClick={handleMemberDel}>
+                Deny
+            </button>
           </div>
         ))}
       </div>

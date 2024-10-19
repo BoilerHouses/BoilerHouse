@@ -3,7 +3,7 @@ import subprocess
 def run_commands():
     try:
         subprocess.run(['python3', 'manage.py', 'migrate', 'api', 'zero'], check=True)
-        subprocess.run(['python3', 'manage.py', 'makemigrations'], check=True)        
+        subprocess.run(['python3', 'manage.py', 'makemigrations', 'api'], check=True)        
         subprocess.run(['python3', 'manage.py', 'migrate'], check=True)
         print("Commands executed successfully!")
     except subprocess.CalledProcessError as e:

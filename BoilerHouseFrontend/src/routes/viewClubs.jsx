@@ -24,8 +24,13 @@ const ViewClubs = () => {
                 approved: 'True'
               }
             });
-            setData(response.data.clubs);
-            setIsLoadingClubs(false);
+            if (response.status == 200) {
+              setData(response.data.clubs);
+              setIsLoadingClubs(false);
+            } else {
+              alert('Internal Server Error')
+            }
+
           }
         };
         fetchClubs();

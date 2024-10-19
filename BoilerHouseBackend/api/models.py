@@ -38,11 +38,15 @@ class Club(models.Model):
     icon = models.CharField(max_length=2048, default='')
     gallery = ArrayField(models.CharField(max_length=2048, default=''))
     is_approved = models.BooleanField(default=False)
-    officers = ArrayField(models.IntegerField())
-    members = ArrayField(models.IntegerField())
+    officers = models.ManyToManyField(User, related_name='officer_list')
+    members = models.ManyToManyField(User, related_name='member_list')
+    pending_members = models.ManyToManyField(User, related_name='pending_list')
     @classmethod
-    def create(cls, name, description, interests, officers, members, icon, gallery):
-        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=gallery)
+    def create(cls, name, description, interests, owner, icon, gallery):
+        club = cls(name=name, description=description, interests=interests, icon=icon, gallery=gallery)
+        club.save()
+        club.officers.add(owner)
+        club.members.add(owner)
         return club
 
 class LoginPair(models.Model):
