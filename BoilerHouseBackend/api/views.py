@@ -313,9 +313,12 @@ def save_club_information(request):
             )
             gallery_image_urls.append(f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{gallery_file_name}')
         
+        
         club = Club.create(name=data.get('name'), 
-                           description=data.get('description'), 
+                           description=data.get('description'),
                            interests=interests, 
+                           culture=data.get('culture'),
+                           time_commitment=data.get('time_commitment'),
                            owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
