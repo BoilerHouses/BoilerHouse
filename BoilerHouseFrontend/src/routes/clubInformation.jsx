@@ -233,6 +233,14 @@ const ClubInformation = () => {
           <Typography variant="body1" gutterBottom color="black">
             {clubData.culture || "No culture information provided."}
           </Typography>
+          {/* Edit Button (only for officers) */}
+          {officer && ( // Conditionally render the button
+            <Link to={`/clubs/${clubId}/edit`}> 
+              <Button variant="contained" color="primary" sx={{ mt: 4 }}>
+                Edit Info
+              </Button>
+            </Link>
+          )}
 
           {/* Club Time Commitment */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
