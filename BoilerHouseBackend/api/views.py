@@ -585,3 +585,30 @@ def get_clubs_for_officer(request):
         return Response({'error': 'user is not a club officer'}, status = 400)
     return Response(clubs, status=200)
 
+@api_view(['GET'])
+def  send_email_to_members(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    if "club_name" not in request.query_params:
+        return Response({'error': 'club_name not included'}, status=400)
+    if "subject" not in request.query_params:
+        return Response({'error':'subject not included'}, status = 400)
+    if "content" not in request.query_params:
+        return Response({'error': 'content not included'}, status=400)
+    club_name = request.query_params['club_name']
+    subject = request.query_params['subject']
+    content = request.query_params['content']
+    club = Club.objects.filter(name=club_name).first()
+    all_members = []
+    members = club.members.all().values_list('username', flat=True)
+    officers = club.officers.all().values_list('username', flat=True)
+    all_members = members + officers
+    try:
+        email = EmailMessage(subject, content, to=all_members)
+        if email.send():
+            return Response("success", status=200)
+        else:
+            return Response("error", status = 400)
+    except Exception as e:
+        return Response("error", status=400)
