@@ -601,8 +601,8 @@ def  send_email_to_members(request):
     content = request.query_params['content']
     club = Club.objects.filter(name=club_name).first()
     all_members = []
-    members = club.members.all().values_list('username', flat=True)
-    officers = club.officers.all().values_list('username', flat=True)
+    members = list(club.members.all().values_list('username', flat=True))
+    officers = list(club.officers.all().values_list('username', flat=True))
     all_members = members + officers
     try:
         email = EmailMessage(subject, content, to=all_members)

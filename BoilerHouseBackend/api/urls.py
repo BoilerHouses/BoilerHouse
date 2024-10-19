@@ -4,7 +4,7 @@ from .views import forgot_password, activate_forgot_password, edit_account
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, approve_club, join_club, set_questions, get_questions
 from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, approve_club, join_club
-from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club, get_clubs_for_officer
+from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club, get_clubs_for_officer, send_email_to_members
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
@@ -32,5 +32,6 @@ urlpatterns = [
     path('club/approve/', approve_club, name="approve_club"),
     path('club/delete/', deny_club, name="approve_club"),
     path("clubs/examples/", get_example_clubs, name="get_example_clubs"),
-    path("get_clubs_for_officer/", get_clubs_for_officer, name="get_clubs_for_officer")
+    path("get_clubs_for_officer/", get_clubs_for_officer, name="get_clubs_for_officer"),
+    path("send_email_to_members/", send_email_to_members, name="send_email_to_members")
 ]
