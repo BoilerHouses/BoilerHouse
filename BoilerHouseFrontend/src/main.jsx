@@ -20,7 +20,7 @@ import ViewClubs from "./routes/viewClubs";
 import ViewApplications from "./routes/viewApplications";
 import Availability from "./routes/availability";
 import { AuthProvider } from "./routes/authProvider";
-
+import SendEmail from "./routes/sendEmail.jsx"
 import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
 
 import "./index.css";
@@ -97,6 +97,10 @@ const router = createBrowserRouter([
         path: "/availability",
         element: <Availability />,
       },
+      {
+        path:"sendEmail",
+        element: <SendEmail/>
+      }
     ],
   },
 ]);
