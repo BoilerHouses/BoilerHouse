@@ -203,9 +203,13 @@ const ClubInformation = () => {
                 onClick={handleJoin}>
                 Join Club 
               </button>
-              <button className={(officer && joined && clubData.is_approved) ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600" : "hidden"  }
+              <button className={(officer && joined && clubData.is_approved) ? "bg-blue-500 absolute top-30 right-[15%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600" : "hidden"  }
                 onClick={(event) => {navigate(`/createQuestions/${clubId}`)}}>
                 Edit Questionnaire 
+              </button>
+              <button className={(officer && clubData.is_approved) ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600" : "hidden"  }
+                onClick={(event) => {navigate(`/club/${clubId}/edit`)}}>
+                Edit Culture and Time Commitment
               </button>
               <button className={!clubData.is_approved ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600" : "hidden"  }
                 onClick={handleDeny}>
@@ -241,14 +245,6 @@ const ClubInformation = () => {
           <Typography variant="body1" gutterBottom color="black">
             {clubData.culture || "No culture information provided."}
           </Typography>
-          {/* Edit Button (only for officers) */}
-          {officer && ( // Conditionally render the button
-            <Link to={`/clubs/${clubId}/edit`}> 
-              <Button variant="contained" color="primary" sx={{ mt: 4 }}>
-                Edit Info
-              </Button>
-            </Link>
-          )}
 
           {/* Club Time Commitment */}
           <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">

@@ -101,7 +101,7 @@ const router = createBrowserRouter([
         element: <Availability />,
       },
       {
-        path: "/edit_club",
+        path: "/club/:clubID/edit",
         element: <EditClub/>,
       },
       {
