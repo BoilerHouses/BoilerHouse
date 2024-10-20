@@ -554,7 +554,6 @@ def modify_user_to_club(request):
     return Response("Sucess!", 200)
 
 
-
 @api_view(['GET'])
 def delete_user(request):
    print(request.data)
@@ -562,7 +561,6 @@ def delete_user(request):
    if not user.is_admin:
        print("here1")
        return Response({'error': 'User is not an admin'}, status=400)
-
 
    if "username" not in request.query_params:
        return Response({'error': 'username of user not included'}, status=400)
@@ -574,3 +572,34 @@ def delete_user(request):
    if pair:
        pair.delete()
    return Response("success", status=200)
+
+@api_view(['GET'])
+# gets meeting clubs based on the club id
+def get_meeting_times(request):
+    if "clubId" not in request.query_params:
+       return Response({'error': 'missing clubId parameter'}, status=400)
+    
+    club = Club.objects.filter(pk=request.query_params['clubId']).first()
+
+    if not club:
+        return Response({'error': 'no club found with the associated clubId'}, status=400)
+
+    meetings = club.meetings
+    return Response(meetings, status=200)
+
+
+@api_view(['GET'])
+# gets meeting clubs based on the club id
+def set_meeting_times(request):
+    if "clubId" not in request.query_params or "meetings" not in request.query_params:
+       return Response({'error': 'missing  parameters'}, status=400)
+    
+    club = Club.objects.filter(pk=request.query_params['clubId']).first()
+
+    if not club:
+        return Response({'error': 'no club found with the associated clubId'}, status=400)
+    
+    club.meetings = request.query_params["meetings"]
+    club.save()
+    return Response("success", status=200)
+

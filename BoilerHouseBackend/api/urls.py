@@ -2,7 +2,7 @@ from django.urls import path
 from .views import ping, try_bucket, log_in, register_account, activate
 from .views import forgot_password, activate_forgot_password, edit_account
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, approve_club, join_club, set_questions, get_questions
-from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
+from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club, get_meeting_times, set_meeting_times
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
@@ -29,5 +29,8 @@ urlpatterns = [
     path('club/questions/fetch/', get_questions, name="get_questions"),
     path('club/approve/', approve_club, name="approve_club"),
     path('club/delete/', deny_club, name="approve_club"),
-    path("clubs/examples/", get_example_clubs, name="get_example_clubs")
+    path("clubs/examples/", get_example_clubs, name="get_example_clubs"),
+    path("clubs/getMeetingTimes/", get_meeting_times, name="get_meeting_times"),
+    path("clubs/setMeetingTimes/", set_meeting_times, name="set_meeting_times")
+
 ]
