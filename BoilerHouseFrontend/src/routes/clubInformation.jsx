@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { CircularProgress, Typography, Box, Chip, Avatar } from "@mui/material";
 
-import MeetingCalendar from "./meetingCalendar";
 
 const ClubInformation = () => {
   const navigate = useNavigate();
@@ -178,9 +177,8 @@ const ClubInformation = () => {
       });
   };
 
-  const toggleCreateMeeting = () => {
-    const createMeeting = document.querySelector("#create-meeting-menu");
-    createMeeting.classList.toggle("hidden");
+  const goToCreateMeeting = () => {
+    navigate(`/club/${clubId}/createMeeting`);
   };
 
   if (isLoading) {
@@ -223,17 +221,13 @@ const ClubInformation = () => {
         <button
           className={
             officer
-              ? "bg-green-500 absolute top-40 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              ? "bg-green-500 absolute top-20 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
               : "hidden"
           }
-          onClick={toggleCreateMeeting}
+          onClick={goToCreateMeeting}
         >
           Create Meeting
         </button>
-
-        <div className="hidden" id="create-meeting-menu">
-          <MeetingCalendar />
-        </div>
 
         <button
           className={

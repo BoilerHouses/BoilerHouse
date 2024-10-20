@@ -22,11 +22,13 @@ import Availability from "./routes/availability";
 import EditClub from "./routes/editClub";
 import Questionnaire from "./routes/createQuestionnaire";
 import Questions from "./routes/fillQuestions";
+import CreateMeeting from "./routes/createMeeting";
+
 import { AuthProvider } from "./routes/authProvider";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
-import { createBrowserRouter, RouterProvider, Router } from "react-router-dom";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 import "./index.css";
 
@@ -99,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: "/club/:clubId",
         element: <ClubInformation />,
+      },
+      {
+        path: "/club/:clubId/createMeeting",
+        element: <CreateMeeting />,
       },
       {
         path: "/availability",
