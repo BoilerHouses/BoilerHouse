@@ -135,7 +135,7 @@ function CreateMeeting() {
       })
         // success
         .then((res) => {
-          let meetings = [];
+          let meetings = res.data;
           if (res.data.length > 0) {
             meetings.forEach((item) => {
               max_id = Math.max(max_id, parseInt(item.id));
@@ -167,7 +167,6 @@ function CreateMeeting() {
           meetings = meetings.concat(newMeetings);
 
           meetings = JSON.stringify(meetings);
-
           axios({
             url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
             method: "GET",
