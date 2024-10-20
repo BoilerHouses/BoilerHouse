@@ -104,7 +104,7 @@ function CreateMeeting() {
       const meetingDays = [];
 
       if (isOneTimeMeeting) {
-        meetingDays.push(startDate.format("YYYY-MM-DD"));
+        meetingDays.push(startDate.format("MMM-DD-YYYY"));
       } else {
         const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const mappedDays = dayOrder.map((day) => (checkedDays[day] ? 1 : 0));
@@ -114,7 +114,7 @@ function CreateMeeting() {
 
         while (cur.isBefore(end) || cur.isSame(end, "day")) {
           if (mappedDays[cur.day()] == 1) {
-            meetingDays.push(cur.format("YYYY-MM-DD"));
+            meetingDays.push(cur.format("MMM-DD-YYYY"));
           }
           cur = cur.add(1, "day");
         }
@@ -135,10 +135,12 @@ function CreateMeeting() {
       })
         // success
         .then((res) => {
-          let meetings = JSON.parse(res.data);
-          meetings.forEach((item) => {
-            max_id = Math.max(max_id, parseInt(item.id));
-          });
+          let meetings = [];
+          if (res.data.length > 0) {
+            meetings.forEach((item) => {
+              max_id = Math.max(max_id, parseInt(item.id));
+            });
+          }
 
           let start_id = max_id + 1;
 
@@ -155,14 +157,15 @@ function CreateMeeting() {
               meetingLocation: meetingLocation,
               meetingAgenda: meetingAgenda,
               date: day,
-              startTime: startTime.format("HH:mm"),
-              endTime: endTime.format("HH:mm"),
+              startTime: startTime.format("hh:mm a"),
+              endTime: endTime.format("hh:mm a"),
             };
             newMeetings.push(newMeeting);
             start_id += 1;
           });
           setNumMeetingsCreated(newMeetings.length);
           meetings = meetings.concat(newMeetings);
+
           meetings = JSON.stringify(meetings);
 
           axios({
@@ -216,7 +219,10 @@ function CreateMeeting() {
   };
 
   const validateDateRange = () => {
-    if (endDate.isBefore(startDate, "day") || startDate.isBefore(dayjs(), "day")) {
+    if (
+      endDate.isBefore(startDate, "day") ||
+      startDate.isBefore(dayjs(), "day")
+    ) {
       setDayError(true);
     } else {
       setDayError(false);

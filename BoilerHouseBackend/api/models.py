@@ -46,7 +46,7 @@ class Club(models.Model):
     useQuestions = models.BooleanField(default=False)
     questionnaire = models.JSONField(default=dict)
     responses = ArrayField(models.JSONField(default=dict), default = list)
-    meetings = models.JSONField(default=dict)
+    meetings = ArrayField(models.JSONField(default=dict), default = list)
 
     @classmethod
     def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):

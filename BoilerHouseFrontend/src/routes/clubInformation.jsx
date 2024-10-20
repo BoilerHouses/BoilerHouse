@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { CircularProgress, Typography, Box, Chip, Avatar } from "@mui/material";
-
+import {
+  CircularProgress,
+  Typography,
+  Box,
+  Chip,
+  Avatar,
+  Card,
+  CardContent,
+} from "@mui/material";
 
 const ClubInformation = () => {
   const navigate = useNavigate();
@@ -11,6 +18,8 @@ const ClubInformation = () => {
   const [joined, setJoined] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [meetings, setMeetings] = useState([]);
+  const [getMeetingError, setGetMeetingError] = useState(false);
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
     "https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg",
@@ -42,6 +51,28 @@ const ClubInformation = () => {
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
+      });
+
+    axios({
+      // create account endpoint
+      url: "http://127.0.0.1:8000/api/clubs/getMeetingTimes/",
+      method: "GET",
+
+      // params
+      params: {
+        clubId: clubId,
+      },
+    })
+      .then((response) => {
+
+        const data = response.data;
+        if (data.length >= 0) {
+          setMeetings(response.data);
+        }
+      })
+      .catch((error) => {
+        console.error("There was an error fetching meetings!", error);
+        setGetMeetingError(true);
       });
   }, [clubId]);
 
@@ -116,7 +147,6 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.club);
         setClubData(response.data.club);
         setIsLoading(false);
         alert("success");
@@ -193,8 +223,8 @@ const ClubInformation = () => {
     <Box
       sx={{
         padding: 4,
-        backgroundColor: "#d0d8da", // Darker light gray background
-        minHeight: "100vh", // Full height to cover the page
+        backgroundColor: "#d0d8da", 
+        minHeight: "100vh",
       }}
     >
       <div className="relative">
@@ -266,6 +296,53 @@ const ClubInformation = () => {
           Deny
         </button>
       </div>
+
+      {/* list of meetings*/}
+      <Box
+        className="w-1/3 absolute right-0 h-[400px] overflow-y-scroll mr-12 mt-32"
+        sx={{
+          border: "1px solid #ddd",
+          borderRadius: "8px",
+          padding: "16px",
+          backgroundColor: "#f9f9f9", // Light background for better contrast
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Subtle shadow
+        }}
+      >
+        <Typography variant="h6">List of Meetings</Typography>
+        {getMeetingError ? (
+          <Typography>
+            An error occurred while fetching meetings. Please try again later.
+          </Typography>
+        ) : meetings.length === 0 ? (
+          <Typography>No meetings to display</Typography>
+        ) : (
+          meetings.map((meeting) => (
+            <Card
+              key={meeting.id}
+              className="mb-4 bg-white shadow-md hover:shadow-lg transition-shadow"
+              sx={{ padding: "2px", borderRadius: "8px" }}
+            >
+              <CardContent>
+                <Typography variant="h6" component="div">
+                  {meeting.meetingName}
+                </Typography>
+                <Typography color="textSecondary" gutterBottom>
+                  {meeting.meetingLocation}
+                </Typography>
+                <Typography color="textSecondary" gutterBottom>
+                  {meeting.date} {meeting.startTime}-{meeting.endTime}
+                </Typography>
+                <Typography color="textSecondary" gutterBottom>
+                  {meeting.meetingAgenda}
+                </Typography>
+                <Typography variant="body2">
+                  Meeting ID: {meeting.id}
+                </Typography>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </Box>
       {/* Club Icon */}
       <Avatar
         src={clubData.icon}

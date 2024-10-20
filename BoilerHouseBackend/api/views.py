@@ -592,7 +592,8 @@ def set_meeting_times(request):
     if not club:
         return Response({'error': 'no club found with the associated clubId'}, status=400)
     
-    club.meetings = request.query_params["meetings"]
+    meetings_data = json.loads(request.query_params["meetings"])
+    club.meetings = meetings_data
     club.save()
     return Response("success", status=200)
 
