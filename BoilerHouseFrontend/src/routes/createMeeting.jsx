@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Button, Box, Alert } from "@mui/material";
+import { Button, Box, Alert, CircularProgress } from "@mui/material";
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
+import axios from "axios";
 
 import {
   Card,
@@ -12,18 +13,19 @@ import {
   FormGroup,
 } from "@mui/material";
 import { useParams } from "react-router-dom";
-import axios from "axios";
 import dayjs from "dayjs";
+
+import { NavLink } from "react-router-dom";
 
 function CreateMeeting() {
   const today = dayjs();
   const oneMonth = dayjs().add(31, "day");
-
   const sixPM = dayjs().hour(18).minute(0);
 
   const [meetingName, setMeetingName] = useState("");
   const [meetingLocation, setMeetingLocation] = useState("");
   const [meetingAgenda, setMeetingAgenda] = useState("");
+  const [numMeetingsCreated, setNumMeetingsCreated] = useState(0);
 
   const [isLoading, setIsLoading] = useState(false);
   const [officer, setOfficer] = useState(false);
@@ -43,9 +45,11 @@ function CreateMeeting() {
     Sat: false,
   });
 
-  const [error, setError] = useState(false);
-
+  const [dayError, setDayError] = useState(false);
+  const [timeError, setTimeError] = useState(false);
   const { clubId } = useParams();
+
+  const [isLoadingButton, setIsLoadingButton] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -71,10 +75,24 @@ function CreateMeeting() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (error) {
-      alert("Fix the errors before submitting.");
+
+    const serverAlert = document.querySelector("#server-error-alert");
+    serverAlert.classList.add("hidden");
+
+    const successAlert = document.querySelector("#success-alert");
+    successAlert.classList.add("hidden");
+
+    if (
+      startDate.format("YYYY-MM-DD") === "Invalid Date" ||
+      startTime.format("YYYY-MM-DD") === "Invalid Date" ||
+      endTime.format("HH:mm") === "Invalid Date" ||
+      (!isOneTimeMeeting && endDate.format("HH:mm") === "Invalid Date") ||
+      dayError ||
+      timeError
+    ) {
       return;
     }
+
     const allUnchecked = Object.values(checkedDays).every(
       (value) => value === false
     );
@@ -84,18 +102,6 @@ function CreateMeeting() {
       daySelectAlert.classList.remove("hidden");
     } else {
       const meetingDays = [];
-
-      // console.log(
-      //   meetingName,
-      //   meetingLocation,
-      //   meetingAgenda,
-      //   startDate.format("YYYY-MM-DD"),
-      //   endDate.format("YYYY-MM-DD"),
-      //   startTime.format("HH:mm"),
-      //   endTime.format("HH:mm"),
-      //   checkedDays,
-      //   isOneTimeMeeting
-      // );
 
       if (isOneTimeMeeting) {
         meetingDays.push(startDate.format("YYYY-MM-DD"));
@@ -114,9 +120,85 @@ function CreateMeeting() {
         }
       }
 
+      let max_id = 0;
 
-      console.log(meetingDays)
-      alert(`created ${meetingDays.length} meetings`)
+      setIsLoadingButton(true);
+      axios({
+        // create account endpoint
+        url: "http://127.0.0.1:8000/api/clubs/getMeetingTimes/",
+        method: "GET",
+
+        // params
+        params: {
+          clubId: clubId,
+        },
+      })
+        // success
+        .then((res) => {
+          let meetings = JSON.parse(res.data);
+          console.log(meetings);
+          meetings.forEach((item) => {
+            max_id = Math.max(max_id, parseInt(item.id));
+          });
+
+          let start_id = max_id + 1;
+
+          if (isNaN(start_id)) {
+            start_id = 1;
+          }
+
+          let newMeetings = [];
+
+          meetingDays.forEach((day) => {
+            let newMeeting = {
+              id: start_id,
+              meetingName: meetingName,
+              meetingLocation: meetingLocation,
+              meetingAgenda: meetingAgenda,
+              date: day,
+              startTime: startTime.format("HH:mm"),
+              endTime: endTime.format("HH:mm"),
+            };
+            newMeetings.push(newMeeting);
+            start_id += 1;
+          });
+          setNumMeetingsCreated(newMeetings.length);
+          meetings = meetings.concat(newMeetings);
+          meetings = JSON.stringify(meetings);
+
+          axios({
+            url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
+            method: "GET",
+
+            // params
+            params: {
+              clubId: clubId,
+              meetings: meetings,
+            },
+          })
+            // success
+            .then(() => {
+              setIsLoadingButton(false);
+              const successAlert = document.querySelector("#success-alert");
+              successAlert.classList.remove("hidden");
+            })
+
+            // Catch errors if any
+            .catch((err) => {
+              setIsLoadingButton(false);
+              console.log(err);
+              const serverAlert = document.querySelector("#server-error-alert");
+              serverAlert.classList.remove("hidden");
+            });
+        })
+
+        // Catch errors if any
+        .catch((err) => {
+          setIsLoadingButton(false);
+          console.log(err);
+          const serverAlert = document.querySelector("#server-error-alert");
+          serverAlert.classList.remove("hidden");
+        });
     }
   };
 
@@ -135,20 +217,36 @@ function CreateMeeting() {
   };
 
   const validateDateRange = () => {
-    if (endDate.isBefore(startDate)) {
-      setError(true);
+    if (endDate.isBefore(startDate, "day") || startDate.isBefore(dayjs(), "day")) {
+      setDayError(true);
     } else {
-      setError(false);
+      setDayError(false);
     }
   };
 
   const validateTimeRange = () => {
     if (endTime.isBefore(startTime)) {
-      setError(true);
+      setTimeError(true);
     } else {
-      setError(false);
+      setTimeError(false);
     }
   };
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [startTime]);
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [endTime]);
+
+  useEffect(() => {
+    validateDateRange();
+  }, [startDate]);
+
+  useEffect(() => {
+    validateDateRange();
+  }, [endDate]);
 
   const handleStartDateChange = (newValue) => {
     setStartDate(newValue);
@@ -268,6 +366,7 @@ function CreateMeeting() {
                 label="Select Day of Meeting"
                 required
                 disablePast
+                onChange={handleStartDateChange}
                 defaultValue={today}
                 className="mb-4"
               />
@@ -393,6 +492,17 @@ function CreateMeeting() {
               </Alert>
             </div>
 
+            <div id="success-alert" className="hidden">
+              <Alert severity="success">
+                Created {numMeetingsCreated} new meeting(s).{" "}
+                <NavLink to={`/club/${clubId}`}>
+                  <span className="text-blue-500 underline">
+                    Back to club homepage
+                  </span>
+                </NavLink>
+              </Alert>
+            </div>
+
             <div className="mt-4">
               <Button
                 type="submit"
@@ -400,8 +510,13 @@ function CreateMeeting() {
                 color="primary"
                 fullWidth
                 className="bg-blue-500 hover:bg-blue-600"
+                disabled={isLoadingButton}
               >
-                Create Meeting
+                {isLoadingButton ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Create Meeting"
+                )}
               </Button>
             </div>
           </form>
