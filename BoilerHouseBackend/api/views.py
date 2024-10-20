@@ -523,6 +523,40 @@ def get_questions(request):
     return Response({'questions': club.questionnaire, 'on': club.useQuestions}, status=200)
 
 
+@api_view(['POST'])
+def set_answers(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'club' not in data or 'response' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=data['club']).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    club.responses[user.username] = data['response']
+    club.save()
+    return Response('Sucess!', status=200)
+
+@api_view(['GET'])
+def get_answers(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'club' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=request.query_params['club']).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if user.username in club.responses:
+        return Response(club.responses[user.username] , status=200)
+    else:
+        return Response([], status=200)
+
 @api_view(['GET'])
 def get_all_users(request):
    user = verify_token(request.headers.get('Authorization'))
@@ -548,6 +582,7 @@ def modify_user_to_club(request):
         return Response({"error": "User or Club does not exist"}, status=404)
     member = User.objects.filter(username=request.query_params['user']).first()
     club.pending_members.remove(member)
+    club.responses.pop(member.username, None)
     if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
         club.members.add(member)
     club.save()

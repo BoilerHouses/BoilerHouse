@@ -3,6 +3,7 @@ from .views import ping, try_bucket, log_in, register_account, activate
 from .views import forgot_password, activate_forgot_password, edit_account
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, approve_club, join_club, set_questions, get_questions
 from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
+from .views import set_answers, get_answers
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
@@ -27,6 +28,8 @@ urlpatterns = [
     path('club/join/approval/', modify_user_to_club, name="modify_user_club"),
     path('club/questions/save/', set_questions, name="set_questions"),
     path('club/questions/fetch/', get_questions, name="get_questions"),
+    path('clubs/responses/add/', set_answers, name='answers'),
+    path('clubs/responses/fetch/', get_answers, name='get_answers'),
     path('club/approve/', approve_club, name="approve_club"),
     path('club/delete/', deny_club, name="approve_club"),
     path("clubs/examples/", get_example_clubs, name="get_example_clubs")

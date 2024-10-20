@@ -6,9 +6,12 @@ const Questions = ({ questions }) => {
   const { clubId } = useParams();
   const [answers, setAnswers] = useState({});
   const [questionSet, setQuestionSet] = useState([]);
+  const [pairSet, setPairSet] = useState([]);
 
   const handleChange = (index, value) => {
     setAnswers((prev) => ({ ...prev, [index]: value }));
+    let a = pairSet
+    setPairSet(a[index].answer = value)
   };
 
   useEffect(() => {
@@ -25,6 +28,11 @@ const Questions = ({ questions }) => {
       })
       .then((response) => {
         setQuestionSet(response.data.questions)
+        let pairSet = []
+        response.data.questions.array.forEach(element => {
+            pairSet.push({question: element, answer: ''})
+        });
+        setPairSet(pairSet)
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -41,7 +49,9 @@ const Questions = ({ questions }) => {
     } else {
       alert("Form submitted!");
       console.log(answers);
+      console.log(pairSet)
     }
+    
   };
 
   return (

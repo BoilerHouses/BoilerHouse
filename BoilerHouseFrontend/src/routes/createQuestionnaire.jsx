@@ -20,8 +20,12 @@ const Questionnaire = () => {
         },
       })
       .then((response) => {
-        setQuestions(response.data.questions)
-        setOn(response.data.on)
+        console.log(response.data)
+        if (Array.isArray(response.data.questions)){
+            setQuestions(response.data.questions)
+            setOn(response.data.on)
+        }
+        
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
