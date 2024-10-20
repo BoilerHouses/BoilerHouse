@@ -136,7 +136,6 @@ function CreateMeeting() {
         // success
         .then((res) => {
           let meetings = JSON.parse(res.data);
-          console.log(meetings);
           meetings.forEach((item) => {
             max_id = Math.max(max_id, parseInt(item.id));
           });

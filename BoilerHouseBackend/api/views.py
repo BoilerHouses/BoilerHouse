@@ -322,10 +322,8 @@ def save_club_information(request):
                            owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
-        #club.gallery = gallery_image_urls 
-        # print("debug")
+
         club.save()
-        #print(model_to_dict(club))
         ret_club = model_to_dict(club)
         ret_club['officers'] = [model_to_dict(x) for x in ret_club['officers']]
         ret_club['members'] = [model_to_dict(x) for x in ret_club['members']]
@@ -483,15 +481,12 @@ def get_club_information(request):
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
-        print(ret_club)
-        print(inClub, isOfficer)
         return Response({'club': ret_club, "joined": inClub, "officer": isOfficer}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
 @api_view(['POST'])
 def set_questions(request):
-    print("HI")
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
        return Response({'error': 'Invalid Auth Token'}, status=400)
@@ -556,10 +551,8 @@ def modify_user_to_club(request):
 
 @api_view(['GET'])
 def delete_user(request):
-   print(request.data)
    user = verify_token(request.headers.get('Authorization'))
    if not user.is_admin:
-       print("here1")
        return Response({'error': 'User is not an admin'}, status=400)
 
    if "username" not in request.query_params:
