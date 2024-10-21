@@ -157,8 +157,8 @@ function CreateMeeting() {
               meetingLocation: meetingLocation,
               meetingAgenda: meetingAgenda,
               date: day,
-              startTime: startTime.format("hh:mm a"),
-              endTime: endTime.format("hh:mm a"),
+              startTime: startTime.format("h:mm a"),
+              endTime: endTime.format("h:mm a"),
             };
             newMeetings.push(newMeeting);
             start_id += 1;

@@ -64,10 +64,35 @@ const ClubInformation = () => {
       },
     })
       .then((response) => {
-
         const data = response.data;
         if (data.length >= 0) {
-          setMeetings(response.data);
+          let meetings = response.data;
+
+          meetings.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+
+            if (dateA.getTime() !== dateB.getTime()) {
+              return dateA - dateB;
+            }
+            const timeA = new Date(`${a.date} ${a.time}`);
+            const timeB = new Date(`${b.date} ${b.time}`);
+            if (timeA.getTime() !== timeB.getTime()) {
+              return dateA - dateB;
+            }
+            return a.id - b.id;
+          });
+
+          console.log(meetings)
+
+          let startInd = 1;
+          for (let i = startInd; i < meetings.length; i++) {
+            if (new Date(meetings[i].date) < new Date()) {
+              startInd++;
+            }
+          }
+          meetings = meetings.slice(startInd - 1);
+          setMeetings(meetings);
         }
       })
       .catch((error) => {
@@ -75,13 +100,6 @@ const ClubInformation = () => {
         setGetMeetingError(true);
       });
   }, [clubId]);
-
-  const fetchGallery = () => {
-    if (clubData.gallery.length == 0) {
-      return defaultPhotos
-    }
-    return clubData.gallery
-  }
 
   const handleMemberProfile = (event) => {
     if (
@@ -181,7 +199,6 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.club);
         setClubData(response.data.club);
         setJoined(true);
         setIsLoading(false);
@@ -230,7 +247,7 @@ const ClubInformation = () => {
     <Box
       sx={{
         padding: 4,
-        backgroundColor: "#d0d8da", 
+        backgroundColor: "#d0d8da",
         minHeight: "100vh",
       }}
     >
@@ -311,8 +328,8 @@ const ClubInformation = () => {
           border: "1px solid #ddd",
           borderRadius: "8px",
           padding: "16px",
-          backgroundColor: "#f9f9f9", // Light background for better contrast
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Subtle shadow
+          backgroundColor: "#f9f9f9",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
         <Typography variant="h6">List of Meetings</Typography>
@@ -337,7 +354,7 @@ const ClubInformation = () => {
                   {meeting.meetingLocation}
                 </Typography>
                 <Typography color="textSecondary" gutterBottom>
-                  {meeting.date} {meeting.startTime}-{meeting.endTime}
+                  {meeting.date} {meeting.startTime} - {meeting.endTime}
                 </Typography>
                 <Typography color="textSecondary" gutterBottom>
                   {meeting.meetingAgenda}
@@ -520,10 +537,14 @@ const ClubInformation = () => {
             </button>
             <button
               className={
-                profile[4] ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300" : 'hidden'
+                profile[4]
+                  ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300"
+                  : "hidden"
               }
               index={profile[3] + "..."}
-              onClick={() => {navigate(`/answers/${clubId}/${profile[3]}`)}}
+              onClick={() => {
+                navigate(`/answers/${clubId}/${profile[3]}`);
+              }}
             >
               View Questionnaire Answers
             </button>
