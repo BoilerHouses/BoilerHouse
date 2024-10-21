@@ -17,6 +17,7 @@ import {
   DialogActions,
   Button,
   TextField,
+  Alert,
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -45,6 +46,8 @@ const ClubInformation = () => {
   const [meetingName, setMeetingName] = useState("");
   const [meetingLocation, setMeetingLocation] = useState("");
   const [meetingAgenda, setMeetingAgenda] = useState("");
+  const [isLoadingEditMeeting, setIsLoadingEditMeeting] = useState(false);
+  const [isLoadingDeleteMeeting, setIsLoadingDeleteMeeting] = useState(false);
 
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
@@ -276,8 +279,125 @@ const ClubInformation = () => {
 
   const handleUpdateMeeting = (e) => {
     e.preventDefault();
-    console.log(meetings);
-    console.log(selectedMeeting);
+
+    if (timeError) {
+      return;
+    }
+
+    // create new meeting object and replace the old one
+    const newMeeting = {
+      id: selectedMeeting.id,
+      meetingName: meetingName,
+      meetingLocation: meetingLocation,
+      meetingAgenda: meetingAgenda,
+      date: startDate.format("MM/DD/YY"),
+      startTime: startTime.format("h:mm a"),
+      endTime: endTime.format("h:mm a"),
+    };
+
+    const index = meetings.findIndex((meeting) => meeting.id === newMeeting.id);
+    if (index !== -1) {
+      meetings[index] = newMeeting;
+    }
+
+    let newMeetings = JSON.stringify(meetings);
+
+    setIsLoadingEditMeeting(true);
+    axios({
+      url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
+      method: "GET",
+
+      // params
+      params: {
+        clubId: clubId,
+        meetings: newMeetings,
+      },
+    })
+      // success
+      .then(() => {
+        setIsLoadingEditMeeting(false);
+
+        // resort the meetings
+        meetings.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          const timeA = new Date(`${a.date} ${a.time}`);
+          const timeB = new Date(`${b.date} ${b.time}`);
+          if (timeA.getTime() !== timeB.getTime()) {
+            return dateA - dateB;
+          }
+          return a.id - b.id;
+        });
+
+        closeEditMeeting();
+      })
+
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoadingEditMeeting(false);
+        console.log(err);
+        const serverAlert = document.querySelector("#server-error-alert");
+        serverAlert.classList.remove("hidden");
+      });
+  };
+
+  // delete a meeting
+  const deleteMeeting = () => {
+    const index = meetings.findIndex(
+      (meeting) => meeting.id === selectedMeeting.id
+    );
+    if (index == -1) {
+      return;
+    }
+
+    meetings.splice(index, 1);
+    let newMeetings = JSON.stringify(meetings);
+
+    setIsLoadingDeleteMeeting(true);
+    axios({
+      url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
+      method: "GET",
+
+      // params
+      params: {
+        clubId: clubId,
+        meetings: newMeetings,
+      },
+    })
+      // success
+      .then(() => {
+        setIsLoadingDeleteMeeting(false);
+
+        // resort the meetings
+        meetings.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          const timeA = new Date(`${a.date} ${a.time}`);
+          const timeB = new Date(`${b.date} ${b.time}`);
+          if (timeA.getTime() !== timeB.getTime()) {
+            return dateA - dateB;
+          }
+          return a.id - b.id;
+        });
+
+        closeEditMeeting();
+      })
+
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoadingDeleteMeeting(false);
+        console.log(err);
+        const serverAlert = document.querySelector("#server-error-alert");
+        serverAlert.classList.remove("hidden");
+      });
   };
 
   const handleMeetingNameChange = (event) => {
@@ -469,11 +589,15 @@ const ClubInformation = () => {
         </DialogContent>
         <DialogActions>
           <div className={officer ? "" : "hidden"}>
-            <Button color="primary" onClick={openEditMeeting}>
+            <Button
+              color="primary"
+              onClick={openEditMeeting}
+              variant="contained"
+            >
               Edit
             </Button>
           </div>
-          <Button onClick={handleClose} color="primary">
+          <Button onClick={handleClose} color="primary" variant="contained">
             Close
           </Button>
         </DialogActions>
@@ -481,7 +605,7 @@ const ClubInformation = () => {
 
       {/* edit meeting info*/}
       <Dialog open={editMeeting} onClose={closeEditMeeting}>
-        <Card className="w-full max-w-md">
+        <Card className="w-full">
           <CardContent>
             <Typography
               variant="h5"
@@ -540,12 +664,37 @@ const ClubInformation = () => {
                 minTime={startTime}
                 onChange={handleEndTimeChange}
               />
+
+              <div id="server-error-alert" className="hidden">
+                <Alert severity="error">
+                  A server error occurred. Please try again later.
+                </Alert>
+              </div>
+
               <div className="flex items-center justify-center">
-                <Button color="error">Delete Meeting</Button>
-                <Button type="submit" color="primary">
-                  Confirm Update
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={deleteMeeting}
+                >
+                  {isLoadingDeleteMeeting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Delete Meeting"
+                  )}
                 </Button>
-                <Button onClick={closeEditMeeting} color="primary">
+                <Button type="submit" color="primary" variant="contained">
+                  {isLoadingEditMeeting ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : (
+                    "Confirm Edits"
+                  )}
+                </Button>
+                <Button
+                  onClick={closeEditMeeting}
+                  color="primary"
+                  variant="contained"
+                >
                   Cancel
                 </Button>
               </div>
@@ -738,8 +887,8 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-      {/* Photos Gallery Section */}
 
+      {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
           Photo Gallery

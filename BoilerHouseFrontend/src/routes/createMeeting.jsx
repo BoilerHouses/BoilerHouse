@@ -104,7 +104,7 @@ function CreateMeeting() {
       const meetingDays = [];
 
       if (isOneTimeMeeting) {
-        meetingDays.push(startDate.format("MMM-DD-YYYY"));
+        meetingDays.push(startDate.format("MM/DD/YY"));
       } else {
         const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const mappedDays = dayOrder.map((day) => (checkedDays[day] ? 1 : 0));
