@@ -70,10 +70,9 @@ const EditClub = () => {
 
       if (response.status === 200) {
         setIsLoading(false);
-        navigate(`/clubs/${clubId}`);
+        navigate(`/club/${clubId}`);
       } else {
         setIsLoading(false);
-        // Handle error responses from the server
         console.error("Server error:", response.data);
         alert("Error updating club information: " + response.data.error); 
       }
