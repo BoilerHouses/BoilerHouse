@@ -6,9 +6,13 @@ const Questions = ({ questions }) => {
   const { clubId } = useParams();
   const [answers, setAnswers] = useState({});
   const [questionSet, setQuestionSet] = useState([]);
+  const [pairSet, setPairSet] = useState([]);
 
   const handleChange = (index, value) => {
     setAnswers((prev) => ({ ...prev, [index]: value }));
+    let a = pairSet
+    a[index].answer = value
+    setPairSet(a)
   };
 
   useEffect(() => {
@@ -25,23 +29,38 @@ const Questions = ({ questions }) => {
       })
       .then((response) => {
         setQuestionSet(response.data.questions)
+        let pairSet = []
+        response.data.questions.forEach(element => {
+            pairSet.push({question: element.text, answer: ''})
+        });
+        setPairSet(pairSet)
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!")
       });
   }, [clubId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const requiredQuestions = questions.filter((q) => q.required);
-    const emptyRequired = requiredQuestions.some((q, index) => !answers[index]);
-
-    if (emptyRequired) {
-      alert("Please answer all required questions.");
-    } else {
-      alert("Form submitted!");
-      console.log(answers);
+    console.log(pairSet)
+    const data = {
+        club: clubId,
+        response: pairSet
     }
+    const token = localStorage.getItem("token");
+
+    axios.post(`http://127.0.0.1:8000/api/clubs/responses/add/`, data, {
+        headers: {
+            Authorization: token,
+          }
+    }).then((response) => {
+        navigate(`/club/${clubId}`)
+      })
+      .catch((error) => {
+        alert("There was an error saving your responses!")
+      });
+    
   };
 
   return (

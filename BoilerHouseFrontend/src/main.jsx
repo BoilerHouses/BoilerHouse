@@ -23,7 +23,7 @@ import EditClub from "./routes/editClub";
 import Questionnaire from "./routes/createQuestionnaire";
 import Questions from "./routes/fillQuestions";
 import CreateMeeting from "./routes/createMeeting";
-
+import Answers from "./routes/viewAnswers";
 import { AuthProvider } from "./routes/authProvider";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -105,6 +105,10 @@ const router = createBrowserRouter([
       {
         path: "/club/:clubId/createMeeting",
         element: <CreateMeeting />,
+      },
+      {
+        path: "/answers/:clubId/:username",
+        element: <Answers />,
       },
       {
         path: "/availability",

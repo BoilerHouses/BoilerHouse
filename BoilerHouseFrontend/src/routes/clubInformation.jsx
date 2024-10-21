@@ -76,6 +76,13 @@ const ClubInformation = () => {
       });
   }, [clubId]);
 
+  const fetchGallery = () => {
+    if (clubData.gallery.length == 0) {
+      return defaultPhotos
+    }
+    return clubData.gallery
+  }
+
   const handleMemberProfile = (event) => {
     if (
       event.target
@@ -470,7 +477,7 @@ const ClubInformation = () => {
       <div
         className={
           officer && clubData.pending_members.length > 0
-            ? "overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2"
+            ? "overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2"
             : "hidden"
         }
       >
@@ -510,6 +517,15 @@ const ClubInformation = () => {
               onClick={handleMemberDel}
             >
               Deny
+            </button>
+            <button
+              className={
+                profile[4] ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300" : 'hidden'
+              }
+              index={profile[3] + "..."}
+              onClick={() => {navigate(`/answers/${clubId}/${profile[3]}`)}}
+            >
+              View Questionnaire Answers
             </button>
           </div>
         ))}
