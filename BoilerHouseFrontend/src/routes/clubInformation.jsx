@@ -538,14 +538,16 @@ const ClubInformation = () => {
                 minTime={startTime}
                 onChange={handleEndTimeChange}
               />
+              <div className="flex items-center justify-center">
+                <Button color="error">Delete Meeting</Button>
+                <Button type="submit" color="primary">
+                  Confirm Update
+                </Button>
+                <Button onClick={closeEditMeeting} color="primary">
+                  Close
+                </Button>
+              </div>
             </form>
-            <DialogActions>
-              <Button color="error">Delete Meeting</Button>
-              <Button color="primary">Confirm Update</Button>
-              <Button onClick={closeEditMeeting} color="primary">
-                Close
-              </Button>
-            </DialogActions>
           </CardContent>
         </Card>
       </Dialog>
