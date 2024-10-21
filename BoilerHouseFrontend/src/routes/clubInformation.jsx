@@ -34,6 +34,8 @@ const ClubInformation = () => {
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+  const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
 
@@ -258,6 +260,7 @@ const ClubInformation = () => {
   };
 
   const handleCardClick = (meeting) => {
+    setMeetingMenu(true);
     setSelectedMeeting(meeting);
     setMeetingName(meeting.meetingName);
     setMeetingLocation(meeting.meetingLocation);
@@ -268,11 +271,13 @@ const ClubInformation = () => {
   };
 
   const handleClose = () => {
-    setSelectedMeeting(null);
+    setMeetingMenu(false);
   };
 
   const handleUpdateMeeting = (e) => {
     e.preventDefault();
+    console.log(meetings);
+    console.log(selectedMeeting);
   };
 
   const handleMeetingNameChange = (event) => {
@@ -451,7 +456,7 @@ const ClubInformation = () => {
       </Box>
 
       {/* view meeting info*/}
-      <Dialog open={!!selectedMeeting} onClose={handleClose}>
+      <Dialog open={meetingMenu} onClose={handleClose}>
         <DialogTitle>{selectedMeeting?.meetingName}</DialogTitle>
         <DialogContent>
           <Typography>Location: {selectedMeeting?.meetingLocation}</Typography>
@@ -490,7 +495,6 @@ const ClubInformation = () => {
                 fullWidth
                 required
                 value={meetingName}
-                defaultValue={selectedMeeting?.meetingName}
                 label="Meeting Name"
                 name="Meeting Name"
                 onChange={handleMeetingNameChange}
@@ -499,7 +503,6 @@ const ClubInformation = () => {
               <TextField
                 fullWidth
                 required
-                defaultValue={selectedMeeting?.meetingLocation}
                 value={meetingLocation}
                 label="Meeting Location"
                 name="Meeting Location"
@@ -509,7 +512,6 @@ const ClubInformation = () => {
               <TextField
                 fullWidth
                 multiline
-                defaultValue={selectedMeeting?.meetingAgenda}
                 value={meetingAgenda}
                 label="Agenda"
                 name="Agenda"
@@ -544,7 +546,7 @@ const ClubInformation = () => {
                   Confirm Update
                 </Button>
                 <Button onClick={closeEditMeeting} color="primary">
-                  Close
+                  Cancel
                 </Button>
               </div>
             </form>
