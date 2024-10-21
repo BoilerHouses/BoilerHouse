@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import dayjs from "dayjs";
+
 import {
   CircularProgress,
   Typography,
@@ -9,10 +11,21 @@ import {
   Avatar,
   Card,
   CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
 } from "@mui/material";
+
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const ClubInformation = () => {
   const navigate = useNavigate();
+  const today = dayjs();
+  const sixPM = dayjs().hour(18).minute(0);
+
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
@@ -20,6 +33,17 @@ const ClubInformation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+  const [timeError, setTimeError] = useState(false);
+  const [editMeeting, setEditMeeting] = useState(false);
+
+  const [startDate, setStartDate] = useState(today);
+  const [startTime, setStartTime] = useState(sixPM);
+  const [endTime, setEndTime] = useState(sixPM.add(1, "hour"));
+  const [meetingName, setMeetingName] = useState("");
+  const [meetingLocation, setMeetingLocation] = useState("");
+  const [meetingAgenda, setMeetingAgenda] = useState("");
+
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
     "https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg",
@@ -83,8 +107,6 @@ const ClubInformation = () => {
             return a.id - b.id;
           });
 
-          console.log(meetings)
-
           let startInd = 1;
           for (let i = startInd; i < meetings.length; i++) {
             if (new Date(meetings[i].date) < new Date()) {
@@ -127,7 +149,7 @@ const ClubInformation = () => {
           approved: "Y",
         },
       })
-      .then((response) => {
+      .then(() => {
         window.location.reload();
       })
       .catch((error) => {
@@ -151,7 +173,7 @@ const ClubInformation = () => {
           approved: "N",
         },
       })
-      .then((response) => {
+      .then(() => {
         window.location.reload();
       })
       .catch((error) => {
@@ -160,7 +182,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleApproval = (event) => {
+  const handleApproval = () => {
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/club/approve/`, {
@@ -183,7 +205,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleJoin = (event) => {
+  const handleJoin = () => {
     if (clubData.useQuestions) {
       navigate(`/questions/${clubId}`);
       return;
@@ -210,7 +232,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleDeny = (event) => {
+  const handleDeny = () => {
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/club/delete/`, {
@@ -221,7 +243,7 @@ const ClubInformation = () => {
           club_id: clubId,
         },
       })
-      .then((response) => {
+      .then(() => {
         setIsLoading(false);
         navigate(`/clubs`);
       })
@@ -233,6 +255,71 @@ const ClubInformation = () => {
 
   const goToCreateMeeting = () => {
     navigate(`/club/${clubId}/createMeeting`);
+  };
+
+  const handleCardClick = (meeting) => {
+    setSelectedMeeting(meeting);
+    setMeetingName(meeting.meetingName);
+    setMeetingLocation(meeting.meetingLocation);
+    setMeetingAgenda(meeting.meetingAgenda);
+    setStartDate(dayjs(meeting.date));
+    setStartTime(dayjs(meeting.startTime, "h:mm a"));
+    setEndTime(dayjs(meeting.endTime, "h:mm a"));
+  };
+
+  const handleClose = () => {
+    setSelectedMeeting(null);
+  };
+
+  const handleUpdateMeeting = (e) => {
+    e.preventDefault();
+  };
+
+  const handleMeetingNameChange = (event) => {
+    setMeetingName(event.target.value);
+  };
+  const handleMeetingLocationChange = (event) => {
+    setMeetingLocation(event.target.value);
+  };
+  const handleMeetingAgendaChange = (event) => {
+    setMeetingAgenda(event.target.value);
+  };
+
+  const handleStartDateChange = (newValue) => {
+    setStartDate(newValue);
+  };
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [startTime]);
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [endTime]);
+
+  const validateTimeRange = () => {
+    if (endTime.isBefore(startTime)) {
+      setTimeError(true);
+    } else {
+      setTimeError(false);
+    }
+  };
+
+  const handleStartTimeChange = (newValue) => {
+    setStartTime(newValue);
+  };
+
+  const handleEndTimeChange = (newValue) => {
+    setEndTime(newValue);
+  };
+
+  const openEditMeeting = () => {
+    setEditMeeting(true);
+    handleClose();
+  };
+
+  const closeEditMeeting = () => {
+    setEditMeeting(false);
   };
 
   if (isLoading) {
@@ -289,7 +376,7 @@ const ClubInformation = () => {
               ? "bg-blue-500 absolute top-30 right-[15%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
               : "hidden"
           }
-          onClick={(event) => {
+          onClick={() => {
             navigate(`/createQuestions/${clubId}`);
           }}
         >
@@ -302,7 +389,7 @@ const ClubInformation = () => {
               ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
               : "hidden"
           }
-          onClick={(event) => {
+          onClick={() => {
             navigate(`/club/${clubId}/edit`);
           }}
         >
@@ -345,6 +432,7 @@ const ClubInformation = () => {
               key={meeting.id}
               className="mb-4 bg-white shadow-md hover:shadow-lg transition-shadow"
               sx={{ padding: "2px", borderRadius: "8px" }}
+              onClick={() => handleCardClick(meeting)}
             >
               <CardContent>
                 <Typography variant="h6" component="div">
@@ -356,17 +444,112 @@ const ClubInformation = () => {
                 <Typography color="textSecondary" gutterBottom>
                   {meeting.date} {meeting.startTime} - {meeting.endTime}
                 </Typography>
-                <Typography color="textSecondary" gutterBottom>
-                  {meeting.meetingAgenda}
-                </Typography>
-                <Typography variant="body2">
-                  Meeting ID: {meeting.id}
-                </Typography>
               </CardContent>
             </Card>
           ))
         )}
       </Box>
+
+      {/* view meeting info*/}
+      <Dialog open={!!selectedMeeting} onClose={handleClose}>
+        <DialogTitle>{selectedMeeting?.meetingName}</DialogTitle>
+        <DialogContent>
+          <Typography>Location: {selectedMeeting?.meetingLocation}</Typography>
+          <Typography>Date: {selectedMeeting?.date}</Typography>
+          <Typography>
+            Time: {selectedMeeting?.startTime} - {selectedMeeting?.endTime}
+          </Typography>
+          <Typography>Agenda: {selectedMeeting?.meetingAgenda}</Typography>
+          <Typography>Meeting Id: {selectedMeeting?.id}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <div className={officer ? "" : "hidden"}>
+            <Button color="primary" onClick={openEditMeeting}>
+              Edit
+            </Button>
+          </div>
+          <Button onClick={handleClose} color="primary">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* edit meeting info*/}
+      <Dialog open={editMeeting} onClose={closeEditMeeting}>
+        <Card className="w-full max-w-md">
+          <CardContent>
+            <Typography
+              variant="h5"
+              component="h2"
+              className="mb-4 text-center"
+            >
+              Update Meeting
+            </Typography>
+            <form onSubmit={handleUpdateMeeting} className="space-y-4">
+              <TextField
+                fullWidth
+                required
+                value={meetingName}
+                defaultValue={selectedMeeting?.meetingName}
+                label="Meeting Name"
+                name="Meeting Name"
+                onChange={handleMeetingNameChange}
+                className="bg-white !my-3.5"
+              />
+              <TextField
+                fullWidth
+                required
+                defaultValue={selectedMeeting?.meetingLocation}
+                value={meetingLocation}
+                label="Meeting Location"
+                name="Meeting Location"
+                onChange={handleMeetingLocationChange}
+                className="bg-white !my-3.5"
+              />
+              <TextField
+                fullWidth
+                multiline
+                defaultValue={selectedMeeting?.meetingAgenda}
+                value={meetingAgenda}
+                label="Agenda"
+                name="Agenda"
+                onChange={handleMeetingAgendaChange}
+                className="bg-white !my-3.5"
+              />
+
+              <DatePicker
+                label="Select Day of Meeting"
+                required
+                disablePast
+                onChange={handleStartDateChange}
+                defaultValue={startDate}
+                className="mb-4"
+              />
+
+              <TimePicker
+                label="Start Time"
+                defaultValue={startTime}
+                maxTime={endTime}
+                onChange={handleStartTimeChange}
+              />
+              <TimePicker
+                label="End Time"
+                defaultValue={endTime}
+                minTime={startTime}
+                onChange={handleEndTimeChange}
+              />
+            </form>
+            <DialogActions>
+              <Button color="error">Delete Meeting</Button>
+              <Button color="primary">Confirm Update</Button>
+              <Button onClick={closeEditMeeting} color="primary">
+                Close
+              </Button>
+            </DialogActions>
+          </CardContent>
+        </Card>
+      </Dialog>
+
       {/* Club Icon */}
       <Avatar
         src={clubData.icon}

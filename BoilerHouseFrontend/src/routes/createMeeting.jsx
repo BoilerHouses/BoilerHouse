@@ -114,7 +114,7 @@ function CreateMeeting() {
 
         while (cur.isBefore(end) || cur.isSame(end, "day")) {
           if (mappedDays[cur.day()] == 1) {
-            meetingDays.push(cur.format("MMM-DD-YYYY"));
+            meetingDays.push(cur.format("MM/DD/YY"));
           }
           cur = cur.add(1, "day");
         }
