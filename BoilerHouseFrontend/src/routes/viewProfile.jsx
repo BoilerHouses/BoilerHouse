@@ -1,12 +1,9 @@
 // ViewProfile.js
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
-import { Navigate, NavLink, useNavigate, useParams } from "react-router-dom";
-import { Visibility } from "@mui/icons-material";
-import { visuallyHidden } from "@mui/utils";
+import { useNavigate, useParams } from "react-router-dom";
 import Availability from "./availability";
-import { AuthContext } from "./authProvider";
-import { useContext } from "react";
+
 
 const ViewProfile = () => {
   // Hardcoded user data

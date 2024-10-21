@@ -322,10 +322,8 @@ def save_club_information(request):
                            owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
-        #club.gallery = gallery_image_urls 
-        # print("debug")
+
         club.save()
-        #print(model_to_dict(club))
         ret_club = model_to_dict(club)
         ret_club['officers'] = [model_to_dict(x) for x in ret_club['officers']]
         ret_club['members'] = [model_to_dict(x) for x in ret_club['members']]
@@ -479,19 +477,19 @@ def get_club_information(request):
         pending_list = []
         for i in ret_club['pending_members']:
             inClub = ((i.username == user.username) or inClub)
-            pending_list.append((i.pk, i.name, i.profile_picture, i.username))
+            submittedForm = False
+            if i.username in club.responses:
+                submittedForm = True
+            pending_list.append((i.pk, i.name, i.profile_picture, i.username, submittedForm))
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
-        print(ret_club)
-        print(inClub, isOfficer)
         return Response({'club': ret_club, "joined": inClub, "officer": isOfficer}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
 @api_view(['POST'])
 def set_questions(request):
-    print("HI")
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
        return Response({'error': 'Invalid Auth Token'}, status=400)
@@ -538,22 +536,22 @@ def set_answers(request):
     club = Club.objects.filter(pk=data['club']).first()
     if not club:
         return Response({"error": "Club does not exist"}, status=404)
-    club.responses[user.username] = data['response']
+    if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
+        club.pending_members.add(user)
+        club.responses[user.username] = data['response']
     club.save()
     return Response('Sucess!', status=200)
 
 @api_view(['GET'])
 def get_answers(request):
-    user = verify_token(request.headers.get('Authorization'))
-    if user == 'Invalid token':
-       return Response({'error': 'Invalid Auth Token'}, status=400)
-    if 'club' not in request.query_params:
+    if 'club' not in request.query_params or 'username' not in request.query_params:
         return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    username = request.query_params['username']
     club = Club.objects.filter(pk=request.query_params['club']).first()
     if not club:
         return Response({"error": "Club does not exist"}, status=404)
-    if user.username in club.responses:
-        return Response(club.responses[user.username] , status=200)
+    if username in club.responses:
+        return Response(club.responses[username] , status=200)
     else:
         return Response([], status=200)
 
@@ -589,15 +587,11 @@ def modify_user_to_club(request):
     return Response("Sucess!", 200)
 
 
-
 @api_view(['GET'])
 def delete_user(request):
-   print(request.data)
    user = verify_token(request.headers.get('Authorization'))
    if not user.is_admin:
-       print("here1")
        return Response({'error': 'User is not an admin'}, status=400)
-
 
    if "username" not in request.query_params:
        return Response({'error': 'username of user not included'}, status=400)
@@ -609,3 +603,35 @@ def delete_user(request):
    if pair:
        pair.delete()
    return Response("success", status=200)
+
+@api_view(['GET'])
+# gets meeting clubs based on the club id
+def get_meeting_times(request):
+    if "clubId" not in request.query_params:
+       return Response({'error': 'missing clubId parameter'}, status=400)
+    
+    club = Club.objects.filter(pk=request.query_params['clubId']).first()
+
+    if not club:
+        return Response({'error': 'no club found with the associated clubId'}, status=400)
+
+    meetings = club.meetings
+    return Response(meetings, status=200)
+
+
+@api_view(['GET'])
+# gets meeting clubs based on the club id
+def set_meeting_times(request):
+    if "clubId" not in request.query_params or "meetings" not in request.query_params:
+       return Response({'error': 'missing  parameters'}, status=400)
+    
+    club = Club.objects.filter(pk=request.query_params['clubId']).first()
+
+    if not club:
+        return Response({'error': 'no club found with the associated clubId'}, status=400)
+    
+    meetings_data = json.loads(request.query_params["meetings"])
+    club.meetings = meetings_data
+    club.save()
+    return Response("success", status=200)
+

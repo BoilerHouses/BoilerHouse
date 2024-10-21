@@ -4,7 +4,7 @@ import axios from "axios";
 const Questionnaire = () => {
   const navigate = useNavigate();
   const { clubId } = useParams(); // Get club ID from the route parameters
-  const [questions, setQuestions] = useState([{ text: "What's your name?", required: false }]);
+  const [questions, setQuestions] = useState([{ text: "What's your name?", required: true }]);
   const [on, setOn] = useState(false);
 
   useEffect(() => {
@@ -20,12 +20,12 @@ const Questionnaire = () => {
         },
       })
       .then((response) => {
-        console.log(response.data)
-        if (Array.isArray(response.data.questions)){
-            setQuestions(response.data.questions)
-            setOn(response.data.on)
-        }
         
+        if(Array.isArray(response.data.questions)) {
+          setQuestions(response.data.questions)
+          setOn(response.data.on)
+        }
+        console.log(questions)
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
