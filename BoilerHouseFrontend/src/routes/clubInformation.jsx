@@ -605,104 +605,105 @@ const ClubInformation = () => {
 
       {/* edit meeting info*/}
       <Dialog open={editMeeting} onClose={closeEditMeeting}>
-        <Card className="w-full">
-          <CardContent>
-            <Typography
-              variant="h5"
-              component="h2"
-              className="mb-4 text-center"
-            >
-              Update Meeting
-            </Typography>
-            <form onSubmit={handleUpdateMeeting} className="space-y-4">
-              <TextField
-                fullWidth
-                required
-                value={meetingName}
-                label="Meeting Name"
-                name="Meeting Name"
-                onChange={handleMeetingNameChange}
-                className="bg-white !my-3.5"
-              />
-              <TextField
-                fullWidth
-                required
-                value={meetingLocation}
-                label="Meeting Location"
-                name="Meeting Location"
-                onChange={handleMeetingLocationChange}
-                className="bg-white !my-3.5"
-              />
-              <TextField
-                fullWidth
-                multiline
-                value={meetingAgenda}
-                label="Agenda"
-                name="Agenda"
-                onChange={handleMeetingAgendaChange}
-                className="bg-white !my-3.5"
-              />
+        <DialogContent className="overflow-y-auto" dividers>
+          <Card className="w-full">
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="h2"
+                className="mb-4 text-center"
+              >
+                Update Meeting
+              </Typography>
+              <form onSubmit={handleUpdateMeeting} className="space-y-4">
+                <TextField
+                  fullWidth
+                  required
+                  value={meetingName}
+                  label="Meeting Name"
+                  name="Meeting Name"
+                  onChange={handleMeetingNameChange}
+                  className="bg-white !my-3.5"
+                />
+                <TextField
+                  fullWidth
+                  required
+                  value={meetingLocation}
+                  label="Meeting Location"
+                  name="Meeting Location"
+                  onChange={handleMeetingLocationChange}
+                  className="bg-white !my-3.5"
+                />
+                <TextField
+                  fullWidth
+                  multiline
+                  value={meetingAgenda}
+                  label="Agenda"
+                  name="Agenda"
+                  onChange={handleMeetingAgendaChange}
+                  className="bg-white !my-3.5"
+                />
 
-              <DatePicker
-                label="Select Day of Meeting"
-                required
-                disablePast
-                onChange={handleStartDateChange}
-                defaultValue={startDate}
-                className="mb-4"
-              />
+                <DatePicker
+                  label="Select Day of Meeting"
+                  required
+                  disablePast
+                  onChange={handleStartDateChange}
+                  defaultValue={startDate}
+                  className="mb-4"
+                />
 
-              <TimePicker
-                label="Start Time"
-                defaultValue={startTime}
-                maxTime={endTime}
-                onChange={handleStartTimeChange}
-              />
-              <TimePicker
-                label="End Time"
-                defaultValue={endTime}
-                minTime={startTime}
-                onChange={handleEndTimeChange}
-              />
+                <TimePicker
+                  label="Start Time"
+                  defaultValue={startTime}
+                  maxTime={endTime}
+                  onChange={handleStartTimeChange}
+                />
+                <TimePicker
+                  label="End Time"
+                  defaultValue={endTime}
+                  minTime={startTime}
+                  onChange={handleEndTimeChange}
+                />
 
-              <div id="server-error-alert" className="hidden">
-                <Alert severity="error">
-                  A server error occurred. Please try again later.
-                </Alert>
-              </div>
+                <div id="server-error-alert" className="hidden">
+                  <Alert severity="error">
+                    A server error occurred. Please try again later.
+                  </Alert>
+                </div>
 
-              <div className="flex items-center justify-center">
-                <Button
-                  color="error"
-                  variant="contained"
-                  onClick={deleteMeeting}
-                >
-                  {isLoadingDeleteMeeting ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Delete Meeting"
-                  )}
-                </Button>
-                <Button type="submit" color="primary" variant="contained">
-                  {isLoadingEditMeeting ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : (
-                    "Confirm Edits"
-                  )}
-                </Button>
-                <Button
-                  onClick={closeEditMeeting}
-                  color="primary"
-                  variant="contained"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                <div className="flex items-center justify-center">
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={deleteMeeting}
+                  >
+                    {isLoadingDeleteMeeting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Delete Meeting"
+                    )}
+                  </Button>
+                  <Button type="submit" color="primary" variant="contained">
+                    {isLoadingEditMeeting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Confirm Edits"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={closeEditMeeting}
+                    color="primary"
+                    variant="contained"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </DialogContent>
       </Dialog>
-
       {/* Club Icon */}
       <Avatar
         src={clubData.icon}
