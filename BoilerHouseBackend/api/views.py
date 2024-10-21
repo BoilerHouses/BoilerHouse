@@ -622,3 +622,27 @@ def update_club_info(request):
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_club_details_for_edit(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    try:
+        club = Club.objects.get(pk=club_id)
+        
+        # Check if the user is an officer of the club
+        if user not in club.officers.all():
+            return Response({"error": "You don't have permission to edit this club"}, status=403)
+
+        club_data = {
+            "name": club.name,
+            "culture": club.culture,
+            "time_commitment": club.time_commitment,
+            # Add any other fields you want to make editable
+        }
+        
+        return Response(club_data, status=200)
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
