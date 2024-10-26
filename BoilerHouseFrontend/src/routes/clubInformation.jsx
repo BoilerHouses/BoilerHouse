@@ -580,6 +580,19 @@ const ClubInformation = () => {
 
         <button
           className={
+            officer && clubData.is_approved
+              ? "bg-blue-500 absolute top-15 right-[30%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+              : "hidden"
+          }
+          onClick={() => {
+            navigate(`/club/${clubId}/edit`);
+          }}
+        >
+          Contact Us!
+        </button>
+
+        <button
+          className={
             !clubData.is_approved
               ? "bg-red-500 absolute top-4 right-[13%] text-white font-bold py-2 px-4 rounded hover:bg-red-600"
               : "hidden"
