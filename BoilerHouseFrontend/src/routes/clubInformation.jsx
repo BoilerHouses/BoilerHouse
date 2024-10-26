@@ -585,7 +585,7 @@ const ClubInformation = () => {
               : "hidden"
           }
           onClick={() => {
-            navigate(`/club/${clubId}/edit`);
+            navigate(`/club/${clubId}/defaultContact`);
           }}
         >
           Contact Us!
