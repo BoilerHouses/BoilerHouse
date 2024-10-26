@@ -348,13 +348,18 @@ def get_all_clubs(request):
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
+
+        members = x.members.count()
         t = model_to_dict(x)
         t['officers'] = []
         t['members'] = []
         t['pending_members'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
+        t['num_members'] = members
         clubs.append(t)
+
+
     return Response({'clubs': clubs}, 200)
 
 @api_view(['GET'])
