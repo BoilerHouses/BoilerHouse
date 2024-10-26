@@ -746,6 +746,26 @@ def update_club_info(request):
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
+def set_accepting_applications(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    try:
+        club = Club.objects.get(pk=club_id)
+        # Check if the user is an officer of the club
+        if user not in club.officers.all():
+            return Response({"error": "You don't have permission to edit this club"}, status=403)
+
+        club.acceptingApplications = not club.acceptingApplications
+        club.save()
+        return Response({'accepting': club.acceptingApplications}, status=200)
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+    except Exception as e:
+        return Response("error", status=500)
+
+@api_view(['GET'])
 def get_club_details_for_edit(request, club_id):
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
@@ -806,4 +826,4 @@ def  send_email_to_members(request):
         else:
             return Response("error", status = 400)
     except Exception as e:
-        return Response("error", status=400)
+        return Response("error", status=500)
