@@ -32,6 +32,7 @@ const ClubInformation = () => {
   const [joined, setJoined] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [accepting, setAccepting] = useState(false);
   const [deleted, setDeleted] = useState(false)
   const [deletedCount, setDeletedCount] = useState(0)
   const [officerCount, setOfficerCount] = useState(0)
@@ -83,11 +84,14 @@ const ClubInformation = () => {
         setOfficer(response.data.officer);
         setDeletedCount(response.data.deleted_count)
         setOfficerCount(response.data.officer_count)
+        setAccepting(response.data.accepting)
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
+
+      
 
     axios({
       // create account endpoint
@@ -134,6 +138,22 @@ const ClubInformation = () => {
         setGetMeetingError(true);
       });
   }, [clubId]);
+
+  const handleCheckboxChange = () => {
+    const token = localStorage.getItem("token");
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/toggle/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        }
+      })
+      .then((response) => {
+        setAccepting(response.data.accepting)
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the club data!", error);
+      });
+  };
 
   const fetchGallery = () => {
     if (clubData.gallery.length == 0) {
@@ -504,7 +524,83 @@ const ClubInformation = () => {
         minHeight: "100vh",
       }}
     >
+      <div className="flex flex-wrap gap-4 justify-between w-2/3 mx-auto my-4 ">
+        <button
+          className={clubData.is_approved && !joined
+            ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+            : "hidden"}
+          onClick={handleJoin}
+        >
+          Join Club
+        </button>
+        
+        <button
+          className={officer
+            ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+            : "hidden"}
+          onClick={goToCreateMeeting}
+        >
+          Create Meeting
+        </button>
+
+        <button
+          className={officer && joined
+            ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+            : "hidden"}
+          onClick={deleteClub}
+        >
+          {deleted ? 'Revoke Vote to Delete' : 'Vote to Delete Club'}
+        </button>
+
+        <p className={officer && joined
+            ? "text-red font-bold"
+            : "hidden"}
+        >
+          {deletedCount + '/' + officerCount + ' have voted to delete this club'}
+        </p>
+
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={accepting}
+            onChange={handleCheckboxChange}
+            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+          />
+          <label className="ml-2 text-gray-700">Accept Officer Applications</label>
+        </div>
+
+        <button
+          className={officer && clubData.is_approved && joined
+            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"}
+          onClick={() => navigate(`/createQuestions/${clubId}`)}
+        >
+          Edit Questionnaire
+        </button>
+
+        <button
+          className={officer && clubData.is_approved
+            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"}
+          onClick={() => navigate(`/club/${clubId}/edit`)}
+        >
+          Edit Culture and Time Commitment
+        </button>
+
+        <button
+          className={officer && clubData.is_approved
+            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"}
+          onClick={() => navigate(`/club/${clubId}/edit`)}
+        >
+          Contact Us!
+        </button>
+      </div>
+
+
       <div className="relative">
+        
+        
         <button
           className={
             !clubData.is_approved
@@ -515,82 +611,6 @@ const ClubInformation = () => {
         >
           Approve
         </button>
-        <button
-          className={
-            clubData.is_approved && !joined
-              ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              : "hidden"
-          }
-          onClick={handleJoin}
-        >
-          Join Club
-        </button>
-        <button
-          className={
-            officer
-              ? "bg-green-500 absolute top-20 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              : "hidden"
-          }
-          onClick={goToCreateMeeting}
-        >
-          Create Meeting
-        </button>
-
-        <button
-          className={
-            officer && joined
-              ? "bg-red-500 absolute top-5 right-[35%] text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-              : "hidden"
-          }
-          onClick={deleteClub}
-        >
-          {deleted ? 'Revoke Vote to Delete' : 'Vote to Delete Club'}
-        </button>
-        <p className={
-            officer && joined
-              ? "absolute top-35 right-[35%] text-red font-bold"
-              : "hidden"
-          }>{deletedCount + '/' + officerCount + ' have voted to delete this club'}</p>
-
-        <button
-          className={
-            officer && clubData.is_approved && joined
-              ? "bg-blue-500 absolute top-30 right-[15%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-              : "hidden"
-          }
-          onClick={() => {
-            navigate(`/createQuestions/${clubId}`);
-          }}
-        >
-          Edit Questionnaire
-        </button>
-
-        <button
-          className={
-            officer && clubData.is_approved
-              ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-              : "hidden"
-          }
-          onClick={() => {
-            navigate(`/club/${clubId}/edit`);
-          }}
-        >
-          Edit Culture and Time Commitment
-        </button>
-
-        <button
-          className={
-            officer && clubData.is_approved
-              ? "bg-blue-500 absolute top-15 right-[30%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-              : "hidden"
-          }
-          onClick={() => {
-            navigate(`/club/${clubId}/edit`);
-          }}
-        >
-          Contact Us!
-        </button>
-
         <button
           className={
             !clubData.is_approved
