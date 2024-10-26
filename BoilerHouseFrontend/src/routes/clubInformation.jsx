@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
+import dayjs from "dayjs";
+
 import {
   CircularProgress,
   Typography,
@@ -9,10 +11,22 @@ import {
   Avatar,
   Card,
   CardContent,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Alert,
 } from "@mui/material";
+
+import { DatePicker, TimePicker } from "@mui/x-date-pickers";
 
 const ClubInformation = () => {
   const navigate = useNavigate();
+  const today = dayjs();
+  const sixPM = dayjs().hour(18).minute(0);
+
   const { clubId } = useParams(); // Get club ID from the route parameters
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
@@ -23,6 +37,21 @@ const ClubInformation = () => {
   const [officerCount, setOfficerCount] = useState(0)
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
+  const [selectedMeeting, setSelectedMeeting] = useState(null);
+
+  const [meetingMenu, setMeetingMenu] = useState(false);
+  const [timeError, setTimeError] = useState(false);
+  const [editMeeting, setEditMeeting] = useState(false);
+
+  const [startDate, setStartDate] = useState(today);
+  const [startTime, setStartTime] = useState(sixPM);
+  const [endTime, setEndTime] = useState(sixPM.add(1, "hour"));
+  const [meetingName, setMeetingName] = useState("");
+  const [meetingLocation, setMeetingLocation] = useState("");
+  const [meetingAgenda, setMeetingAgenda] = useState("");
+  const [isLoadingEditMeeting, setIsLoadingEditMeeting] = useState(false);
+  const [isLoadingDeleteMeeting, setIsLoadingDeleteMeeting] = useState(false);
+
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
     "https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg",
@@ -71,10 +100,33 @@ const ClubInformation = () => {
       },
     })
       .then((response) => {
-
         const data = response.data;
         if (data.length >= 0) {
-          setMeetings(response.data);
+          let meetings = response.data;
+
+          meetings.sort((a, b) => {
+            const dateA = new Date(a.date);
+            const dateB = new Date(b.date);
+
+            if (dateA.getTime() !== dateB.getTime()) {
+              return dateA - dateB;
+            }
+            const timeA = new Date(`${a.date} ${a.time}`);
+            const timeB = new Date(`${b.date} ${b.time}`);
+            if (timeA.getTime() !== timeB.getTime()) {
+              return dateA - dateB;
+            }
+            return a.id - b.id;
+          });
+
+          let startInd = 1;
+          for (let i = startInd; i < meetings.length; i++) {
+            if (new Date(meetings[i].date) < new Date()) {
+              startInd++;
+            }
+          }
+          meetings = meetings.slice(startInd - 1);
+          setMeetings(meetings);
         }
       })
       .catch((error) => {
@@ -143,7 +195,7 @@ const ClubInformation = () => {
           approved: "Y",
         },
       })
-      .then((response) => {
+      .then(() => {
         window.location.reload();
       })
       .catch((error) => {
@@ -167,7 +219,7 @@ const ClubInformation = () => {
           approved: "N",
         },
       })
-      .then((response) => {
+      .then(() => {
         window.location.reload();
       })
       .catch((error) => {
@@ -176,7 +228,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleApproval = (event) => {
+  const handleApproval = () => {
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/club/approve/`, {
@@ -199,7 +251,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleJoin = (event) => {
+  const handleJoin = () => {
     if (clubData.useQuestions) {
       navigate(`/questions/${clubId}`);
       return;
@@ -215,7 +267,6 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.club);
         setClubData(response.data.club);
         setJoined(true);
         setIsLoading(false);
@@ -227,7 +278,7 @@ const ClubInformation = () => {
       });
   };
 
-  const handleDeny = (event) => {
+  const handleDeny = () => {
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/club/delete/`, {
@@ -238,7 +289,7 @@ const ClubInformation = () => {
           club_id: clubId,
         },
       })
-      .then((response) => {
+      .then(() => {
         setIsLoading(false);
         navigate(`/clubs`);
       })
@@ -250,6 +301,191 @@ const ClubInformation = () => {
 
   const goToCreateMeeting = () => {
     navigate(`/club/${clubId}/createMeeting`);
+  };
+
+  const handleCardClick = (meeting) => {
+    setMeetingMenu(true);
+    setSelectedMeeting(meeting);
+    setMeetingName(meeting.meetingName);
+    setMeetingLocation(meeting.meetingLocation);
+    setMeetingAgenda(meeting.meetingAgenda);
+    setStartDate(dayjs(meeting.date));
+    setStartTime(dayjs(meeting.startTime, "h:mm a"));
+    setEndTime(dayjs(meeting.endTime, "h:mm a"));
+  };
+
+  const handleClose = () => {
+    setMeetingMenu(false);
+  };
+
+  const handleUpdateMeeting = (e) => {
+    e.preventDefault();
+
+    if (timeError) {
+      return;
+    }
+
+    // create new meeting object and replace the old one
+    const newMeeting = {
+      id: selectedMeeting.id,
+      meetingName: meetingName,
+      meetingLocation: meetingLocation,
+      meetingAgenda: meetingAgenda,
+      date: startDate.format("MM/DD/YY"),
+      startTime: startTime.format("h:mm a"),
+      endTime: endTime.format("h:mm a"),
+    };
+
+    const index = meetings.findIndex((meeting) => meeting.id === newMeeting.id);
+    if (index !== -1) {
+      meetings[index] = newMeeting;
+    }
+
+    let newMeetings = JSON.stringify(meetings);
+
+    setIsLoadingEditMeeting(true);
+    axios({
+      url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
+      method: "GET",
+
+      // params
+      params: {
+        clubId: clubId,
+        meetings: newMeetings,
+      },
+    })
+      // success
+      .then(() => {
+        setIsLoadingEditMeeting(false);
+
+        // resort the meetings
+        meetings.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          const timeA = new Date(`${a.date} ${a.time}`);
+          const timeB = new Date(`${b.date} ${b.time}`);
+          if (timeA.getTime() !== timeB.getTime()) {
+            return dateA - dateB;
+          }
+          return a.id - b.id;
+        });
+
+        closeEditMeeting();
+      })
+
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoadingEditMeeting(false);
+        console.log(err);
+        const serverAlert = document.querySelector("#server-error-alert");
+        serverAlert.classList.remove("hidden");
+      });
+  };
+
+  // delete a meeting
+  const deleteMeeting = () => {
+    const index = meetings.findIndex(
+      (meeting) => meeting.id === selectedMeeting.id
+    );
+    if (index == -1) {
+      return;
+    }
+
+    meetings.splice(index, 1);
+    let newMeetings = JSON.stringify(meetings);
+
+    setIsLoadingDeleteMeeting(true);
+    axios({
+      url: "http://127.0.0.1:8000/api/clubs/setMeetingTimes/",
+      method: "GET",
+
+      // params
+      params: {
+        clubId: clubId,
+        meetings: newMeetings,
+      },
+    })
+      // success
+      .then(() => {
+        setIsLoadingDeleteMeeting(false);
+
+        // resort the meetings
+        meetings.sort((a, b) => {
+          const dateA = new Date(a.date);
+          const dateB = new Date(b.date);
+
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          const timeA = new Date(`${a.date} ${a.time}`);
+          const timeB = new Date(`${b.date} ${b.time}`);
+          if (timeA.getTime() !== timeB.getTime()) {
+            return dateA - dateB;
+          }
+          return a.id - b.id;
+        });
+
+        closeEditMeeting();
+      })
+
+      // Catch errors if any
+      .catch((err) => {
+        setIsLoadingDeleteMeeting(false);
+        console.log(err);
+        const serverAlert = document.querySelector("#server-error-alert");
+        serverAlert.classList.remove("hidden");
+      });
+  };
+
+  const handleMeetingNameChange = (event) => {
+    setMeetingName(event.target.value);
+  };
+  const handleMeetingLocationChange = (event) => {
+    setMeetingLocation(event.target.value);
+  };
+  const handleMeetingAgendaChange = (event) => {
+    setMeetingAgenda(event.target.value);
+  };
+
+  const handleStartDateChange = (newValue) => {
+    setStartDate(newValue);
+  };
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [startTime]);
+
+  useEffect(() => {
+    validateTimeRange();
+  }, [endTime]);
+
+  const validateTimeRange = () => {
+    if (endTime.isBefore(startTime)) {
+      setTimeError(true);
+    } else {
+      setTimeError(false);
+    }
+  };
+
+  const handleStartTimeChange = (newValue) => {
+    setStartTime(newValue);
+  };
+
+  const handleEndTimeChange = (newValue) => {
+    setEndTime(newValue);
+  };
+
+  const openEditMeeting = () => {
+    setEditMeeting(true);
+    handleClose();
+  };
+
+  const closeEditMeeting = () => {
+    setEditMeeting(false);
   };
 
   if (isLoading) {
@@ -264,7 +500,7 @@ const ClubInformation = () => {
     <Box
       sx={{
         padding: 4,
-        backgroundColor: "#d0d8da", 
+        backgroundColor: "#d0d8da",
         minHeight: "100vh",
       }}
     >
@@ -322,7 +558,7 @@ const ClubInformation = () => {
               ? "bg-blue-500 absolute top-30 right-[15%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
               : "hidden"
           }
-          onClick={(event) => {
+          onClick={() => {
             navigate(`/createQuestions/${clubId}`);
           }}
         >
@@ -335,7 +571,7 @@ const ClubInformation = () => {
               ? "bg-blue-500 absolute top-10 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
               : "hidden"
           }
-          onClick={(event) => {
+          onClick={() => {
             navigate(`/club/${clubId}/edit`);
           }}
         >
@@ -361,8 +597,8 @@ const ClubInformation = () => {
           border: "1px solid #ddd",
           borderRadius: "8px",
           padding: "16px",
-          backgroundColor: "#f9f9f9", // Light background for better contrast
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)", // Subtle shadow
+          backgroundColor: "#f9f9f9",
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
         }}
       >
         <Typography variant="h6">List of Meetings</Typography>
@@ -378,6 +614,7 @@ const ClubInformation = () => {
               key={meeting.id}
               className="mb-4 bg-white shadow-md hover:shadow-lg transition-shadow"
               sx={{ padding: "2px", borderRadius: "8px" }}
+              onClick={() => handleCardClick(meeting)}
             >
               <CardContent>
                 <Typography variant="h6" component="div">
@@ -387,19 +624,147 @@ const ClubInformation = () => {
                   {meeting.meetingLocation}
                 </Typography>
                 <Typography color="textSecondary" gutterBottom>
-                  {meeting.date} {meeting.startTime}-{meeting.endTime}
-                </Typography>
-                <Typography color="textSecondary" gutterBottom>
-                  {meeting.meetingAgenda}
-                </Typography>
-                <Typography variant="body2">
-                  Meeting ID: {meeting.id}
+                  {meeting.date} {meeting.startTime} - {meeting.endTime}
                 </Typography>
               </CardContent>
             </Card>
           ))
         )}
       </Box>
+
+      {/* view meeting info*/}
+      <Dialog open={meetingMenu} onClose={handleClose}>
+        <DialogTitle>{selectedMeeting?.meetingName}</DialogTitle>
+        <DialogContent>
+          <Typography>Location: {selectedMeeting?.meetingLocation}</Typography>
+          <Typography>Date: {selectedMeeting?.date}</Typography>
+          <Typography>
+            Time: {selectedMeeting?.startTime} - {selectedMeeting?.endTime}
+          </Typography>
+          <div
+            className={selectedMeeting?.meetingAgenda === "" ? "hidden" : ""}
+          >
+            <Typography>Agenda: {selectedMeeting?.meetingAgenda}</Typography>
+          </div>
+          <Typography>Meeting Id: {selectedMeeting?.id}</Typography>
+        </DialogContent>
+        <DialogActions>
+          <div className={officer ? "" : "hidden"}>
+            <Button
+              color="primary"
+              onClick={openEditMeeting}
+              variant="contained"
+            >
+              Edit
+            </Button>
+          </div>
+          <Button onClick={handleClose} color="primary" variant="contained">
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* edit meeting info*/}
+      <Dialog open={editMeeting} onClose={closeEditMeeting}>
+        <DialogContent className="overflow-y-auto" dividers>
+          <Card className="w-full">
+            <CardContent>
+              <Typography
+                variant="h5"
+                component="h2"
+                className="mb-4 text-center"
+              >
+                Update Meeting
+              </Typography>
+              <form onSubmit={handleUpdateMeeting} className="space-y-4">
+                <TextField
+                  fullWidth
+                  required
+                  value={meetingName}
+                  label="Meeting Name"
+                  name="Meeting Name"
+                  onChange={handleMeetingNameChange}
+                  className="bg-white !my-3.5"
+                />
+                <TextField
+                  fullWidth
+                  required
+                  value={meetingLocation}
+                  label="Meeting Location"
+                  name="Meeting Location"
+                  onChange={handleMeetingLocationChange}
+                  className="bg-white !my-3.5"
+                />
+                <TextField
+                  fullWidth
+                  multiline
+                  value={meetingAgenda}
+                  label="Agenda"
+                  name="Agenda"
+                  onChange={handleMeetingAgendaChange}
+                  className="bg-white !my-3.5"
+                />
+
+                <DatePicker
+                  label="Select Day of Meeting"
+                  required
+                  disablePast
+                  onChange={handleStartDateChange}
+                  defaultValue={startDate}
+                  className="mb-4"
+                />
+
+                <TimePicker
+                  label="Start Time"
+                  defaultValue={startTime}
+                  maxTime={endTime}
+                  onChange={handleStartTimeChange}
+                />
+                <TimePicker
+                  label="End Time"
+                  defaultValue={endTime}
+                  minTime={startTime}
+                  onChange={handleEndTimeChange}
+                />
+
+                <div id="server-error-alert" className="hidden">
+                  <Alert severity="error">
+                    A server error occurred. Please try again later.
+                  </Alert>
+                </div>
+
+                <div className="flex items-center justify-center">
+                  <Button
+                    color="error"
+                    variant="contained"
+                    onClick={deleteMeeting}
+                  >
+                    {isLoadingDeleteMeeting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Delete Meeting"
+                    )}
+                  </Button>
+                  <Button type="submit" color="primary" variant="contained">
+                    {isLoadingEditMeeting ? (
+                      <CircularProgress size={24} color="inherit" />
+                    ) : (
+                      "Confirm Edits"
+                    )}
+                  </Button>
+                  <Button
+                    onClick={closeEditMeeting}
+                    color="primary"
+                    variant="contained"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </DialogContent>
+      </Dialog>
       {/* Club Icon */}
       <Avatar
         src={clubData.icon}
@@ -570,18 +935,22 @@ const ClubInformation = () => {
             </button>
             <button
               className={
-                profile[4] ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300" : 'hidden'
+                profile[4]
+                  ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300"
+                  : "hidden"
               }
               index={profile[3] + "..."}
-              onClick={() => {navigate(`/answers/${clubId}/${profile[3]}`)}}
+              onClick={() => {
+                navigate(`/answers/${clubId}/${profile[3]}`);
+              }}
             >
               View Questionnaire Answers
             </button>
           </div>
         ))}
       </div>
-      {/* Photos Gallery Section */}
 
+      {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
           Photo Gallery

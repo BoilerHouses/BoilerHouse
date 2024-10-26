@@ -104,7 +104,7 @@ function CreateMeeting() {
       const meetingDays = [];
 
       if (isOneTimeMeeting) {
-        meetingDays.push(startDate.format("MMM-DD-YYYY"));
+        meetingDays.push(startDate.format("MM/DD/YY"));
       } else {
         const dayOrder = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const mappedDays = dayOrder.map((day) => (checkedDays[day] ? 1 : 0));
@@ -114,7 +114,7 @@ function CreateMeeting() {
 
         while (cur.isBefore(end) || cur.isSame(end, "day")) {
           if (mappedDays[cur.day()] == 1) {
-            meetingDays.push(cur.format("MMM-DD-YYYY"));
+            meetingDays.push(cur.format("MM/DD/YY"));
           }
           cur = cur.add(1, "day");
         }
@@ -157,8 +157,8 @@ function CreateMeeting() {
               meetingLocation: meetingLocation,
               meetingAgenda: meetingAgenda,
               date: day,
-              startTime: startTime.format("hh:mm a"),
-              endTime: endTime.format("hh:mm a"),
+              startTime: startTime.format("h:mm a"),
+              endTime: endTime.format("h:mm a"),
             };
             newMeetings.push(newMeeting);
             start_id += 1;

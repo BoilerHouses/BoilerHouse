@@ -677,3 +677,91 @@ def set_meeting_times(request):
     club.save()
     return Response("success", status=200)
 
+
+@api_view(['PUT'])
+def update_club_info(request):
+    #Updates club culture and time commitment so far
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    try:
+        club = Club.objects.get(pk=request.data.get('club_id'))
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
+
+    try:
+        if request.data.get('culture'):
+            club.culture = request.data.get('culture')
+        if request.data.get('time_commitment'):
+            club.time_commitment = request.data.get('time_commitment')
+        club.save()
+        return Response({"message": "Club information updated successfully"}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+def get_club_details_for_edit(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    try:
+        club = Club.objects.get(pk=club_id)
+        
+        # Check if the user is an officer of the club
+        if user not in club.officers.all():
+            return Response({"error": "You don't have permission to edit this club"}, status=403)
+
+        club_data = {
+            "name": club.name,
+            "culture": club.culture,
+            "time_commitment": club.time_commitment,
+            # Add any other fields you want to make editable
+        }
+        
+        return Response(club_data, status=200)
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+    
+@api_view(['GET'])
+def get_clubs_for_officer(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    clubs = user.officer_list.all().values_list('name', flat=True)
+
+    if len(clubs) == 0:
+        return Response({'error': 'user is not a club officer'}, status = 400)
+    return Response(clubs, status=200)
+
+@api_view(['GET'])
+def  send_email_to_members(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    if "club_name" not in request.query_params:
+        return Response({'error': 'club_name not included'}, status=400)
+    if "subject" not in request.query_params:
+        return Response({'error':'subject not included'}, status = 400)
+    if "content" not in request.query_params:
+        return Response({'error': 'content not included'}, status=400)
+    club_name = request.query_params['club_name']
+    subject = request.query_params['subject']
+    content = request.query_params['content']
+    club = Club.objects.filter(name=club_name).first()
+    all_members = []
+    members = list(club.members.all().values_list('username', flat=True))
+    officers = list(club.officers.all().values_list('username', flat=True))
+    all_members = members + officers
+    try:
+        email = EmailMessage(subject, content, to=all_members)
+        if email.send():
+            return Response("success", status=200)
+        else:
+            return Response("error", status = 400)
+    except Exception as e:
+        return Response("error", status=400)

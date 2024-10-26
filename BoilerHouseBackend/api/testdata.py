@@ -50,11 +50,12 @@ def drop_tables(conn):
         conn.commit()
 
 def connect_db():
+    load_dotenv()
     try:
         conn = psycopg2.connect(
             dbname="postgres",
             user="postgres",
-            password="asdfjkhasdfj1238u8d7faysdfabxzlv12312379",
+            password=os.getenv("DATABASE_PASSWORD"),
             host="boilerhouse-postgres-db.cke5ybck7fmc.us-east-2.rds.amazonaws.com", 
             port="5432"
         )
