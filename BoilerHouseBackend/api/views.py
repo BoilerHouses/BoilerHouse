@@ -684,13 +684,15 @@ def get_club_details_for_edit(request, club_id):
         return Response(club_data, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
-
+    
+@api_view(['GET'])
 def get_clubs_for_officer(request):
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
         return Response({'error': 'invalid token'}, status=400)
     clubs = user.officer_list.all().values_list('name', flat=True)
-    if clubs.count() == 0:
+
+    if len(clubs) == 0:
         return Response({'error': 'user is not a club officer'}, status = 400)
     return Response(clubs, status=200)
 
