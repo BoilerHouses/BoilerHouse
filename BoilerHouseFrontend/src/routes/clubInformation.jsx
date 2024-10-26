@@ -584,7 +584,11 @@ const ClubInformation = () => {
           <Typography>
             Time: {selectedMeeting?.startTime} - {selectedMeeting?.endTime}
           </Typography>
-          <Typography>Agenda: {selectedMeeting?.meetingAgenda}</Typography>
+          <div
+            className={selectedMeeting?.meetingAgenda === "" ? "hidden" : ""}
+          >
+            <Typography>Agenda: {selectedMeeting?.meetingAgenda}</Typography>
+          </div>
           <Typography>Meeting Id: {selectedMeeting?.id}</Typography>
         </DialogContent>
         <DialogActions>
