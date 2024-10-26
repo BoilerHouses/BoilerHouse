@@ -271,6 +271,48 @@ const ClubInformation = () => {
       });
   };
 
+  const handleOfficerAdd = (event) => {
+    const token = localStorage.getItem("token");
+    const username = event.target.getAttribute("index").substring(0, event.target.getAttribute("index").length - 3)
+    axios.get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          username: username,
+          approved: "Y"
+        },
+      })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("There was an error with approval!", error);
+        setIsLoading(false);
+      });
+  };
+
+  const handleOfficerDeny = (event) => {
+    const token = localStorage.getItem("token");
+    const username = event.target.getAttribute("index").substring(0, event.target.getAttribute("index").length - 3)
+    axios.get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          username: username,
+          approved: "N"
+        },
+      })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("There was an error with approval!", error);
+        setIsLoading(false);
+      });
+  };
+
   const handleJoin = () => {
     if (clubData.useQuestions) {
       navigate(`/questions/${clubId}`);
@@ -579,6 +621,15 @@ const ClubInformation = () => {
         </button>
 
         <button
+          className={officer && clubData.is_approved && joined
+            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"}
+          onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
+        >
+          Edit Officer Questionnaire
+        </button>
+
+        <button
           className={officer && clubData.is_approved
             ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
             : "hidden"}
@@ -594,6 +645,14 @@ const ClubInformation = () => {
           onClick={() => navigate(`/club/${clubId}/edit`)}
         >
           Contact Us!
+        </button>
+        <button
+          className={!officer && clubData.is_approved && joined
+            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"}
+          onClick={() => navigate(`/officer_questions/${clubId}`)}
+        >
+          Apply To Be an Officer!
         </button>
       </div>
 
@@ -880,6 +939,7 @@ const ClubInformation = () => {
             <span className="ml-4 text-black font-semibold" index={profile[3]}>
               {profile[1]}
             </span>
+            
           </div>
         ))}
       </div>
@@ -888,7 +948,7 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):
       </Typography>
-      <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
             index={profile[3]}
@@ -908,6 +968,36 @@ const ClubInformation = () => {
             <span className="ml-4 text-black font-semibold" index={profile[3]}>
               {profile[1]}
             </span>
+            <button
+              className={
+                profile[4] && officer
+                  ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => {
+                
+                navigate(`/officer_answers/${clubId}/${profile[3]}`);
+              }}
+            >View Application</button>
+            <button
+              className={
+                profile[4] && officer
+                 ? "bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"
+                 : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={handleOfficerAdd}
+            >Approve</button>
+            <button
+              className={
+                profile[4] && officer
+                 ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"
+                 : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={handleOfficerDeny}
+            >Deny</button>
           </div>
         ))}
       </div>

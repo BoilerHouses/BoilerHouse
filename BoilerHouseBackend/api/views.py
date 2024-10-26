@@ -352,6 +352,7 @@ def get_all_clubs(request):
         t['officers'] = []
         t['members'] = []
         t['pending_members'] = []
+        t['pending_officers'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         clubs.append(t)
@@ -473,7 +474,7 @@ def get_club_information(request):
         member_list = []
         for i in ret_club['members']:
             inClub = ((i.username == user.username) or inClub)
-            member_list.append((i.pk, i.name, i.profile_picture, i.username))
+            member_list.append((i.pk, i.name, i.profile_picture, i.username, i in list(club.pending_officers.all())))
         pending_list = []
         for i in ret_club['pending_members']:
             inClub = ((i.username == user.username) or inClub)
@@ -484,6 +485,7 @@ def get_club_information(request):
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
+        ret_club['pending_officers'] = []
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
             deleted = deleted and club.deletion_votes[user.username]
@@ -515,6 +517,35 @@ def set_questions(request):
     club.questionnaire = data['questions']
     club.save()
     return Response({'questions': club.questionnaire}, status=200)
+
+@api_view(['POST'])
+def set_officer_questions(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'questions' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    club.officerQuestionnaire = data['questions']
+    club.save()
+    return Response({'questions': club.officerQuestionnaire}, status=200)
+
+@api_view(['GET'])
+def get_officer_questions(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    return Response({'questions': club.officerQuestionnaire}, status=200)
 
 @api_view(['GET'])
 def get_questions(request):
@@ -549,6 +580,38 @@ def set_answers(request):
         club.responses[user.username] = data['response']
     club.save()
     return Response('Sucess!', status=200)
+
+
+@api_view(['POST'])
+def set_officer_answers(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'response' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if (user not in list(club.officers.all()) and user in list(club.members.all())):
+        club.pending_officers.add(user)
+        club.officerResponses[user.username] = data['response']
+    club.save()
+    return Response('Sucess!', status=200)
+
+@api_view(['GET'])
+def get_officer_answers(request, club_id, username):
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if username in club.officerResponses:
+        return Response(club.officerResponses[username] , status=200)
+    else:
+        return Response([], status=200)
 
 @api_view(['GET'])
 def get_answers(request):
@@ -625,6 +688,28 @@ def modify_user_to_club(request):
     club.responses.pop(member.username, None)
     if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
         club.members.add(member)
+    club.save()
+    return Response("Sucess!", 200)
+
+
+@api_view(['GET'])
+def modify_user_to_officer(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'username' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if user.username not in [x.username for x in list(club.officers.all())]:
+        return Response({"error": "Invalid Permissions, cannot access club!"}, status=403)
+    username = request.query_params['username']
+    if not club or username not in [x.username for x in list(club.pending_officers.all())]:
+        return Response({"error": "User or Club does not exist"}, status=404)
+    member = User.objects.filter(username=username).first()
+    club.pending_officers.remove(member)
+    club.officerResponses.pop(member.username, None)
+    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
+        club.officers.add(member)
     club.save()
     return Response("Sucess!", 200)
 
