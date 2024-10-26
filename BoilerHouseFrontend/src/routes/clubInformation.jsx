@@ -18,6 +18,9 @@ const ClubInformation = () => {
   const [joined, setJoined] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [deleted, setDeleted] = useState(false)
+  const [deletedCount, setDeletedCount] = useState(0)
+  const [officerCount, setOfficerCount] = useState(0)
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const defaultPhotos = [
@@ -28,6 +31,7 @@ const ClubInformation = () => {
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2dVbLMzlaeJnL5C6RpZ8HLRECJhH6ILEGKg&s",
     "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
     "https://st.depositphotos.com/2001755/3622/i/450/depositphotos_36220949-stock-photo-beautiful-landscape.jpg",
+    "https://source.boomplaymusic.com/group10/M00/09/11/d0e4e4e7e6a84fe7b53b2222db066c5cH3000W3000_320_320.jpg"
   ];
 
   useEffect(() => {
@@ -46,7 +50,10 @@ const ClubInformation = () => {
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
+        setDeleted(response.data.deleted)
         setOfficer(response.data.officer);
+        setDeletedCount(response.data.deleted_count)
+        setOfficerCount(response.data.officer_count)
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -81,6 +88,33 @@ const ClubInformation = () => {
       return defaultPhotos
     }
     return clubData.gallery
+  }
+
+  const deleteClub = (event) => {
+    const token = localStorage.getItem("token");
+
+    axios.get(`http://127.0.0.1:8000/api/club/delete/vote/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          club: clubId,
+        },
+      })
+      .then((response) => {
+        const data = response.data
+        if (data.deleted) {
+          navigate(`/clubs`)
+        } else {
+          setDeleted(data.vote)
+          setDeletedCount(response.data.deleted_count)
+          setOfficerCount(response.data.officer_count)
+        }
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the club data!", error);
+        setIsLoading(false);
+      });
   }
 
   const handleMemberProfile = (event) => {
@@ -265,6 +299,22 @@ const ClubInformation = () => {
         >
           Create Meeting
         </button>
+
+        <button
+          className={
+            officer && joined
+              ? "bg-red-500 absolute top-5 right-[35%] text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+              : "hidden"
+          }
+          onClick={deleteClub}
+        >
+          {deleted ? 'Revoke Vote to Delete' : 'Vote to Delete Club'}
+        </button>
+        <p className={
+            officer && joined
+              ? "absolute top-35 right-[35%] text-red font-bold"
+              : "hidden"
+          }>{deletedCount + '/' + officerCount + ' have voted to delete this club'}</p>
 
         <button
           className={

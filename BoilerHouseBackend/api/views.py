@@ -484,7 +484,15 @@ def get_club_information(request):
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
-        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer}, status=200)
+        deleted = user.username in club.deletion_votes
+        if user.username in club.deletion_votes:
+            deleted = deleted and club.deletion_votes[user.username]
+        officer_names = [a.username for a in list(club.officers.all())]
+        voted_count = 0
+        for a in club.deletion_votes:
+            if a in officer_names and club.deletion_votes[a]:
+                voted_count += 1
+        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names)}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
@@ -554,6 +562,40 @@ def get_answers(request):
         return Response(club.responses[username] , status=200)
     else:
         return Response([], status=200)
+
+@api_view(['GET'])
+def set_deletion(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'club' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=request.query_params['club']).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if (user not in list(club.officers.all())):
+        return Response({"error": "Invalid Request, Missing Permissions!"}, status=403)
+    if user.username not in club.deletion_votes:
+        club.deletion_votes[user.username] = True
+    else:
+        club.deletion_votes[user.username] = not club.deletion_votes[user.username]
+    club.save()
+    to_del = True
+    for i in list(club.officers.all()):
+        to_del = to_del and i.username in club.deletion_votes
+        if i.username in club.deletion_votes:
+            to_del = to_del and club.deletion_votes[i.username]
+    if to_del:
+        club.delete()
+        return Response({'deleted': True}, status=200)
+    else:
+        voted_count = 0
+        officer_names = [a.username for a in list(club.officers.all())]
+        for a in club.deletion_votes:
+            if a in officer_names and club.deletion_votes[a]:
+                voted_count += 1
+        return Response({'deleted': False, 'vote': club.deletion_votes[user.username], "deleted_count": voted_count, "officer_count": len(officer_names)}, status=200)
+
 
 @api_view(['GET'])
 def get_all_users(request):
