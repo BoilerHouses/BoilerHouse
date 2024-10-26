@@ -14,15 +14,13 @@ const ViewClubs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
-
-  const [selectedClubSize, setSelectedClubSize] = useState("");
-
+  const [selectedClubSize, setSelectedClubSize] = useState("1 - 9");
   const [openFilterMenu, setOpenFilterMenu] = useState(false);
 
+  const [filteredData, setFilteredData] = useState([]);
+
   const navigate = useNavigate();
-  const filteredData = data.filter((item) =>
-    item.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+
   useEffect(() => {
     const fetchClubs = async () => {
       setIsLoadingClubs(true);
@@ -37,8 +35,8 @@ const ViewClubs = () => {
           },
         });
         if (response.status == 200) {
-          console.log(response.data.clubs);
           setData(response.data.clubs);
+          setFilteredData(response.data.clubs);
           setIsLoadingClubs(false);
         } else {
           alert("Internal Server Error");
@@ -56,6 +54,61 @@ const ViewClubs = () => {
     setSelectedClubSize(event.target.value);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+
+    const filter = data.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredData(filter);
+  };
+
+  const applyFilters = () => {
+    setOpenFilterMenu(false);
+
+    let minClubSize = 1;
+    let maxClubSize = 1;
+
+    switch (selectedClubSize) {
+      case "1 - 9":
+        minClubSize = 1;
+        maxClubSize = 9;
+        break;
+      case "10 - 24":
+        minClubSize = 10;
+        maxClubSize = 24;
+        break;
+      case "25 - 49":
+        minClubSize = 25;
+        maxClubSize = 49;
+        break;
+      case "50 - 99":
+        minClubSize = 50;
+        maxClubSize = 99;
+        break;
+      case "100+":
+        minClubSize = 100;
+        maxClubSize = Infinity;
+        break;
+    }
+
+    const filter = data.filter((item) =>
+      item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+
+    let newClubList = [];
+
+    filter.forEach((club) => {
+      const members = club.num_members;
+
+      if (members >= minClubSize && members <= maxClubSize) {
+        newClubList.push(club);
+      }
+    });
+    setFilteredData(newClubList);
+  };
+
   return (
     <div className="container mx-auto p-5 max-w-[80%]">
       <div className="flex items-center mb-5 space-x-3">
@@ -63,7 +116,7 @@ const ViewClubs = () => {
           type="text"
           placeholder="Search..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={handleSearchChange}
           className="flex-grow p-3 border border-gray-300 rounded"
         />
         <div className="relative">
@@ -74,11 +127,10 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg">
-              <Typography variant="h6" gutterBottom>
-                Club Size
-              </Typography>
+            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center">
+              <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
+                <Typography variant="subtitle1">Number of Members</Typography>
                 <RadioGroup
                   value={selectedClubSize}
                   onChange={changeSelectedClubSize}
@@ -104,18 +156,17 @@ const ViewClubs = () => {
                     label="50 - 99"
                   />
                   <FormControlLabel
-                    value="100 - 249"
+                    value="100+"
                     control={<Radio />}
-                    label="100 - 249"
-                  />
-                  <FormControlLabel
-                    value="250+"
-                    control={<Radio />}
-                    label="250+"
+                    label="100+"
                   />
                 </RadioGroup>
               </FormControl>
-              <Button variant="contained" className="!mt-5">
+              <Button
+                variant="contained"
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={applyFilters}
+              >
                 Apply Filters
               </Button>
             </div>
@@ -135,7 +186,6 @@ const ViewClubs = () => {
             >
               <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
                 <span>{item.name}</span>
-                <span className="text-sm block">Members: {item.members}</span>
               </div>
             </div>
           ))}
