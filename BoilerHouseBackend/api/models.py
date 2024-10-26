@@ -48,6 +48,12 @@ class Club(models.Model):
     responses = models.JSONField(default=dict)
     meetings = ArrayField(models.JSONField(default=dict), default = list)
     deletion_votes = models.JSONField(default=dict)
+    officerQuestionnaire = models.JSONField(default=dict)
+    officerResponses = models.JSONField(default=dict)
+    acceptingApplications = models.BooleanField(default=True)
+    clubPhoneNumber = models.CharField(max_length=100, default='')
+    clubEmail = models.CharField(max_length=100, default='')
+
 
     @classmethod
     def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
