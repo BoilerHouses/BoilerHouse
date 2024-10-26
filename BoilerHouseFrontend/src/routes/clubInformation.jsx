@@ -568,9 +568,9 @@ const ClubInformation = () => {
             type="checkbox"
             checked={accepting}
             onChange={handleCheckboxChange}
-            className={officer && joined && clubData.is_approved ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" : hidden}
+            className={officer && joined && clubData.is_approved ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" : 'hidden'}
           />
-          <label className="ml-2 text-gray-700">Accept Officer Applications</label>
+          <label className={officer && joined && clubData.is_approved ? "ml-2 text-gray-700" : 'hidden'}>Accept Officer Applications</label>
         </div>
 
         <button
