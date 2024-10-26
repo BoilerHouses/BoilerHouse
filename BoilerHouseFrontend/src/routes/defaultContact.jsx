@@ -34,8 +34,8 @@ const DefaultContact = () => {
           },
         });
         const clubData = response.data;
-        setCulture(clubData.culture);
-        setTimeCommitment(clubData.time_commitment);
+        setCulture(clubData.clubPhoneNumber);
+        setTimeCommitment(clubData.clubEmail);
       } catch (error) {
         console.error("Error fetching club data:", error);
         if (error.response && error.response.status === 403) {
@@ -57,45 +57,45 @@ const DefaultContact = () => {
     event.preventDefault();
 
     if (!validateEmail(email)) {
-      setEmailError("Please enter a valid email address.");
-      return;
+        setEmailError("Please enter a valid email address.");
+        return;
     } else {
-      setEmailError(""); // Clear any existing error if email is valid
+        setEmailError(""); // Clear any existing error if email is valid
     }
 
     setIsLoading(true);
 
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.put(
-        `http://127.0.0.1:8000/api/club/update/`,
+        const response = await axios.put(
+        `http://127.0.0.1:8000/api/club/${clubId}/defaultContact`, // Adjust to match your backend endpoint URL
         {
-          club_id: clubId,
-          culture: culture,
-          time_commitment: timeCommitment,
-          email: email,
+            club_id: clubId,
+            clubEmail: email,
+            clubPhoneNumber: culture, // Change 'culture' to the state variable for the phone number if necessary
         },
         {
-          headers: {
-            Authorization: token,
-          },
+            headers: {
+                Authorization: token,
+            },
         }
-      );
+    );
 
-      if (response.status === 200) {
-        setIsLoading(false);
-        navigate(`/club/${clubId}`);
-      } else {
-        setIsLoading(false);
-        console.error("Server error:", response.data);
-        alert("Error updating club information: " + response.data.error);
-      }
-    } catch (error) {
-      setIsLoading(false);
-      console.error("Error updating club information:", error);
-      alert("Error updating club information");
+    if (response.status === 200) {
+         setIsLoading(false);
+         navigate(`/club/${clubId}`);
+    } else {
+         setIsLoading(false);
+         console.error("Server error:", response.data);
+         alert("Error updating club information: " + response.data.error);
     }
+    } catch (error) {
+        setIsLoading(false);
+        console.error("Error updating club information:", error);
+        alert("Error updating club information");
+     }
   };
+
 
   return (
     <div className="flex items-center justify-center my-14">
