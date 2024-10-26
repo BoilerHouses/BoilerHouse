@@ -58,6 +58,14 @@ const Navbar = () => {
             </li>
             <li>
               <NavLink
+                to="/clubcreation"
+                className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
+              >
+                Create a Club
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
                 to="/approveClubs"
                 className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
               >
@@ -70,6 +78,14 @@ const Navbar = () => {
                 className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
               >
                 Manage Users
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/sendemail"
+                className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
+              >
+                Send Email
               </NavLink>
             </li>
             <li>
@@ -110,7 +126,14 @@ const Navbar = () => {
                 Create a Club
               </NavLink>
             </li>
-
+            <li>
+              <NavLink
+                to="/sendemail"
+                className="text-black  hover:text-yellow-500 px-3 py-2 rounded-md transition duration-300 font-bold"
+              >
+                Send Email
+              </NavLink>
+            </li>
             <li>
               <NavLink
                 to={`/profile/${localStorage.getItem('username')}`}

@@ -9,3 +9,4 @@ BoilerHouseBackend/tutorial-env/
 BoilerHouseFrontend/node_modules/
 BoilerHouseBackend/env/pyvenv.cfg
 BoilerHouseBackend/.env
+BoilerHouseBackend/api/testData.py

@@ -34,15 +34,27 @@ class User(models.Model):
 class Club(models.Model):
     name = models.CharField(max_length=255, unique=True)
     description = models.CharField(max_length=2048)
+    culture = models.CharField(max_length=2048, default='')
+    time_commitment = models.CharField(max_length=255, default='')
     interests = ArrayField(models.CharField(max_length=255))
     icon = models.CharField(max_length=2048, default='')
     gallery = ArrayField(models.CharField(max_length=2048, default=''))
     is_approved = models.BooleanField(default=False)
-    officers = ArrayField(models.IntegerField())
-    members = ArrayField(models.IntegerField())
+    officers = models.ManyToManyField(User, related_name='officer_list')
+    members = models.ManyToManyField(User, related_name='member_list')
+    pending_members = models.ManyToManyField(User, related_name='pending_list')
+    useQuestions = models.BooleanField(default=False)
+    questionnaire = models.JSONField(default=dict)
+    responses = models.JSONField(default=dict)
+    meetings = ArrayField(models.JSONField(default=dict), default = list)
+    deletion_votes = models.JSONField(default=dict)
+
     @classmethod
-    def create(cls, name, description, interests, officers, members, icon, gallery):
-        club = cls(name=name, description=description, interests=interests, officers=officers, members=members, icon=icon, gallery=gallery)
+    def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
+        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
+        club.save()
+        club.officers.add(owner)
+        club.members.add(owner)
         return club
 
 class LoginPair(models.Model):
