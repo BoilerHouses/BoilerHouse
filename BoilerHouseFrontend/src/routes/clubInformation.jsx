@@ -18,6 +18,10 @@ import {
   Button,
   TextField,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Grid
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -33,9 +37,9 @@ const ClubInformation = () => {
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
-  const [deleted, setDeleted] = useState(false)
-  const [deletedCount, setDeletedCount] = useState(0)
-  const [officerCount, setOfficerCount] = useState(0)
+  const [deleted, setDeleted] = useState(false);
+  const [deletedCount, setDeletedCount] = useState(0);
+  const [officerCount, setOfficerCount] = useState(0);
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -53,6 +57,10 @@ const ClubInformation = () => {
   const [isLoadingEditMeeting, setIsLoadingEditMeeting] = useState(false);
   const [isLoadingDeleteMeeting, setIsLoadingDeleteMeeting] = useState(false);
 
+  const [mostCommonMajors, setMostCommonMajors] = useState([]);
+  const [mostCommonInterests, setMostCommonInterests] = useState([]);
+  const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
+
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
     "https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg",
@@ -61,7 +69,7 @@ const ClubInformation = () => {
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2dVbLMzlaeJnL5C6RpZ8HLRECJhH6ILEGKg&s",
     "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
     "https://st.depositphotos.com/2001755/3622/i/450/depositphotos_36220949-stock-photo-beautiful-landscape.jpg",
-    "https://source.boomplaymusic.com/group10/M00/09/11/d0e4e4e7e6a84fe7b53b2222db066c5cH3000W3000_320_320.jpg"
+    "https://source.boomplaymusic.com/group10/M00/09/11/d0e4e4e7e6a84fe7b53b2222db066c5cH3000W3000_320_320.jpg",
   ];
 
   useEffect(() => {
@@ -77,25 +85,22 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.common_majors)
-        console.log(response.data.common_interests)
-        console.log(response.data.common_grad_years)
-
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
-        setDeleted(response.data.deleted)
+        setDeleted(response.data.deleted);
         setOfficer(response.data.officer);
-        setDeletedCount(response.data.deleted_count)
-        setOfficerCount(response.data.officer_count)
-        setAccepting(response.data.accepting)
+        setDeletedCount(response.data.deleted_count);
+        setOfficerCount(response.data.officer_count);
+        setAccepting(response.data.accepting);
+        setMostCommonMajors(response.data.common_majors);
+        setMostCommonInterests(response.data.common_interests);
+        setMostCommonGradYears(response.data.common_grad_years);
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
-
-      
 
     axios({
       // create account endpoint
@@ -149,10 +154,10 @@ const ClubInformation = () => {
       .get(`http://127.0.0.1:8000/api/club/officer/toggle/${clubId}/`, {
         headers: {
           Authorization: token,
-        }
+        },
       })
       .then((response) => {
-        setAccepting(response.data.accepting)
+        setAccepting(response.data.accepting);
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -161,15 +166,16 @@ const ClubInformation = () => {
 
   const fetchGallery = () => {
     if (clubData.gallery.length == 0) {
-      return defaultPhotos
+      return defaultPhotos;
     }
-    return clubData.gallery
-  }
+    return clubData.gallery;
+  };
 
   const deleteClub = (event) => {
     const token = localStorage.getItem("token");
 
-    axios.get(`http://127.0.0.1:8000/api/club/delete/vote/`, {
+    axios
+      .get(`http://127.0.0.1:8000/api/club/delete/vote/`, {
         headers: {
           Authorization: token,
         },
@@ -178,20 +184,20 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        const data = response.data
+        const data = response.data;
         if (data.deleted) {
-          navigate(`/clubs`)
+          navigate(`/clubs`);
         } else {
-          setDeleted(data.vote)
-          setDeletedCount(response.data.deleted_count)
-          setOfficerCount(response.data.officer_count)
+          setDeleted(data.vote);
+          setDeletedCount(response.data.deleted_count);
+          setOfficerCount(response.data.officer_count);
         }
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
-  }
+  };
 
   const handleMemberProfile = (event) => {
     if (
@@ -530,37 +536,43 @@ const ClubInformation = () => {
     >
       <div className="flex flex-wrap gap-4 justify-between w-2/3 mx-auto my-4 ">
         <button
-          className={clubData.is_approved && !joined
-            ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-            : "hidden"}
+          className={
+            clubData.is_approved && !joined
+              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
           onClick={handleJoin}
         >
           Join Club
         </button>
-        
+
         <button
-          className={officer
-            ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-            : "hidden"}
+          className={
+            officer
+              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
           onClick={goToCreateMeeting}
         >
           Create Meeting
         </button>
 
         <button
-          className={officer && joined
-            ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-            : "hidden"}
+          className={
+            officer && joined
+              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+              : "hidden"
+          }
           onClick={deleteClub}
         >
-          {deleted ? 'Revoke Vote to Delete' : 'Vote to Delete Club'}
+          {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
         </button>
 
-        <p className={officer && joined
-            ? "text-red font-bold"
-            : "hidden"}
-        >
-          {deletedCount + '/' + officerCount + ' have voted to delete this club'}
+        <p className={officer && joined ? "text-red font-bold" : "hidden"}>
+          {deletedCount +
+            "/" +
+            officerCount +
+            " have voted to delete this club"}
         </p>
 
         <div className="flex items-center">
@@ -568,43 +580,58 @@ const ClubInformation = () => {
             type="checkbox"
             checked={accepting}
             onChange={handleCheckboxChange}
-            className={officer && joined && clubData.is_approved ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" : 'hidden'}
+            className={
+              officer && joined && clubData.is_approved
+                ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                : "hidden"
+            }
           />
-          <label className={officer && joined && clubData.is_approved ? "ml-2 text-gray-700" : 'hidden'}>Accept Officer Applications</label>
+          <label
+            className={
+              officer && joined && clubData.is_approved
+                ? "ml-2 text-gray-700"
+                : "hidden"
+            }
+          >
+            Accept Officer Applications
+          </label>
         </div>
 
         <button
-          className={officer && clubData.is_approved && joined
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
+          className={
+            officer && clubData.is_approved && joined
+              ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+              : "hidden"
+          }
           onClick={() => navigate(`/createQuestions/${clubId}`)}
         >
           Edit Questionnaire
         </button>
 
         <button
-          className={officer && clubData.is_approved
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
+          className={
+            officer && clubData.is_approved
+              ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+              : "hidden"
+          }
           onClick={() => navigate(`/club/${clubId}/edit`)}
         >
           Edit Culture and Time Commitment
         </button>
 
         <button
-          className={officer && clubData.is_approved
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
+          className={
+            officer && clubData.is_approved
+              ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+              : "hidden"
+          }
           onClick={() => navigate(`/club/${clubId}/edit`)}
         >
           Contact Us!
         </button>
       </div>
 
-
       <div className="relative">
-        
-        
         <button
           className={
             !clubData.is_approved
@@ -915,6 +942,146 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
+
+      {/* Club Overview Section*/}
+      <Grid
+        container
+        spacing={2}
+        justifyContent="center"
+        alignItems="flex-start"
+        sx={{ maxWidth: 900 }}
+      >
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Majors
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonMajors.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Interests
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonInterests.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Grad Years
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonGradYears.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
       <Typography
         variant="h6"
         gutterBottom
