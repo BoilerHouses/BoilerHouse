@@ -647,7 +647,7 @@ const ClubInformation = () => {
           Contact Us!
         </button>
         <button
-          className={!officer && clubData.is_approved && joined
+          className={!officer && clubData.is_approved && joined && accepting
             ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
             : "hidden"}
           onClick={() => navigate(`/officer_questions/${clubId}`)}
