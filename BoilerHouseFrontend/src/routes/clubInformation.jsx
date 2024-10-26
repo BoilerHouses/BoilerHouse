@@ -76,6 +76,10 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
+        console.log(response.data.common_majors)
+        console.log(response.data.common_interests)
+        console.log(response.data.common_grad_years)
+
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);

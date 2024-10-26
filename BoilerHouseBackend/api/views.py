@@ -466,6 +466,10 @@ def get_club_information(request):
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
         ret_club = model_to_dict(club)
+        major_frequencies = {}
+        interest_frequencies = {}
+        grad_year_frequencies = {}
+        num_members = club.members.count()
         officer_list = []
         for i in ret_club['officers']:
             isOfficer = ((i.username == user.username) or isOfficer)
@@ -473,7 +477,14 @@ def get_club_information(request):
         member_list = []
         for i in ret_club['members']:
             inClub = ((i.username == user.username) or inClub)
-            member_list.append((i.pk, i.name, i.profile_picture, i.username))
+            member_list.append((i.pk, i.name, i.profile_picture, i.username, i.interests, i.grad_year, i.major))
+            for major in i.major:
+                major_frequencies[major] = 1 + major_frequencies.get(major, 0)
+
+            for interest in i.interests:
+                interest_frequencies[interest] = 1 + interest_frequencies.get(interest, 0)
+
+            grad_year_frequencies[i.grad_year] = 1 + grad_year_frequencies.get(i.grad_year, 0)
         pending_list = []
         for i in ret_club['pending_members']:
             inClub = ((i.username == user.username) or inClub)
@@ -492,7 +503,38 @@ def get_club_information(request):
         for a in club.deletion_votes:
             if a in officer_names and club.deletion_votes[a]:
                 voted_count += 1
-        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names)}, status=200)
+
+        max_majors = 5 if len(major_frequencies) >= 5 else len(major_frequencies)
+        max_interests = 5 if len(interest_frequencies) >=5 else len(interest_frequencies)
+        max_grad_years = 5 if len(grad_year_frequencies) >=5 else len(grad_year_frequencies)
+
+        most_common_majors = []
+        most_common_interests = []
+        most_common_grad_years = []
+
+        if max_majors > 0:
+            most_common_majors = sorted(list(major_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_majors]
+
+        if max_interests > 0:
+            most_common_interests = sorted(list(interest_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_interests]
+
+        if max_grad_years > 0:
+            most_common_grad_years = sorted(list(grad_year_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_grad_years]
+
+        major_pairs = []
+        interest_pairs = []
+        grad_year_pairs = []
+
+        for major, freq in most_common_majors:
+            major_pairs.append((major, round((freq/num_members) * 100, 2)))
+
+        for interest, freq in most_common_interests:
+            interest_pairs.append((interest, round((freq/num_members) * 100, 2)))
+
+        for year, freq in most_common_grad_years:
+            grad_year_pairs.append((year, round((freq/num_members) * 100, 2)))
+
+        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
