@@ -20,6 +20,10 @@ import {
   Button,
   TextField,
   Alert,
+  List,
+  ListItem,
+  ListItemText,
+  Grid,
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -29,14 +33,15 @@ const ClubInformation = () => {
   const today = dayjs();
   const sixPM = dayjs().hour(18).minute(0);
 
-  const { clubId } = useParams(); // Get club ID from the route parameters
+  const { clubId } = useParams();
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [deleted, setDeleted] = useState(false)
-  const [deletedCount, setDeletedCount] = useState(0)
-  const [officerCount, setOfficerCount] = useState(0)
+  const [accepting, setAccepting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+  const [deletedCount, setDeletedCount] = useState(0);
+  const [officerCount, setOfficerCount] = useState(0);
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
@@ -54,6 +59,10 @@ const ClubInformation = () => {
   const [isLoadingEditMeeting, setIsLoadingEditMeeting] = useState(false);
   const [isLoadingDeleteMeeting, setIsLoadingDeleteMeeting] = useState(false);
 
+  const [mostCommonMajors, setMostCommonMajors] = useState([]);
+  const [mostCommonInterests, setMostCommonInterests] = useState([]);
+  const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
+
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
     "https://impactgroupmarketing.com/Portals/0/xBlog/uploads/2023/1/3/Myproject(20).jpg",
@@ -62,7 +71,7 @@ const ClubInformation = () => {
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2dVbLMzlaeJnL5C6RpZ8HLRECJhH6ILEGKg&s",
     "https://img.freepik.com/free-photo/wide-angle-shot-single-tree-growing-clouded-sky-during-sunset-surrounded-by-grass_181624-22807.jpg",
     "https://st.depositphotos.com/2001755/3622/i/450/depositphotos_36220949-stock-photo-beautiful-landscape.jpg",
-    "https://source.boomplaymusic.com/group10/M00/09/11/d0e4e4e7e6a84fe7b53b2222db066c5cH3000W3000_320_320.jpg"
+    "https://source.boomplaymusic.com/group10/M00/09/11/d0e4e4e7e6a84fe7b53b2222db066c5cH3000W3000_320_320.jpg",
   ];
 
   useEffect(() => {
@@ -81,10 +90,14 @@ const ClubInformation = () => {
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
-        setDeleted(response.data.deleted)
+        setDeleted(response.data.deleted);
         setOfficer(response.data.officer);
-        setDeletedCount(response.data.deleted_count)
-        setOfficerCount(response.data.officer_count)
+        setDeletedCount(response.data.deleted_count);
+        setOfficerCount(response.data.officer_count);
+        setAccepting(response.data.club.acceptingApplications);
+        setMostCommonMajors(response.data.common_majors);
+        setMostCommonInterests(response.data.common_interests);
+        setMostCommonGradYears(response.data.common_grad_years);
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -137,17 +150,39 @@ const ClubInformation = () => {
       });
   }, [clubId]);
 
+  const handleCheckboxChange = () => {
+    const token = localStorage.getItem("token");
+    setAccepting(!accepting);
+    console.log(accepting);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/toggle/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          accept: accepting,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the club data!", error);
+      });
+  };
+
   const fetchGallery = () => {
     if (clubData.gallery.length == 0) {
-      return defaultPhotos
+      return defaultPhotos;
     }
-    return clubData.gallery
-  }
+    return clubData.gallery;
+  };
 
   const deleteClub = (event) => {
     const token = localStorage.getItem("token");
 
-    axios.get(`http://127.0.0.1:8000/api/club/delete/vote/`, {
+    axios
+      .get(`http://127.0.0.1:8000/api/club/delete/vote/`, {
         headers: {
           Authorization: token,
         },
@@ -156,20 +191,20 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        const data = response.data
+        const data = response.data;
         if (data.deleted) {
-          navigate(`/clubs`)
+          navigate(`/clubs`);
         } else {
-          setDeleted(data.vote)
-          setDeletedCount(response.data.deleted_count)
-          setOfficerCount(response.data.officer_count)
+          setDeleted(data.vote);
+          setDeletedCount(response.data.deleted_count);
+          setOfficerCount(response.data.officer_count);
         }
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
-  }
+  };
 
   const handleMemberProfile = (event) => {
     if (
@@ -249,6 +284,54 @@ const ClubInformation = () => {
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
+        setIsLoading(false);
+      });
+  };
+
+  const handleOfficerAdd = (event) => {
+    const token = localStorage.getItem("token");
+    const username = event.target
+      .getAttribute("index")
+      .substring(0, event.target.getAttribute("index").length - 3);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          username: username,
+          approved: "Y",
+        },
+      })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("There was an error with approval!", error);
+        setIsLoading(false);
+      });
+  };
+
+  const handleOfficerDeny = (event) => {
+    const token = localStorage.getItem("token");
+    const username = event.target
+      .getAttribute("index")
+      .substring(0, event.target.getAttribute("index").length - 3);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+        headers: {
+          Authorization: token,
+        },
+        params: {
+          username: username,
+          approved: "N",
+        },
+      })
+      .then(() => {
+        window.location.reload();
+      })
+      .catch((error) => {
+        console.error("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -506,6 +589,130 @@ const ClubInformation = () => {
         minHeight: "100vh",
       }}
     >
+      <div className="absolute right-0">
+        <button
+          className={
+            clubData.is_approved && !joined
+              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
+          onClick={handleJoin}
+        >
+          Join Club
+        </button>
+
+        <div className="flex justify-between">
+          <button
+            className={
+              officer
+                ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+                : "hidden"
+            }
+            onClick={goToCreateMeeting}
+          >
+            Create Meeting
+          </button>
+
+          <button
+            className={
+              officer && joined
+                ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+                : "hidden"
+            }
+            onClick={deleteClub}
+          >
+            {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
+          </button>
+        </div>
+
+        <div className="flex justify-between">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={accepting}
+              onChange={handleCheckboxChange}
+              className={
+                officer && joined && clubData.is_approved
+                  ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  : "hidden"
+              }
+            />
+            <label
+              className={
+                officer && joined && clubData.is_approved
+                  ? "ml-2 text-gray-700"
+                  : "hidden"
+              }
+            >
+              Accept Officer Applications
+            </label>
+          </div>
+
+          <p className={officer && joined ? "text-red font-bold" : "hidden"}>
+            {deletedCount + "/" + officerCount + " votes to delete club"}
+          </p>
+        </div>
+
+        <div className="flex justify-between">
+          <button
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createQuestions/${clubId}`)}
+          >
+            Edit Questionnaire
+          </button>
+
+          <button
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
+          >
+            Edit Officer Questionnaire
+          </button>
+          <div />
+        </div>
+
+        <div className="flex justify-between">
+          <button
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/edit`)}
+          >
+            Edit Culture and Time Commitment
+          </button>
+
+          <button
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/edit`)}
+          >
+            Contact Us!
+          </button>
+          <button
+            className={
+              !officer && clubData.is_approved && joined && accepting
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/officer_questions/${clubId}`)}
+          >
+            Apply To Be an Officer!
+          </button>
+        </div>
+      </div>
+
       <div className="relative">
         <button
           className={
@@ -607,7 +814,7 @@ const ClubInformation = () => {
 
       {/* list of meetings*/}
       <Box
-        className="w-1/3 absolute right-0 h-[400px] overflow-y-scroll mr-12 mt-32"
+        className="w-1/3 absolute right-0 h-[400px] overflow-y-scroll mr-12 mt-52"
         sx={{
           border: "1px solid #ddd",
           borderRadius: "8px",
@@ -887,7 +1094,7 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):
       </Typography>
-      <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
             index={profile[3]}
@@ -907,9 +1114,184 @@ const ClubInformation = () => {
             <span className="ml-4 text-black font-semibold" index={profile[3]}>
               {profile[1]}
             </span>
+            <button
+              className={
+                profile[7] && officer
+                  ? "bg-orange-200 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-orange-300"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => {
+                navigate(`/officer_answers/${clubId}/${profile[3]}`);
+              }}
+            >
+              View Application
+            </button>
+            <button
+              className={
+                profile[7] && officer
+                  ? "bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={handleOfficerAdd}
+            >
+              Approve
+            </button>
+            <button
+              className={
+                profile[7] && officer
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={handleOfficerDeny}
+            >
+              Deny
+            </button>
           </div>
         ))}
       </div>
+
+      {/* Club Overview Section*/}
+      <Grid
+        container
+        spacing={2}
+        justifyContent="center"
+        alignItems="flex-start"
+        sx={{ maxWidth: 900 }}
+      >
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Majors
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonMajors.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Interests
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonInterests.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item>
+          <Card sx={{ width: 240, boxShadow: 3 }} className="mt-5">
+            <CardContent>
+              <Typography
+                variant="subtitle1"
+                component="div"
+                sx={{ textAlign: "center" }}
+              >
+                Most Common Grad Years
+              </Typography>
+              <List
+                sx={{
+                  "& > :not(:last-child)": {
+                    borderBottom: "1px solid rgba(0, 0, 0, 0.12)",
+                  },
+                }}
+              >
+                {mostCommonGradYears.map(([major, frequency], index) => (
+                  <ListItem key={index} sx={{ py: 0.75 }}>
+                    <ListItemText
+                      primary={
+                        <Typography
+                          variant="body2"
+                          sx={{ fontWeight: "medium" }}
+                        >
+                          {major}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography
+                          variant="caption"
+                          sx={{ color: "text.secondary" }}
+                        >
+                          {frequency}%
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+
       <Typography
         variant="h6"
         gutterBottom
