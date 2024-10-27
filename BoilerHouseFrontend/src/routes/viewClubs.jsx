@@ -19,6 +19,9 @@ const ViewClubs = () => {
 
   const [filteredData, setFilteredData] = useState([]);
 
+  const [minClubSize, setMinClubSize] = useState(0);
+  const [maxClubSize, setMaxClubSize] = useState(Infinity);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,55 +57,59 @@ const ViewClubs = () => {
     setSelectedClubSize(event.target.value);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-
-    const filter = data.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredData(filter);
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
 
   const applyFilters = () => {
     setOpenFilterMenu(false);
 
-    let minClubSize = 1;
-    let maxClubSize = 1;
-
     switch (selectedClubSize) {
       case "1 - 9":
-        minClubSize = 1;
-        maxClubSize = 9;
+        setMinClubSize(1);
+        setMaxClubSize(9);
         break;
       case "10 - 24":
-        minClubSize = 10;
-        maxClubSize = 24;
+        setMinClubSize(10);
+        setMaxClubSize(24);
         break;
       case "25 - 49":
-        minClubSize = 25;
-        maxClubSize = 49;
+        setMinClubSize(25);
+        setMaxClubSize(49);
         break;
       case "50 - 99":
-        minClubSize = 50;
-        maxClubSize = 99;
+        setMinClubSize(50);
+        setMaxClubSize(99);
         break;
       case "100+":
-        minClubSize = 100;
-        maxClubSize = Infinity;
+        setMinClubSize(100);
+        setMaxClubSize(Infinity);
         break;
     }
+  };
 
-    const filter = data.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const clearFilters = () => {
+    setSearchTerm("");
+    setMinClubSize(0);
+    setMaxClubSize(Infinity);
+    setSelectedClubSize("1 - 9");
+    setOpenFilterMenu(false);
+  }
 
+  useEffect(() => {
+    handleFilter();
+  }, [searchTerm, minClubSize, maxClubSize]);
 
+  const handleFilter = () => {
     let newClubList = [];
 
-    filter.forEach((club) => {
+    data.forEach((club) => {
       const members = club.num_members;
-
-      if (members >= minClubSize && members <= maxClubSize) {
+      if (
+        members >= minClubSize &&
+        members <= maxClubSize &&
+        club.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
         newClubList.push(club);
       }
     });
@@ -116,7 +123,9 @@ const ViewClubs = () => {
           type="text"
           placeholder="Search..."
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(e) => {
+            handleSearchChange(e);
+          }}
           className="flex-grow p-3 border border-gray-300 rounded"
         />
         <div className="relative">
@@ -168,6 +177,13 @@ const ViewClubs = () => {
                 onClick={applyFilters}
               >
                 Apply Filters
+              </Button>
+              <Button
+                variant="contained"
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={clearFilters}
+              >
+                Clear Filters
               </Button>
             </div>
           )}

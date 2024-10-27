@@ -21,7 +21,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  Grid
+  Grid,
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -31,7 +31,7 @@ const ClubInformation = () => {
   const today = dayjs();
   const sixPM = dayjs().hour(18).minute(0);
 
-  const { clubId } = useParams(); // Get club ID from the route parameters
+  const { clubId } = useParams();
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
   const [officer, setOfficer] = useState(false);
@@ -85,7 +85,6 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data)
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
@@ -151,9 +150,10 @@ const ClubInformation = () => {
 
   const handleCheckboxChange = () => {
     const token = localStorage.getItem("token");
-    setAccepting(!accepting)
-    console.log(accepting)
-    axios.get(`http://127.0.0.1:8000/api/club/officer/toggle/${clubId}/`, {
+    setAccepting(!accepting);
+    console.log(accepting);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/toggle/${clubId}/`, {
         headers: {
           Authorization: token,
         },
@@ -162,7 +162,7 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response)
+        console.log(response);
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -288,14 +288,17 @@ const ClubInformation = () => {
 
   const handleOfficerAdd = (event) => {
     const token = localStorage.getItem("token");
-    const username = event.target.getAttribute("index").substring(0, event.target.getAttribute("index").length - 3)
-    axios.get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+    const username = event.target
+      .getAttribute("index")
+      .substring(0, event.target.getAttribute("index").length - 3);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
         headers: {
           Authorization: token,
         },
         params: {
           username: username,
-          approved: "Y"
+          approved: "Y",
         },
       })
       .then(() => {
@@ -309,14 +312,17 @@ const ClubInformation = () => {
 
   const handleOfficerDeny = (event) => {
     const token = localStorage.getItem("token");
-    const username = event.target.getAttribute("index").substring(0, event.target.getAttribute("index").length - 3)
-    axios.get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
+    const username = event.target
+      .getAttribute("index")
+      .substring(0, event.target.getAttribute("index").length - 3);
+    axios
+      .get(`http://127.0.0.1:8000/api/club/officer/set/${clubId}/`, {
         headers: {
           Authorization: token,
         },
         params: {
           username: username,
-          approved: "N"
+          approved: "N",
         },
       })
       .then(() => {
@@ -581,7 +587,7 @@ const ClubInformation = () => {
         minHeight: "100vh",
       }}
     >
-      <div className="flex flex-wrap gap-4 justify-between w-2/3 mx-auto my-4 ">
+      <div className="absolute right-0">
         <button
           className={
             clubData.is_approved && !joined
@@ -593,104 +599,116 @@ const ClubInformation = () => {
           Join Club
         </button>
 
-        <button
-          className={
-            officer
-              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              : "hidden"
-          }
-          onClick={goToCreateMeeting}
-        >
-          Create Meeting
-        </button>
-
-        <button
-          className={
-            officer && joined
-              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-              : "hidden"
-          }
-          onClick={deleteClub}
-        >
-          {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
-        </button>
-
-        <p className={officer && joined ? "text-red font-bold" : "hidden"}>
-          {deletedCount +
-            "/" +
-            officerCount +
-            " have voted to delete this club"}
-        </p>
-
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            checked={accepting}
-            onChange={handleCheckboxChange}
+        <div className="flex justify-between">
+          <button
             className={
-              officer && joined && clubData.is_approved
-                ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              officer
+                ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
                 : "hidden"
             }
-          />
-          <label
-            className={
-              officer && joined && clubData.is_approved
-                ? "ml-2 text-gray-700"
-                : "hidden"
-            }
+            onClick={goToCreateMeeting}
           >
-            Accept Officer Applications
-          </label>
+            Create Meeting
+          </button>
+
+          <button
+            className={
+              officer && joined
+                ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+                : "hidden"
+            }
+            onClick={deleteClub}
+          >
+            {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
+          </button>
         </div>
 
-        <button
-          className={
-            officer && clubData.is_approved && joined
-              ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-              : "hidden"
-          }
-          onClick={() => navigate(`/createQuestions/${clubId}`)}
-        >
-          Edit Questionnaire
-        </button>
+        <div className="flex justify-between">
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={accepting}
+              onChange={handleCheckboxChange}
+              className={
+                officer && joined && clubData.is_approved
+                  ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  : "hidden"
+              }
+            />
+            <label
+              className={
+                officer && joined && clubData.is_approved
+                  ? "ml-2 text-gray-700"
+                  : "hidden"
+              }
+            >
+              Accept Officer Applications
+            </label>
+          </div>
 
-        <button
-          className={officer && clubData.is_approved && joined
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
-          onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
-        >
-          Edit Officer Questionnaire
-        </button>
+          <p className={officer && joined ? "text-red font-bold" : "hidden"}>
+            {deletedCount + "/" + officerCount + " votes to delete club"}
+          </p>
+        </div>
 
-        <button
-          className={officer && clubData.is_approved
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
-          onClick={() => navigate(`/club/${clubId}/edit`)}
-        >
-          Edit Culture and Time Commitment
-        </button>
+        <div className="flex justify-between">
+          <button
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createQuestions/${clubId}`)}
+          >
+            Edit Questionnaire
+          </button>
 
-        <button
-          className={
-            officer && clubData.is_approved
-              ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-              : "hidden"
-          }
-          onClick={() => navigate(`/club/${clubId}/edit`)}
-        >
-          Contact Us!
-        </button>
-        <button
-          className={!officer && clubData.is_approved && joined && accepting
-            ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-            : "hidden"}
-          onClick={() => navigate(`/officer_questions/${clubId}`)}
-        >
-          Apply To Be an Officer!
-        </button>
+          <button
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
+          >
+            Edit Officer Questionnaire
+          </button>
+          <div />
+        </div>
+
+        <div className="flex justify-between">
+          <button
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/edit`)}
+          >
+            Edit Culture and Time Commitment
+          </button>
+
+          <button
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/edit`)}
+          >
+            Contact Us!
+          </button>
+          <button
+            className={
+              !officer && clubData.is_approved && joined && accepting
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/officer_questions/${clubId}`)}
+          >
+            Apply To Be an Officer!
+          </button>
+        </div>
       </div>
 
       <div className="relative">
@@ -718,7 +736,7 @@ const ClubInformation = () => {
 
       {/* list of meetings*/}
       <Box
-        className="w-1/3 absolute right-0 h-[400px] overflow-y-scroll mr-12 mt-32"
+        className="w-1/3 absolute right-0 h-[400px] overflow-y-scroll mr-12 mt-52"
         sx={{
           border: "1px solid #ddd",
           borderRadius: "8px",
@@ -973,7 +991,6 @@ const ClubInformation = () => {
             <span className="ml-4 text-black font-semibold" index={profile[3]}>
               {profile[1]}
             </span>
-            
           </div>
         ))}
       </div>
@@ -1010,28 +1027,33 @@ const ClubInformation = () => {
               }
               index={profile[3] + "..."}
               onClick={() => {
-                
                 navigate(`/officer_answers/${clubId}/${profile[3]}`);
               }}
-            >View Application</button>
+            >
+              View Application
+            </button>
             <button
               className={
                 profile[7] && officer
-                 ? "bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"
-                 : "hidden"
+                  ? "bg-green-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-green-600"
+                  : "hidden"
               }
               index={profile[3] + "..."}
               onClick={handleOfficerAdd}
-            >Approve</button>
+            >
+              Approve
+            </button>
             <button
               className={
                 profile[7] && officer
-                 ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"
-                 : "hidden"
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600"
+                  : "hidden"
               }
               index={profile[3] + "..."}
               onClick={handleOfficerDeny}
-            >Deny</button>
+            >
+              Deny
+            </button>
           </div>
         ))}
       </div>
