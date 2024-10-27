@@ -21,7 +21,7 @@ import {
   List,
   ListItem,
   ListItemText,
-  Grid,
+  Grid, FormGroup, FormControlLabel, Checkbox,
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -60,6 +60,8 @@ const ClubInformation = () => {
   const [mostCommonMajors, setMostCommonMajors] = useState([]);
   const [mostCommonInterests, setMostCommonInterests] = useState([]);
   const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
+
+  const [sendEmail, setSendEmail] = useState(false)
 
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
@@ -435,6 +437,9 @@ const ClubInformation = () => {
       params: {
         clubId: clubId,
         meetings: newMeetings,
+        sendEmail:sendEmail,
+        relevant_meetings:JSON.stringify([newMeeting]),
+        action:'updated'
       },
     })
       // success
@@ -477,7 +482,7 @@ const ClubInformation = () => {
     if (index == -1) {
       return;
     }
-
+    const deleted_meeting = meetings[index]
     meetings.splice(index, 1);
     let newMeetings = JSON.stringify(meetings);
 
@@ -490,6 +495,9 @@ const ClubInformation = () => {
       params: {
         clubId: clubId,
         meetings: newMeetings,
+        sendEmail:sendEmail,
+        relevant_meetings:JSON.stringify([deleted_meeting]),
+        action:'deleted'
       },
     })
       // success
@@ -870,6 +878,16 @@ const ClubInformation = () => {
                   minTime={startTime}
                   onChange={handleEndTimeChange}
                 />
+                <FormGroup>
+                  <FormControlLabel
+                      control={<Checkbox />}
+                      checked={sendEmail}
+                      onClick={() => {
+                        setSendEmail(!sendEmail);
+                      }}
+                      label="Notify Members"
+                  />
+                </FormGroup>
 
                 <div id="server-error-alert" className="hidden">
                   <Alert severity="error">

@@ -176,8 +176,9 @@ function CreateMeeting() {
             params: {
               clubId: clubId,
               meetings: meetings,
-              new_meetings:JSON.stringify(newMeetings),
-              sendEmail:sendEmail
+              relevant_meetings:JSON.stringify(newMeetings),
+              sendEmail:sendEmail,
+              action:"created"
             },
           })
             // success
