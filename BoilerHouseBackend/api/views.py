@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair, Club
-from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email, send_email_to_club_members
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -798,13 +798,13 @@ def get_meeting_times(request):
 # gets meeting clubs based on the club id
 def set_meeting_times(request):
     if "clubId" not in request.query_params or "meetings" not in request.query_params or "sendEmail" not in request.query_params or "new_meetings" not in request.query_params:
-        return Response({'error': 'missing  parameters'}, status=400)
-
+       return Response({'error': 'missing  parameters'}, status=400)
+    
     club = Club.objects.filter(pk=request.query_params['clubId']).first()
 
     if not club:
         return Response({'error': 'no club found with the associated clubId'}, status=400)
-
+    
     meetings_data = json.loads(request.query_params["meetings"])
     new_meetings  = json.loads(request.query_params["new_meetings"])
     club.meetings = meetings_data
