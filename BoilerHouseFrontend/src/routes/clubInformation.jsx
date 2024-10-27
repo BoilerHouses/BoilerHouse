@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
+import DefaultContact from './DefaultContact';
 
 import {
   CircularProgress,
@@ -585,7 +586,7 @@ const ClubInformation = () => {
               : "hidden"
           }
           onClick={() => {
-            navigate(`/club/${clubId}/edit`);
+            navigate(`/club/${clubId}/defaultContact`);
           }}
         >
           Contact Us!
@@ -806,6 +807,22 @@ const ClubInformation = () => {
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
         {clubData.culture || "No culture information provided."}
+      </Typography>
+
+      {/* Club Phone Number Info */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Phone Number:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.clubPhoneNumber || "No phone number provided."}
+      </Typography>
+
+      {/* Club Email Info */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Email:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.clubEmail || "No email provided."}
       </Typography>
 
       {/* Club Time Commitment */}

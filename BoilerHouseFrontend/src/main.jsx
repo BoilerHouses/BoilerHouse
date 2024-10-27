@@ -29,6 +29,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SendEmail from "./routes/sendEmail.jsx"
+import DefaultContact from "./routes/DefaultContact"
 
 import "./index.css";
 
@@ -129,6 +130,10 @@ const router = createBrowserRouter([
       {
         path: "/questions/:clubId",
         element: <Questions />,
+      },
+      {
+        path: "/club/:clubId/defaultContact",
+        element: <DefaultContact />,
       },
     ],
   },
