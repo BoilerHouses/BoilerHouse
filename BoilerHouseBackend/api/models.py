@@ -53,11 +53,12 @@ class Club(models.Model):
     acceptingApplications = models.BooleanField(default=True)
     clubPhoneNumber = models.CharField(max_length=100, default='')
     clubEmail = models.CharField(max_length=100, default='')
+    pending_officers = models.ManyToManyField(User, related_name='pending_officer_list')
 
 
     @classmethod
     def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
-        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
+        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery, officerQuestionnaire=[{'text': "What's your name?", 'required': True}])
         club.save()
         club.officers.add(owner)
         club.members.add(owner)
