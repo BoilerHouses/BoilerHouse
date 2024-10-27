@@ -945,3 +945,19 @@ def  send_email_to_members(request):
         return Response("success", status=200)
     else:
         return Response("error", status=400)
+
+@api_view(['GET'])
+def leave_club(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    if "club_name" not in request.query_params:
+        return Response({'error': 'club_name not included'}, status=400)
+    club_name = request.query_params['club_name']
+    club = Club.objects.filter(name=club_name).first()
+    if user in club.officers.all():
+        club.officers.remove(user)
+    club.members.remove(user)
+    club.save()
+    return Response("success", status = 200)
+
