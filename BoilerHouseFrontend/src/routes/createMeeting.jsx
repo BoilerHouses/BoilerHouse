@@ -30,6 +30,7 @@ function CreateMeeting() {
   const [isLoading, setIsLoading] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isError, setIsError] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false)
   const [isOneTimeMeeting, setIsOneTimeMeeting] = useState(true);
   const [startDate, setStartDate] = useState(today);
   const [endDate, setEndDate] = useState(oneMonth);
@@ -175,6 +176,8 @@ function CreateMeeting() {
             params: {
               clubId: clubId,
               meetings: meetings,
+              new_meetings:JSON.stringify(newMeetings),
+              sendEmail:sendEmail
             },
           })
             // success
@@ -362,6 +365,16 @@ function CreateMeeting() {
                 checked={!isOneTimeMeeting}
                 onClick={toggleMeetingType}
                 label="Recurring meeting"
+              />
+            </FormGroup>
+            <FormGroup>
+              <FormControlLabel
+                  control={<Checkbox />}
+                  checked={sendEmail}
+                  onClick={() => {
+                    setSendEmail(!sendEmail);
+                  }}
+                  label="Notify Members"
               />
             </FormGroup>
 
