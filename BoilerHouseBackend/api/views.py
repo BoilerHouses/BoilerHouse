@@ -956,6 +956,7 @@ def leave_club(request):
     club_name = request.query_params['club_name']
     club = Club.objects.filter(name=club_name).first()
     if user in club.officers.all():
+        club.deletion_votes = {}
         club.officers.remove(user)
     club.members.remove(user)
     club.save()
