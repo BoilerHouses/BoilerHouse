@@ -114,6 +114,19 @@ def send_club_approved_email(user, club_name):
     except Exception as e:
         return "error"
 
+def send_email_to_club_members(subject, content, club):
+    members = list(club.members.all().values_list('username', flat=True))
+    officers = list(club.officers.all().values_list('username', flat=True))
+    all_members = members + officers
+    try:
+        email = EmailMessage(subject, content, to=all_members)
+        if email.send():
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
+
 def resetPasswordEmail(request, user, to_email):
     mail_subject = "Reset your password."
 

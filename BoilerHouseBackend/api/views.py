@@ -797,17 +797,43 @@ def get_meeting_times(request):
 @api_view(['GET'])
 # gets meeting clubs based on the club id
 def set_meeting_times(request):
-    if "clubId" not in request.query_params or "meetings" not in request.query_params:
-       return Response({'error': 'missing  parameters'}, status=400)
-    
+    if "clubId" not in request.query_params or "meetings" not in request.query_params or "sendEmail" not in request.query_params or "new_meetings" not in request.query_params:
+        return Response({'error': 'missing  parameters'}, status=400)
+
     club = Club.objects.filter(pk=request.query_params['clubId']).first()
 
     if not club:
         return Response({'error': 'no club found with the associated clubId'}, status=400)
-    
+
     meetings_data = json.loads(request.query_params["meetings"])
+    new_meetings  = json.loads(request.query_params["new_meetings"])
     club.meetings = meetings_data
     club.save()
+
+    # send emails to club members about new meeting that was created
+    if request.query_params['sendEmail'] == 'true':
+        subject = f"New Meeting Created For {club.name}"
+        meeting_name = new_meetings[0]['meetingName']
+        meeting_location = new_meetings[0]['meetingLocation']
+        meeting_agenda = new_meetings[0]['meetingAgenda']
+        dates = [new_meetings[i]['date'] for i in range(len(new_meetings))]
+        startTime = new_meetings[0]['startTime']
+        endTime = new_meetings[0]['endTime']
+        content = f"""
+        Meeting Name: {meeting_name} \n
+        Meeting Location: {meeting_location} \n
+        Meeting Agenda: {meeting_agenda} \n
+        Meeting Dates: {','.join(dates)} \n
+        Meeting Start Time: {startTime} \n
+        Meeting End Time: {endTime} \n
+        """
+
+        # send email to all club members
+        if send_email_to_club_members(subject, content, club):
+
+            return Response("success", status=200)
+        else:
+            return Response("error", status=400)
     return Response("success", status=200)
 
 
@@ -908,15 +934,7 @@ def  send_email_to_members(request):
     subject = request.query_params['subject']
     content = request.query_params['content']
     club = Club.objects.filter(name=club_name).first()
-    all_members = []
-    members = list(club.members.all().values_list('username', flat=True))
-    officers = list(club.officers.all().values_list('username', flat=True))
-    all_members = members + officers
-    try:
-        email = EmailMessage(subject, content, to=all_members)
-        if email.send():
-            return Response("success", status=200)
-        else:
-            return Response("error", status = 400)
-    except Exception as e:
-        return Response("error", status=500)
+    if send_email_to_club_members(subject, content, club):
+        return Response("success", status=200)
+    else:
+        return Response("error", status=400)
