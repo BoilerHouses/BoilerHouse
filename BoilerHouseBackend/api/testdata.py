@@ -187,6 +187,6 @@ if __name__ == "__main__":
         else:
             insert_user_data(conn)
             insert_club_data(conn)
-            generate_large_club(conn)
+            #generate_large_club(conn)
             close_connection(conn)
             print("Test data inserted successfully.")
