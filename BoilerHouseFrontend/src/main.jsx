@@ -24,12 +24,15 @@ import Questionnaire from "./routes/createQuestionnaire";
 import Questions from "./routes/fillQuestions";
 import CreateMeeting from "./routes/createMeeting";
 import Answers from "./routes/viewAnswers";
+import OfficerQuestionnaire from "./routes/createOfficerQuestionnaire";
+import OfficerQuestions from "./routes/fillOfficerQuestions";
+import OfficerAnswers from "./routes/viewOfficerAnswers";
 import { AuthProvider } from "./routes/authProvider";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SendEmail from "./routes/sendEmail.jsx"
-import DefaultContact from "./routes/DefaultContact"
+import DefaultContact from "./routes/defaultContact"
 
 import "./index.css";
 
@@ -112,6 +115,10 @@ const router = createBrowserRouter([
         element: <Answers />,
       },
       {
+        path: "/officer_answers/:clubId/:username",
+        element: <OfficerAnswers />,
+      },
+      {
         path: "/availability",
         element: <Availability />,
       },
@@ -128,12 +135,20 @@ const router = createBrowserRouter([
         element: <Questionnaire />,
       },
       {
+        path: "/createOfficerQuestions/:clubId",
+        element: <OfficerQuestionnaire />,
+      },
+      {
         path: "/questions/:clubId",
         element: <Questions />,
       },
       {
         path: "/club/:clubId/defaultContact",
         element: <DefaultContact />,
+      },
+      {
+        path: "/officer_questions/:clubId",
+        element: <OfficerQuestions />,
       },
     ],
   },

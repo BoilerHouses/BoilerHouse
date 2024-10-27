@@ -348,13 +348,19 @@ def get_all_clubs(request):
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
+
+        members = x.members.count()
         t = model_to_dict(x)
         t['officers'] = []
         t['members'] = []
         t['pending_members'] = []
+        t['pending_officers'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
+        t['num_members'] = members
         clubs.append(t)
+
+
     return Response({'clubs': clubs}, 200)
 
 @api_view(['GET'])
@@ -366,7 +372,8 @@ def get_example_clubs(request):
         t['officers'] = [model_to_dict(a) for a in x.officers.all()]
         t['owner'] = t['officers'][0]
         t['members'] = [model_to_dict(a) for a in x.members.all()]
-        t['pending_membesr'] = [model_to_dict(a) for a in x.pending_members.all()]
+        t['pending_members'] = [model_to_dict(a) for a in x.pending_members.all()]
+        t['pending_officers'] = []
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -466,6 +473,10 @@ def get_club_information(request):
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
         ret_club = model_to_dict(club)
+        major_frequencies = {}
+        interest_frequencies = {}
+        grad_year_frequencies = {}
+        num_members = club.members.count()
         officer_list = []
         for i in ret_club['officers']:
             isOfficer = ((i.username == user.username) or isOfficer)
@@ -473,7 +484,14 @@ def get_club_information(request):
         member_list = []
         for i in ret_club['members']:
             inClub = ((i.username == user.username) or inClub)
-            member_list.append((i.pk, i.name, i.profile_picture, i.username))
+            member_list.append((i.pk, i.name, i.profile_picture, i.username, i.interests, i.grad_year, i.major, i in list(club.pending_officers.all())))
+            for major in i.major:
+                major_frequencies[major] = 1 + major_frequencies.get(major, 0)
+
+            for interest in i.interests:
+                interest_frequencies[interest] = 1 + interest_frequencies.get(interest, 0)
+
+            grad_year_frequencies[i.grad_year] = 1 + grad_year_frequencies.get(i.grad_year, 0)
         pending_list = []
         for i in ret_club['pending_members']:
             inClub = ((i.username == user.username) or inClub)
@@ -484,6 +502,7 @@ def get_club_information(request):
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
+        ret_club['pending_officers'] = []
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
             deleted = deleted and club.deletion_votes[user.username]
@@ -492,7 +511,38 @@ def get_club_information(request):
         for a in club.deletion_votes:
             if a in officer_names and club.deletion_votes[a]:
                 voted_count += 1
-        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names)}, status=200)
+
+        max_majors = 5 if len(major_frequencies) >= 5 else len(major_frequencies)
+        max_interests = 5 if len(interest_frequencies) >=5 else len(interest_frequencies)
+        max_grad_years = 5 if len(grad_year_frequencies) >=5 else len(grad_year_frequencies)
+
+        most_common_majors = []
+        most_common_interests = []
+        most_common_grad_years = []
+
+        if max_majors > 0:
+            most_common_majors = sorted(list(major_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_majors]
+
+        if max_interests > 0:
+            most_common_interests = sorted(list(interest_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_interests]
+
+        if max_grad_years > 0:
+            most_common_grad_years = sorted(list(grad_year_frequencies.items()), key = lambda x: x[1], reverse=True)[:max_grad_years]
+
+        major_pairs = []
+        interest_pairs = []
+        grad_year_pairs = []
+
+        for major, freq in most_common_majors:
+            major_pairs.append((major, round((freq/num_members) * 100, 2)))
+
+        for interest, freq in most_common_interests:
+            interest_pairs.append((interest, round((freq/num_members) * 100, 2)))
+
+        for year, freq in most_common_grad_years:
+            grad_year_pairs.append((year, round((freq/num_members) * 100, 2)))
+
+        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
@@ -515,6 +565,35 @@ def set_questions(request):
     club.questionnaire = data['questions']
     club.save()
     return Response({'questions': club.questionnaire}, status=200)
+
+@api_view(['POST'])
+def set_officer_questions(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'questions' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    club.officerQuestionnaire = data['questions']
+    club.save()
+    return Response({'questions': club.officerQuestionnaire}, status=200)
+
+@api_view(['GET'])
+def get_officer_questions(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    return Response({'questions': club.officerQuestionnaire}, status=200)
 
 @api_view(['GET'])
 def get_questions(request):
@@ -549,6 +628,38 @@ def set_answers(request):
         club.responses[user.username] = data['response']
     club.save()
     return Response('Sucess!', status=200)
+
+
+@api_view(['POST'])
+def set_officer_answers(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'response' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if (user not in list(club.officers.all()) and user in list(club.members.all())):
+        club.pending_officers.add(user)
+        club.officerResponses[user.username] = data['response']
+    club.save()
+    return Response('Sucess!', status=200)
+
+@api_view(['GET'])
+def get_officer_answers(request, club_id, username):
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club does not exist"}, status=404)
+    if username in club.officerResponses:
+        return Response(club.officerResponses[username] , status=200)
+    else:
+        return Response([], status=200)
 
 @api_view(['GET'])
 def get_answers(request):
@@ -630,6 +741,28 @@ def modify_user_to_club(request):
 
 
 @api_view(['GET'])
+def modify_user_to_officer(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+       return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'username' not in request.query_params:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+    club = Club.objects.filter(pk=club_id).first()
+    if user.username not in [x.username for x in list(club.officers.all())]:
+        return Response({"error": "Invalid Permissions, cannot access club!"}, status=403)
+    username = request.query_params['username']
+    if not club or username not in [x.username for x in list(club.pending_officers.all())]:
+        return Response({"error": "User or Club does not exist"}, status=404)
+    member = User.objects.filter(username=username).first()
+    club.pending_officers.remove(member)
+    club.officerResponses.pop(member.username, None)
+    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
+        club.officers.add(member)
+    club.save()
+    return Response("Sucess!", 200)
+
+
+@api_view(['GET'])
 def delete_user(request):
    user = verify_token(request.headers.get('Authorization'))
    if not user.is_admin:
@@ -704,6 +837,28 @@ def update_club_info(request):
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
+def set_accepting_applications(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if 'accept' not in request.query_params:
+       return Response({'error': 'missing  parameters'}, status=400)
+    try:
+        club = Club.objects.get(pk=club_id)
+        # Check if the user is an officer of the club
+        if user not in club.officers.all():
+            return Response({"error": "You don't have permission to edit this club"}, status=403)
+        print(request.query_params.get('accept'))
+        print(type(request.query_params.get('accept')))
+        club.acceptingApplications = (request.query_params.get('accept') != 'true')
+        club.save()
+        return Response({'accepting': club.acceptingApplications}, status=200)
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+    except Exception as e:
+        return Response("error", status=500)
+
+@api_view(['GET'])
 def get_club_details_for_edit(request, club_id):
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
@@ -766,19 +921,21 @@ def  send_email_to_members(request):
     except Exception as e:
         return Response("error", status=400)
 
-
 @api_view(['PUT'])
 def update_contact_info(request, club_id):
     #Updates default club contact info
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
+
     try:
         club = Club.objects.get(pk=request.data.get('club_id'))
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
+
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
+
     try:
         if request.data.get('clubPhoneNumber'):
             club.clubPhoneNumber = request.data.get('clubPhoneNumber')
