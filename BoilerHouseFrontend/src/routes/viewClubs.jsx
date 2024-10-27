@@ -136,7 +136,7 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center">
+            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
               <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">Number of Members</Typography>

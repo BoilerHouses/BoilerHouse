@@ -16,6 +16,9 @@ python3 api/testData.py
 python3 api/testData.py --drop
 ----------------------------------------------------------------------------------------
 - drops the database and runs python3 manage.py migrate
+
+
+generate_large_club() takes a while to run. If you don't want a large club a test data, comment out the function call
 '''
 
 import psycopg2
@@ -38,6 +41,8 @@ USERNAME = ["admin1@gmail.com", "admin2@gmail.com", "admin3@gmail.com", "user1@g
             "user2@gmail.com", "user3@gmail.com", "user4@gmail.com", "user5@gmail.com", "asawaarin0@gmail.com", 
             "rohit.kannan203@gmail.com", "thisisadhi@gmail.com", "victorgao0308@gmail.com"]
 NAME = ["admin1", "admin2", "admin3", "user1", "user2", "user3", "user4", "user5", "wipe", "dyude", "baab", "vickyg"]
+LARGE_CLUB_MEMBERS = 250
+MEMBER_NAME = "test"
 
 
 def drop_tables(conn):
@@ -132,6 +137,38 @@ def close_connection(conn):
     if conn:
         conn.close()
 
+
+def generate_large_club(conn):
+    users = []
+    names = []
+
+    for i in range(1, LARGE_CLUB_MEMBERS + 1):
+        users.append("test" + str(i) + "@gmail.com")
+        names.append("test" + str(i))
+    
+    with conn.cursor() as cursor:
+        for username, name in zip(users, names):
+            queries = build_insert_user_query(username, name, False)   
+            for query in queries:   
+                cursor.execute(query)
+        conn.commit()
+
+        club_query = f'''
+                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail") VALUES 
+                        ('big club', 'test', 'test', '16+ hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '')
+                    '''
+        cursor.execute(club_query)
+        conn.commit()
+
+        for i in range(13, 13 + LARGE_CLUB_MEMBERS):
+            query = f'INSERT INTO api_club_members (club_id, user_id) VALUES (2, {i})'
+            cursor.execute(query)
+
+        cursor.execute('INSERT INTO api_club_officers (club_id, user_id) VALUES (2, 1)')
+        cursor.execute('INSERT INTO api_club_members (club_id, user_id) VALUES (2, 1)')
+        conn.commit()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--drop', help="drop database", action='store_true')
@@ -150,5 +187,6 @@ if __name__ == "__main__":
         else:
             insert_user_data(conn)
             insert_club_data(conn)
+            generate_large_club(conn)
             close_connection(conn)
             print("Test data inserted successfully.")
