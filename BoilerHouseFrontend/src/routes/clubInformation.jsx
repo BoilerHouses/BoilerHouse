@@ -587,6 +587,32 @@ const ClubInformation = () => {
     return <Typography variant="h6">Club not found!</Typography>;
   }
 
+  const handleLeaveClub = () => {
+      if (officer){
+        if (officerCount === 1){
+          alert("You cannot leave as you are the only officer left. Delete the club or make another user an officer")
+        }
+        else {
+          axios({
+            url: "http://127.0.0.1:8000/api/leaveClub/",
+            method: "GET",
+            headers: {
+              Authorization: localStorage.getItem("token")
+            },
+            // params
+            params: {
+              club_name: clubData.name,
+            },
+          }).then(() => {
+            navigate("/clubs");
+          }) .catch(() => {
+              alert("There was an error in leaving the club. Please try again.")
+          })
+        }
+
+      }
+  }
+
   return (
     <Box
       sx={{
@@ -597,35 +623,35 @@ const ClubInformation = () => {
     >
       <div className="absolute right-0">
         <button
-          className={
-            clubData.is_approved && !joined
-              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              : "hidden"
-          }
-          onClick={handleJoin}
+            className={
+              clubData.is_approved && !joined
+                  ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+                  : "hidden"
+            }
+            onClick={handleJoin}
         >
           Join Club
         </button>
 
         <div className="flex justify-between">
           <button
-            className={
-              officer
-                ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-                : "hidden"
-            }
-            onClick={goToCreateMeeting}
+              className={
+                officer
+                    ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+                    : "hidden"
+              }
+              onClick={goToCreateMeeting}
           >
             Create Meeting
           </button>
 
           <button
-            className={
-              officer && joined
-                ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-                : "hidden"
-            }
-            onClick={deleteClub}
+              className={
+                officer && joined
+                    ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+                    : "hidden"
+              }
+              onClick={deleteClub}
           >
             {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
           </button>
@@ -634,21 +660,21 @@ const ClubInformation = () => {
         <div className="flex justify-between">
           <div className="flex items-center">
             <input
-              type="checkbox"
-              checked={accepting}
-              onChange={handleCheckboxChange}
-              className={
-                officer && joined && clubData.is_approved
-                  ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                  : "hidden"
-              }
+                type="checkbox"
+                checked={accepting}
+                onChange={handleCheckboxChange}
+                className={
+                  officer && joined && clubData.is_approved
+                      ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                      : "hidden"
+                }
             />
             <label
-              className={
-                officer && joined && clubData.is_approved
-                  ? "ml-2 text-gray-700"
-                  : "hidden"
-              }
+                className={
+                  officer && joined && clubData.is_approved
+                      ? "ml-2 text-gray-700"
+                      : "hidden"
+                }
             >
               Accept Officer Applications
             </label>
@@ -661,72 +687,82 @@ const ClubInformation = () => {
 
         <div className="flex justify-between">
           <button
-            className={
-              officer && clubData.is_approved && joined
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/createQuestions/${clubId}`)}
+              className={
+                officer && clubData.is_approved && joined
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/createQuestions/${clubId}`)}
           >
             Edit Questionnaire
           </button>
 
           <button
-            className={
-              officer && clubData.is_approved && joined
-                ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
+              className={
+                officer && clubData.is_approved && joined
+                    ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
           >
             Edit Officer Questionnaire
           </button>
-          <div />
+          <div/>
         </div>
 
         <div className="flex justify-between">
           <button
-            className={
-              officer && clubData.is_approved
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/club/${clubId}/edit`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/edit`)}
           >
             Edit Culture and Time Commitment
           </button>
 
           <button
-            className={
-              officer && clubData.is_approved
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/club/${clubId}/edit`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/edit`)}
           >
             Contact Us!
           </button>
           <button
-            className={
-              !officer && clubData.is_approved && joined && accepting
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/officer_questions/${clubId}`)}
+              className={
+                !officer && clubData.is_approved && joined && accepting
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/officer_questions/${clubId}`)}
           >
             Apply To Be an Officer!
           </button>
         </div>
+        <button
+            className={
+              joined
+                  ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
+                  : "hidden"
+            }
+            onClick={handleLeaveClub}
+        >
+          Leave Club
+        </button>
       </div>
 
       <div className="relative">
         <button
-          className={
-            !clubData.is_approved
-              ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-              : "hidden"
-          }
-          onClick={handleApproval}
+            className={
+              !clubData.is_approved
+                  ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+                  : "hidden"
+            }
+            onClick={handleApproval}
         >
           Approve
         </button>
