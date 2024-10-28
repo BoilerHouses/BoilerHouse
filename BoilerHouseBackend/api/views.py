@@ -797,7 +797,7 @@ def get_meeting_times(request):
 @api_view(['GET'])
 # gets meeting clubs based on the club id
 def set_meeting_times(request):
-    if "clubId" not in request.query_params or "meetings" not in request.query_params or "sendEmail" not in request.query_params or "new_meetings" not in request.query_params:
+    if "clubId" not in request.query_params or "meetings" not in request.query_params or "sendEmail" not in request.query_params or "relevant_meetings" not in request.query_params or "action" not in request.query_params:
        return Response({'error': 'missing  parameters'}, status=400)
     
     club = Club.objects.filter(pk=request.query_params['clubId']).first()
@@ -806,19 +806,26 @@ def set_meeting_times(request):
         return Response({'error': 'no club found with the associated clubId'}, status=400)
     
     meetings_data = json.loads(request.query_params["meetings"])
-    new_meetings  = json.loads(request.query_params["new_meetings"])
+    relevant_meetings  = json.loads(request.query_params["relevant_meetings"])
     club.meetings = meetings_data
     club.save()
 
     # send emails to club members about new meeting that was created
     if request.query_params['sendEmail'] == 'true':
-        subject = f"New Meeting Created For {club.name}"
-        meeting_name = new_meetings[0]['meetingName']
-        meeting_location = new_meetings[0]['meetingLocation']
-        meeting_agenda = new_meetings[0]['meetingAgenda']
-        dates = [new_meetings[i]['date'] for i in range(len(new_meetings))]
-        startTime = new_meetings[0]['startTime']
-        endTime = new_meetings[0]['endTime']
+        subject = ""
+        if request.query_params['action'] == 'deleted':
+            subject = f"Meeting Canceled For {club.name}"
+        elif request.query_params['action'] == 'created':
+            subject = f"Meeting Created For {club.name}"
+        elif request.query_params['action'] == 'updated':
+            subject = f"Meeting Updated For {club.name}"
+
+        meeting_name = relevant_meetings[0]['meetingName']
+        meeting_location = relevant_meetings[0]['meetingLocation']
+        meeting_agenda = relevant_meetings[0]['meetingAgenda']
+        dates = [relevant_meetings[i]['date'] for i in range(len(relevant_meetings))]
+        startTime = relevant_meetings[0]['startTime']
+        endTime = relevant_meetings[0]['endTime']
         content = f"""
         Meeting Name: {meeting_name} \n
         Meeting Location: {meeting_location} \n
@@ -938,3 +945,20 @@ def  send_email_to_members(request):
         return Response("success", status=200)
     else:
         return Response("error", status=400)
+
+@api_view(['GET'])
+def leave_club(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    if "club_name" not in request.query_params:
+        return Response({'error': 'club_name not included'}, status=400)
+    club_name = request.query_params['club_name']
+    club = Club.objects.filter(name=club_name).first()
+    if user in club.officers.all():
+        club.deletion_votes = {}
+        club.officers.remove(user)
+    club.members.remove(user)
+    club.save()
+    return Response("success", status = 200)
+
