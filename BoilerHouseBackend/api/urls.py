@@ -49,5 +49,5 @@ urlpatterns = [
     path('club/<int:club_id>/edit/', get_club_details_for_edit, name='get_club_details_for_edit'),
     path("get_clubs_for_officer/", get_clubs_for_officer, name="get_clubs_for_officer"),
     path("send_email_to_members/", send_email_to_members, name="send_email_to_members"),
-    path("leave_club/", leave_club, name="leave_club")
+    path("leaveClub/", leave_club, name="leave_club")
 ]
