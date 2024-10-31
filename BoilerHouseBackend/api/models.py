@@ -48,10 +48,18 @@ class Club(models.Model):
     responses = models.JSONField(default=dict)
     meetings = ArrayField(models.JSONField(default=dict), default = list)
     deletion_votes = models.JSONField(default=dict)
+    officerQuestionnaire = models.JSONField(default=dict)
+    officerResponses = models.JSONField(default=dict)
+    acceptingApplications = models.BooleanField(default=True)
+    clubPhoneNumber = models.CharField(max_length=100, default='')
+    clubEmail = models.CharField(max_length=100, default='')
+    pending_officers = models.ManyToManyField(User, related_name='pending_officer_list')
+    targetedAudience = models.CharField(max_length=2048, default='')
+
 
     @classmethod
-    def create(cls, name, description, culture, time_commitment, interests, owner, icon, gallery):
-        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, interests=interests, icon=icon, gallery=gallery)
+    def create(cls, name, description, culture, time_commitment, targetedAudience, interests, owner, icon, gallery):
+        club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, targetedAudience=targetedAudience, interests=interests, icon=icon, gallery=gallery, officerQuestionnaire=[{'text': "What's your name?", 'required': True}])
         club.save()
         club.officers.add(owner)
         club.members.add(owner)
