@@ -728,7 +728,7 @@ const ClubInformation = () => {
                     ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
                     : "hidden"
               }
-              onClick={() => navigate(`/club/${clubId}/edit`)}
+              onClick={() => navigate(`/club/${clubId}/defaultContact`)}
           >
             Contact Us!
           </button>
@@ -1000,6 +1000,23 @@ const ClubInformation = () => {
       <Typography variant="body1" gutterBottom color="black">
         {clubData.time_commitment || "No time commitment information provided."}
       </Typography>
+
+      {/* Club Email */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Club Email:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.clubEmail || "No email information provided."}
+      </Typography>
+
+      {/* Club Phone Number */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Club Phone Number:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.clubPhoneNumber || "No phone number information provided."}
+      </Typography>
+
 
       {/* Interests */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
