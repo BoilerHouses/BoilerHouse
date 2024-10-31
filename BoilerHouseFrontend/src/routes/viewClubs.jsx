@@ -14,7 +14,8 @@ const ViewClubs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
-  const [selectedClubSize, setSelectedClubSize] = useState("1 - 9");
+  const [selectedClubSize, setSelectedClubSize] = useState("None");
+  const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("None");
   const [openFilterMenu, setOpenFilterMenu] = useState(false);
 
   const [filteredData, setFilteredData] = useState([]);
@@ -62,6 +63,11 @@ const ViewClubs = () => {
     setSelectedClubSize(event.target.value);
   };
 
+
+  const changeSelectedTimeCommitment = (event) => {
+    setSelectedTimeCommitment(event.target.value);
+  };
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -70,6 +76,10 @@ const ViewClubs = () => {
     setOpenFilterMenu(false);
 
     switch (selectedClubSize) {
+      case "None":
+        setMinClubSize(0);
+        setMaxClubSize(Infinity);
+        break;
       case "1 - 9":
         setMinClubSize(1);
         setMaxClubSize(9);
@@ -97,7 +107,7 @@ const ViewClubs = () => {
     setSearchTerm("");
     setMinClubSize(0);
     setMaxClubSize(Infinity);
-    setSelectedClubSize("1 - 9");
+    setSelectedClubSize("None");
     setOpenFilterMenu(false);
   };
 
@@ -149,6 +159,51 @@ const ViewClubs = () => {
                   value={selectedClubSize}
                   onChange={changeSelectedClubSize}
                 >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="1 - 9"
+                    control={<Radio />}
+                    label="1 - 9"
+                  />
+                  <FormControlLabel
+                    value="10 - 24"
+                    control={<Radio />}
+                    label="10 - 24"
+                  />
+                  <FormControlLabel
+                    value="25 - 49"
+                    control={<Radio />}
+                    label="25 - 49"
+                  />
+                  <FormControlLabel
+                    value="50 - 99"
+                    control={<Radio />}
+                    label="50 - 99"
+                  />
+                  <FormControlLabel
+                    value="100+"
+                    control={<Radio />}
+                    label="100+"
+                  />
+                </RadioGroup>
+              </FormControl>
+
+              <Typography variant="h6">Time Commitment</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="subtitle1">Hours per week</Typography>
+                <RadioGroup
+                  value={selectedTimeCommitment}
+                  onChange={changeSelectedTimeCommitment}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
                   <FormControlLabel
                     value="1 - 9"
                     control={<Radio />}
