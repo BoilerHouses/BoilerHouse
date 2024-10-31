@@ -7,7 +7,6 @@ from .views import set_answers, get_answers, get_meeting_times, set_meeting_time
 from .views import set_accepting_applications, set_officer_questions, get_officer_questions, set_officer_answers, get_officer_answers, modify_user_to_officer, leave_club, update_contact_info
 
 
-
 urlpatterns = [
     path('ping/', ping, name='ping'),
     path('buckets/', try_bucket, name='tryBucket'),
@@ -51,5 +50,4 @@ urlpatterns = [
     path("send_email_to_members/", send_email_to_members, name="send_email_to_members"),
     path("leaveClub/", leave_club, name="leave_club"),
     path("club/<int:club_id>/defaultContact", update_contact_info, name="update_contact_info"),
-
 ]

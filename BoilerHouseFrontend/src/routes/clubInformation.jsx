@@ -993,6 +993,14 @@ const ClubInformation = () => {
         {clubData.culture || "No culture information provided."}
       </Typography>
 
+      {/* Club Targeted Audience */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Targeted Audience:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.targetedAudience || "No audience information provided."}
+      </Typography>
+
       {/* Club Time Commitment */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Time Commitment:

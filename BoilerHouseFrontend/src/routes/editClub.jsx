@@ -19,6 +19,7 @@ const EditClub = () => {
   const navigate = useNavigate();
   const [culture, setCulture] = useState("");
   const [timeCommitment, setTimeCommitment] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -27,7 +28,7 @@ const EditClub = () => {
         console.error("Club ID is undefined");
         return;
       }
-      
+
       try {
         const token = localStorage.getItem("token");
         const response = await axios.get(`http://127.0.0.1:8000/api/club/${clubId}/edit/`, {
@@ -38,19 +39,19 @@ const EditClub = () => {
         const clubData = response.data;
         setCulture(clubData.culture);
         setTimeCommitment(clubData.time_commitment);
-        // Set any other state variables as needed
+        setTargetAudience(clubData.target_audience);
       } catch (error) {
         console.error("Error fetching club data:", error);
         if (error.response && error.response.status === 403) {
           alert("You don't have permission to edit this club");
-          navigate(`/club/${clubId}`); // Redirect to club view page
+          navigate(`/club/${clubId}`);
         }
       }
     };
-  
+
     fetchClubData();
   }, [clubId, navigate]);
-  
+
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -62,6 +63,7 @@ const EditClub = () => {
         club_id: clubId,
         culture: culture,
         time_commitment: timeCommitment,
+        targetedAudience: targetAudience,
       }, {
         headers: {
           Authorization: token,
@@ -74,7 +76,7 @@ const EditClub = () => {
       } else {
         setIsLoading(false);
         console.error("Server error:", response.data);
-        alert("Error updating club information: " + response.data.error); 
+        alert("Error updating club information: " + response.data.error);
       }
     } catch (error) {
       setIsLoading(false);
@@ -101,7 +103,6 @@ const EditClub = () => {
                 shrink: true,
               }}
             />
-            {/* Time Commitment Dropdown */}
             <FormControl fullWidth className="bg-white !my-3.5">
               <InputLabel id="time-commitment-label">Time Commitment (per week)</InputLabel>
               <Select
@@ -116,6 +117,16 @@ const EditClub = () => {
                 <MenuItem value={"16+ hours"}>16+ hours</MenuItem>
               </Select>
             </FormControl>
+            <TextField
+              fullWidth
+              label="Target Audience"
+              value={targetAudience}
+              onChange={(e) => setTargetAudience(e.target.value)}
+              className="bg-white !my-3.5"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
             <Button
               type="submit"
               variant="contained"

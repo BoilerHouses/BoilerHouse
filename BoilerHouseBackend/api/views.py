@@ -319,6 +319,7 @@ def save_club_information(request):
                            interests=interests, 
                            culture=data.get('culture'),
                            time_commitment=data.get('time_commitment'),
+                           targetedAudience=data.get('targetedAudience'),
                            owner=user,
                            icon=f'https://{settings.AWS_STORAGE_BUCKET_NAME}.s3.amazonaws.com/{file_name}',
                            gallery=gallery_image_urls)
@@ -864,6 +865,8 @@ def update_club_info(request):
             club.culture = request.data.get('culture')
         if request.data.get('time_commitment'):
             club.time_commitment = request.data.get('time_commitment')
+        if request.data.get('targetedAudience'):
+            club.targetedAudience = request.data.get('targetedAudience')
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
@@ -983,3 +986,5 @@ def update_contact_info(request, club_id):
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+

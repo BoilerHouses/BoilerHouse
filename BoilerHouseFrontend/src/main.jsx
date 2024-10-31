@@ -33,6 +33,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SendEmail from "./routes/sendEmail.jsx"
 import DefaultContact from "./routes/defaultContact"
+import EditAudience from "./routes/editAudience"
 
 import "./index.css";
 
