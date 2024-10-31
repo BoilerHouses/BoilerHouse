@@ -21,6 +21,7 @@ const ViewClubs = () => {
 
   const [minClubSize, setMinClubSize] = useState(0);
   const [maxClubSize, setMaxClubSize] = useState(Infinity);
+  const [error, setError] = useState(false);
 
   const navigate = useNavigate();
 
@@ -29,21 +30,25 @@ const ViewClubs = () => {
       setIsLoadingClubs(true);
       const token = localStorage.getItem("token");
       if (token) {
-        const response = await axios.get("http://127.0.0.1:8000/api/clubs/", {
+        axios({
+          url: "http://127.0.0.1:8000/api/clubs/",
+          method: "GET",
           headers: {
             Authorization: token,
           },
           params: {
             approved: "True",
           },
-        });
-        if (response.status == 200) {
-          setData(response.data.clubs);
-          setFilteredData(response.data.clubs);
-          setIsLoadingClubs(false);
-        } else {
-          alert("Internal Server Error");
-        }
+        })
+          .then((res) => {
+            setData(res.data.clubs);
+            setFilteredData(res.data.clubs);
+            setIsLoadingClubs(false);
+          })
+          .catch(() => {
+            setIsLoadingClubs(false);
+            setError(true);
+          });
       }
     };
     fetchClubs();
@@ -94,7 +99,7 @@ const ViewClubs = () => {
     setMaxClubSize(Infinity);
     setSelectedClubSize("1 - 9");
     setOpenFilterMenu(false);
-  }
+  };
 
   useEffect(() => {
     handleFilter();
@@ -209,7 +214,11 @@ const ViewClubs = () => {
       ) : (
         <div className="flex justify-center h-screen">
           <p className="text-black text-center font-bold rounded-md">
-            {isLoadingClubs ? "Loading..." : "No clubs found matching criteria"}
+            {isLoadingClubs
+              ? "Loading..."
+              : error
+              ? "There was an error fetching clubs. Please try again later."
+              : "No clubs found matching criteria"}
           </p>
         </div>
       )}
