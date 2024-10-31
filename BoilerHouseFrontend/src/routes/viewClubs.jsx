@@ -14,7 +14,12 @@ const ViewClubs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
-  const [selectedClubSize, setSelectedClubSize] = useState("1 - 9");
+  const [selectedClubSize, setSelectedClubSize] = useState("None");
+  const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("None");
+  const [timeCommitmentFilter, setTimeCommitmentFilter] = useState("None");
+
+  const [selectedCulture, setSelectedCulture] = useState("");
+  const [cultureFilter, setCultureFilter] = useState("");
   const [openFilterMenu, setOpenFilterMenu] = useState(false);
 
   const [filteredData, setFilteredData] = useState([]);
@@ -43,6 +48,7 @@ const ViewClubs = () => {
           .then((res) => {
             setData(res.data.clubs);
             setFilteredData(res.data.clubs);
+            console.log(res.data.clubs);
             setIsLoadingClubs(false);
           })
           .catch(() => {
@@ -62,6 +68,10 @@ const ViewClubs = () => {
     setSelectedClubSize(event.target.value);
   };
 
+  const changeSelectedTimeCommitment = (event) => {
+    setSelectedTimeCommitment(event.target.value);
+  };
+
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
   };
@@ -70,6 +80,10 @@ const ViewClubs = () => {
     setOpenFilterMenu(false);
 
     switch (selectedClubSize) {
+      case "None":
+        setMinClubSize(0);
+        setMaxClubSize(Infinity);
+        break;
       case "1 - 9":
         setMinClubSize(1);
         setMaxClubSize(9);
@@ -91,19 +105,32 @@ const ViewClubs = () => {
         setMaxClubSize(Infinity);
         break;
     }
+
+    setTimeCommitmentFilter(selectedTimeCommitment);
+    setCultureFilter(selectedCulture);
   };
 
   const clearFilters = () => {
     setSearchTerm("");
     setMinClubSize(0);
     setMaxClubSize(Infinity);
-    setSelectedClubSize("1 - 9");
+    setSelectedClubSize("None");
     setOpenFilterMenu(false);
+    setSelectedTimeCommitment("None");
+    setTimeCommitmentFilter("None");
+    setSelectedCulture("");
+    setCultureFilter("");
   };
 
   useEffect(() => {
     handleFilter();
-  }, [searchTerm, minClubSize, maxClubSize]);
+  }, [
+    searchTerm,
+    minClubSize,
+    maxClubSize,
+    timeCommitmentFilter,
+    cultureFilter,
+  ]);
 
   const handleFilter = () => {
     let newClubList = [];
@@ -115,10 +142,33 @@ const ViewClubs = () => {
         members <= maxClubSize &&
         club.name.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
-        newClubList.push(club);
+        if (timeCommitmentFilter === "None" && cultureFilter === "") {
+          newClubList.push(club);
+        } else if (timeCommitmentFilter === "None") {
+          if (
+            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
+          ) {
+            newClubList.push(club);
+          }
+        } else if (cultureFilter === "") {
+          if (club.time_commitment === timeCommitmentFilter) {
+            newClubList.push(club);
+          }
+        } else {
+          if (
+            club.time_commitment === timeCommitmentFilter &&
+            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
+          ) {
+            newClubList.push(club);
+          }
+        }
       }
     });
     setFilteredData(newClubList);
+  };
+
+  const handleCultureFilter = (e) => {
+    setSelectedCulture(e.target.value);
   };
 
   return (
@@ -141,7 +191,7 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
+            <div className="absolute right-0 mt-2 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
               <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">Number of Members</Typography>
@@ -149,6 +199,11 @@ const ViewClubs = () => {
                   value={selectedClubSize}
                   onChange={changeSelectedClubSize}
                 >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
                   <FormControlLabel
                     value="1 - 9"
                     control={<Radio />}
@@ -176,6 +231,53 @@ const ViewClubs = () => {
                   />
                 </RadioGroup>
               </FormControl>
+
+              <Typography variant="h6">Time Commitment</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="subtitle1">Hours per week</Typography>
+                <RadioGroup
+                  value={selectedTimeCommitment}
+                  onChange={changeSelectedTimeCommitment}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="1-5 hours"
+                    control={<Radio />}
+                    label="1 - 5 hours"
+                  />
+                  <FormControlLabel
+                    value="6-10 hours"
+                    control={<Radio />}
+                    label="6 - 10 hours"
+                  />
+                  <FormControlLabel
+                    value="11-15 hours"
+                    control={<Radio />}
+                    label="11 - 15 hours"
+                  />
+                  <FormControlLabel
+                    value="16+ hours"
+                    control={<Radio />}
+                    label="16+ hours"
+                  />
+                </RadioGroup>
+              </FormControl>
+              <Typography variant="h6">Culture</Typography>
+              <Typography variant="subtitle1">Filter by Culture</Typography>
+
+              <input
+                type="text"
+                placeholder="Filter by culture"
+                value={selectedCulture}
+                onChange={(e) => {
+                  handleCultureFilter(e);
+                }}
+                className="flex-grow p-3 border border-gray-300 rounded"
+              />
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"

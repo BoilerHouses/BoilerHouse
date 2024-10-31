@@ -958,7 +958,8 @@ def leave_club(request):
     if user in club.officers.all():
         club.deletion_votes = {}
         club.officers.remove(user)
-    club.members.remove(user)
+    if user in club.members.all():
+        club.members.remove(user)
     club.save()
     return Response("success", status = 200)
 
