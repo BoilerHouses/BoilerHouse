@@ -19,6 +19,10 @@ const ViewClubs = () => {
 
   const [filteredData, setFilteredData] = useState([]);
 
+  const [minClubSize, setMinClubSize] = useState(0);
+  const [maxClubSize, setMaxClubSize] = useState(Infinity);
+  const [error, setError] = useState(false);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -26,21 +30,25 @@ const ViewClubs = () => {
       setIsLoadingClubs(true);
       const token = localStorage.getItem("token");
       if (token) {
-        const response = await axios.get("http://127.0.0.1:8000/api/clubs/", {
+        axios({
+          url: "http://127.0.0.1:8000/api/clubs/",
+          method: "GET",
           headers: {
             Authorization: token,
           },
           params: {
             approved: "True",
           },
-        });
-        if (response.status == 200) {
-          setData(response.data.clubs);
-          setFilteredData(response.data.clubs);
-          setIsLoadingClubs(false);
-        } else {
-          alert("Internal Server Error");
-        }
+        })
+          .then((res) => {
+            setData(res.data.clubs);
+            setFilteredData(res.data.clubs);
+            setIsLoadingClubs(false);
+          })
+          .catch(() => {
+            setIsLoadingClubs(false);
+            setError(true);
+          });
       }
     };
     fetchClubs();
@@ -54,55 +62,59 @@ const ViewClubs = () => {
     setSelectedClubSize(event.target.value);
   };
 
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
-
-    const filter = data.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredData(filter);
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
   };
 
   const applyFilters = () => {
     setOpenFilterMenu(false);
 
-    let minClubSize = 1;
-    let maxClubSize = 1;
-
     switch (selectedClubSize) {
       case "1 - 9":
-        minClubSize = 1;
-        maxClubSize = 9;
+        setMinClubSize(1);
+        setMaxClubSize(9);
         break;
       case "10 - 24":
-        minClubSize = 10;
-        maxClubSize = 24;
+        setMinClubSize(10);
+        setMaxClubSize(24);
         break;
       case "25 - 49":
-        minClubSize = 25;
-        maxClubSize = 49;
+        setMinClubSize(25);
+        setMaxClubSize(49);
         break;
       case "50 - 99":
-        minClubSize = 50;
-        maxClubSize = 99;
+        setMinClubSize(50);
+        setMaxClubSize(99);
         break;
       case "100+":
-        minClubSize = 100;
-        maxClubSize = Infinity;
+        setMinClubSize(100);
+        setMaxClubSize(Infinity);
         break;
     }
+  };
 
-    const filter = data.filter((item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const clearFilters = () => {
+    setSearchTerm("");
+    setMinClubSize(0);
+    setMaxClubSize(Infinity);
+    setSelectedClubSize("1 - 9");
+    setOpenFilterMenu(false);
+  };
 
+  useEffect(() => {
+    handleFilter();
+  }, [searchTerm, minClubSize, maxClubSize]);
 
+  const handleFilter = () => {
     let newClubList = [];
 
-    filter.forEach((club) => {
+    data.forEach((club) => {
       const members = club.num_members;
-
-      if (members >= minClubSize && members <= maxClubSize) {
+      if (
+        members >= minClubSize &&
+        members <= maxClubSize &&
+        club.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
         newClubList.push(club);
       }
     });
@@ -116,7 +128,9 @@ const ViewClubs = () => {
           type="text"
           placeholder="Search..."
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(e) => {
+            handleSearchChange(e);
+          }}
           className="flex-grow p-3 border border-gray-300 rounded"
         />
         <div className="relative">
@@ -127,7 +141,7 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center">
+            <div className="absolute right-0 mt-2 w-48 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
               <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">Number of Members</Typography>
@@ -169,6 +183,13 @@ const ViewClubs = () => {
               >
                 Apply Filters
               </Button>
+              <Button
+                variant="contained"
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={clearFilters}
+              >
+                Clear Filters
+              </Button>
             </div>
           )}
         </div>
@@ -193,7 +214,11 @@ const ViewClubs = () => {
       ) : (
         <div className="flex justify-center h-screen">
           <p className="text-black text-center font-bold rounded-md">
-            {isLoadingClubs ? "Loading..." : "No clubs found matching criteria"}
+            {isLoadingClubs
+              ? "Loading..."
+              : error
+              ? "There was an error fetching clubs. Please try again later."
+              : "No clubs found matching criteria"}
           </p>
         </div>
       )}
