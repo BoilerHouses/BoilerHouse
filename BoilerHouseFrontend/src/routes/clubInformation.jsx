@@ -719,7 +719,7 @@ const ClubInformation = () => {
               }
               onClick={() => navigate(`/club/${clubId}/edit`)}
           >
-            Edit Culture and Time Commitment
+            Edit Culture, Time Commitment, Audience
           </button>
 
           <button
