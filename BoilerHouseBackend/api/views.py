@@ -469,6 +469,7 @@ def get_club_information(request):
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     inClub = False
+    isPending = False
     isOfficer = False
     try:
         club = Club.objects.filter(pk=request.query_params['club_id']).first()
@@ -494,7 +495,7 @@ def get_club_information(request):
             grad_year_frequencies[i.grad_year] = 1 + grad_year_frequencies.get(i.grad_year, 0)
         pending_list = []
         for i in ret_club['pending_members']:
-            inClub = ((i.username == user.username) or inClub)
+            isPending = ((i.username == user.username) or isPending)
             submittedForm = False
             if i.username in club.responses:
                 submittedForm = True
@@ -542,7 +543,7 @@ def get_club_information(request):
         for year, freq in most_common_grad_years:
             grad_year_pairs.append((year, round((freq/num_members) * 100, 2)))
 
-        return Response({'club': ret_club, "joined": inClub, "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs}, status=200)
+        return Response({'club': ret_club, "joined": (inClub or isPending), "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs, "pending": isPending}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
@@ -960,6 +961,8 @@ def leave_club(request):
         club.officers.remove(user)
     if user in club.members.all():
         club.members.remove(user)
+    if user in club.pending_members.all():
+        club.pending_members.remove(user)
     club.save()
     return Response("success", status = 200)
 

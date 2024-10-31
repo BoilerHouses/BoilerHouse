@@ -34,6 +34,7 @@ const ClubInformation = () => {
   const { clubId } = useParams();
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
+  const [pending, setPending] = useState(false)
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
@@ -90,6 +91,7 @@ const ClubInformation = () => {
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
+        setPending(response.data.pending)
         setDeleted(response.data.deleted);
         setOfficer(response.data.officer);
         setDeletedCount(response.data.deleted_count);
@@ -355,6 +357,7 @@ const ClubInformation = () => {
         setClubData(response.data.club);
         setJoined(true);
         setIsLoading(false);
+        setPending(true)
       })
       .catch((error) => {
         console.error("There was an error joining club!", error);
@@ -609,7 +612,22 @@ const ClubInformation = () => {
               alert("There was an error in leaving the club. Please try again.")
           })
         }
-
+      }else {
+        axios({
+          url: "http://127.0.0.1:8000/api/leaveClub/",
+          method: "GET",
+          headers: {
+            Authorization: localStorage.getItem("token")
+          },
+          // params
+          params: {
+            club_name: clubData.name,
+          },
+        }).then(() => {
+          navigate("/clubs");
+        }) .catch(() => {
+            alert("There was an error in leaving the club. Please try again.")
+        })
       }
   }
 
@@ -734,7 +752,7 @@ const ClubInformation = () => {
           </button>
           <button
               className={
-                !officer && clubData.is_approved && joined && accepting
+                !officer && clubData.is_approved && joined && accepting && !pending
                     ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
                     : "hidden"
               }
@@ -745,7 +763,7 @@ const ClubInformation = () => {
         </div>
         <button
             className={
-              joined
+              joined || pending
                   ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
                   : "hidden"
             }
