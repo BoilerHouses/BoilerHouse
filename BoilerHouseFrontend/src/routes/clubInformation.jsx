@@ -1309,7 +1309,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            className={officer ? "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500" : 'hidden'}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
