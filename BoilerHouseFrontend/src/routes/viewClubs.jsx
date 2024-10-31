@@ -15,16 +15,13 @@ const ViewClubs = () => {
   const [data, setData] = useState([]);
   const [isLoadingClubs, setIsLoadingClubs] = useState(false);
   const [selectedClubSize, setSelectedClubSize] = useState("1 - 9");
-  const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("1-5");
   const [openFilterMenu, setOpenFilterMenu] = useState(false);
 
   const [filteredData, setFilteredData] = useState([]);
 
   const [minClubSize, setMinClubSize] = useState(0);
   const [maxClubSize, setMaxClubSize] = useState(Infinity);
-
-  const [minTimeCommitment, setMinTimeCommitment] = useState(0);
-  const [maxTimeCommitment, setMaxTimeCommitment] = useState(Infinity);
+  const [error, setError] = useState(false);
 
   const navigate = useNavigate();
 
@@ -33,21 +30,25 @@ const ViewClubs = () => {
       setIsLoadingClubs(true);
       const token = localStorage.getItem("token");
       if (token) {
-        const response = await axios.get("http://127.0.0.1:8000/api/clubs/", {
+        axios({
+          url: "http://127.0.0.1:8000/api/clubs/",
+          method: "GET",
           headers: {
             Authorization: token,
           },
           params: {
             approved: "True",
           },
-        });
-        if (response.status === 200) {
-          setData(response.data.clubs);
-          setFilteredData(response.data.clubs);
-          setIsLoadingClubs(false);
-        } else {
-          alert("Internal Server Error");
-        }
+        })
+          .then((res) => {
+            setData(res.data.clubs);
+            setFilteredData(res.data.clubs);
+            setIsLoadingClubs(false);
+          })
+          .catch(() => {
+            setIsLoadingClubs(false);
+            setError(true);
+          });
       }
     };
     fetchClubs();
@@ -59,10 +60,6 @@ const ViewClubs = () => {
 
   const changeSelectedClubSize = (event) => {
     setSelectedClubSize(event.target.value);
-  };
-
-  const changeSelectedTimeCommitment = (event) => {
-    setSelectedTimeCommitment(event.target.value);
   };
 
   const handleSearchChange = (event) => {
@@ -94,54 +91,28 @@ const ViewClubs = () => {
         setMaxClubSize(Infinity);
         break;
     }
-
-    switch (selectedTimeCommitment) {
-      case "1-5":
-        setMinTimeCommitment(1);
-        setMaxTimeCommitment(5);
-        break;
-      case "6-10":
-        setMinTimeCommitment(6);
-        setMaxTimeCommitment(10);
-        break;
-      case "11-15":
-        setMinTimeCommitment(11);
-        setMaxTimeCommitment(15);
-        break;
-      case "16+":
-        setMinTimeCommitment(16);
-        setMaxTimeCommitment(Infinity);
-        break;
-    }
   };
 
   const clearFilters = () => {
     setSearchTerm("");
     setMinClubSize(0);
     setMaxClubSize(Infinity);
-    setMinTimeCommitment(0);
-    setMaxTimeCommitment(Infinity);
     setSelectedClubSize("1 - 9");
-    setSelectedTimeCommitment("1-5");
     setOpenFilterMenu(false);
-  }
+  };
 
   useEffect(() => {
     handleFilter();
-  }, [searchTerm, minClubSize, maxClubSize, minTimeCommitment, maxTimeCommitment]);
+  }, [searchTerm, minClubSize, maxClubSize]);
 
   const handleFilter = () => {
     let newClubList = [];
 
     data.forEach((club) => {
       const members = club.num_members;
-      const commitment = club.time_commitment; // Assuming `time_commitment` is a field in your data
-
       if (
         members >= minClubSize &&
         members <= maxClubSize &&
-        commitment >= minTimeCommitment &&
-        commitment <= maxTimeCommitment &&
         club.name.toLowerCase().includes(searchTerm.toLowerCase())
       ) {
         newClubList.push(club);
@@ -205,34 +176,6 @@ const ViewClubs = () => {
                   />
                 </RadioGroup>
               </FormControl>
-              <Typography variant="h6" className="mt-4">Time Commitment</Typography>
-              <FormControl component="fieldset">
-                <RadioGroup
-                  value={selectedTimeCommitment}
-                  onChange={changeSelectedTimeCommitment}
-                >
-                  <FormControlLabel
-                    value="1-5"
-                    control={<Radio />}
-                    label="1-5 hours"
-                  />
-                  <FormControlLabel
-                    value="6-10"
-                    control={<Radio />}
-                    label="6-10 hours"
-                  />
-                  <FormControlLabel
-                    value="11-15"
-                    control={<Radio />}
-                    label="11-15 hours"
-                  />
-                  <FormControlLabel
-                    value="16+"
-                    control={<Radio />}
-                    label="16+ hours"
-                  />
-                </RadioGroup>
-              </FormControl>
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"
@@ -269,10 +212,17 @@ const ViewClubs = () => {
           ))}
         </div>
       ) : (
-        <p className="text-center">No results found.</p>
+        <div className="flex justify-center h-screen">
+          <p className="text-black text-center font-bold rounded-md">
+            {isLoadingClubs
+              ? "Loading..."
+              : error
+              ? "There was an error fetching clubs. Please try again later."
+              : "No clubs found matching criteria"}
+          </p>
+        </div>
       )}
     </div>
   );
 };
-
 export default ViewClubs;

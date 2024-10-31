@@ -2,7 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
 from .models import User, LoginPair, Club
-from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email
+from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email, send_email_to_club_members
 from .bucket_controller import find_buckets
 import json
 from .tokens import account_activation_token
@@ -797,7 +797,7 @@ def get_meeting_times(request):
 @api_view(['GET'])
 # gets meeting clubs based on the club id
 def set_meeting_times(request):
-    if "clubId" not in request.query_params or "meetings" not in request.query_params:
+    if "clubId" not in request.query_params or "meetings" not in request.query_params or "sendEmail" not in request.query_params or "relevant_meetings" not in request.query_params or "action" not in request.query_params:
        return Response({'error': 'missing  parameters'}, status=400)
     
     club = Club.objects.filter(pk=request.query_params['clubId']).first()
@@ -806,8 +806,41 @@ def set_meeting_times(request):
         return Response({'error': 'no club found with the associated clubId'}, status=400)
     
     meetings_data = json.loads(request.query_params["meetings"])
+    relevant_meetings  = json.loads(request.query_params["relevant_meetings"])
     club.meetings = meetings_data
     club.save()
+
+    # send emails to club members about new meeting that was created
+    if request.query_params['sendEmail'] == 'true':
+        subject = ""
+        if request.query_params['action'] == 'deleted':
+            subject = f"Meeting Canceled For {club.name}"
+        elif request.query_params['action'] == 'created':
+            subject = f"Meeting Created For {club.name}"
+        elif request.query_params['action'] == 'updated':
+            subject = f"Meeting Updated For {club.name}"
+
+        meeting_name = relevant_meetings[0]['meetingName']
+        meeting_location = relevant_meetings[0]['meetingLocation']
+        meeting_agenda = relevant_meetings[0]['meetingAgenda']
+        dates = [relevant_meetings[i]['date'] for i in range(len(relevant_meetings))]
+        startTime = relevant_meetings[0]['startTime']
+        endTime = relevant_meetings[0]['endTime']
+        content = f"""
+        Meeting Name: {meeting_name} \n
+        Meeting Location: {meeting_location} \n
+        Meeting Agenda: {meeting_agenda} \n
+        Meeting Dates: {','.join(dates)} \n
+        Meeting Start Time: {startTime} \n
+        Meeting End Time: {endTime} \n
+        """
+
+        # send email to all club members
+        if send_email_to_club_members(subject, content, club):
+
+            return Response("success", status=200)
+        else:
+            return Response("error", status=400)
     return Response("success", status=200)
 
 
@@ -908,40 +941,24 @@ def  send_email_to_members(request):
     subject = request.query_params['subject']
     content = request.query_params['content']
     club = Club.objects.filter(name=club_name).first()
-    all_members = []
-    members = list(club.members.all().values_list('username', flat=True))
-    officers = list(club.officers.all().values_list('username', flat=True))
-    all_members = members + officers
-    try:
-        email = EmailMessage(subject, content, to=all_members)
-        if email.send():
-            return Response("success", status=200)
-        else:
-            return Response("error", status = 400)
-    except Exception as e:
+    if send_email_to_club_members(subject, content, club):
+        return Response("success", status=200)
+    else:
         return Response("error", status=400)
 
-@api_view(['PUT'])
-def update_contact_info(request, club_id):
-    #Updates default club contact info
+@api_view(['GET'])
+def leave_club(request):
     user = verify_token(request.headers.get('Authorization'))
-    if user == 'Invalid token':
-        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    if "club_name" not in request.query_params:
+        return Response({'error': 'club_name not included'}, status=400)
+    club_name = request.query_params['club_name']
+    club = Club.objects.filter(name=club_name).first()
+    if user in club.officers.all():
+        club.deletion_votes = {}
+        club.officers.remove(user)
+    club.members.remove(user)
+    club.save()
+    return Response("success", status = 200)
 
-    try:
-        club = Club.objects.get(pk=request.data.get('club_id'))
-    except Club.DoesNotExist:
-        return Response({"error": "Club not found"}, status=404)
-
-    if user not in club.officers.all():
-        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
-
-    try:
-        if request.data.get('clubPhoneNumber'):
-            club.clubPhoneNumber = request.data.get('clubPhoneNumber')
-        if request.data.get('clubEmail'):
-            club.clubEmail = request.data.get('clubEmail')
-        club.save()
-        return Response({"message": "Club information updated successfully"}, status=200)
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)

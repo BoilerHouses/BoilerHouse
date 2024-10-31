@@ -4,7 +4,8 @@ from .views import forgot_password, activate_forgot_password, edit_account
 from .views import get_user_profile, save_club_information, get_all_clubs, set_availability, approve_club, join_club, set_questions, get_questions
 from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
 from .views import set_answers, get_answers, get_meeting_times, set_meeting_times, set_deletion, get_club_details_for_edit, update_club_info, get_clubs_for_officer, send_email_to_members
-from .views import update_contact_info, set_accepting_applications, set_officer_questions, get_officer_questions, set_officer_answers, get_officer_answers, modify_user_to_officer
+from .views import set_accepting_applications, set_officer_questions, get_officer_questions, set_officer_answers, get_officer_answers, modify_user_to_officer, leave_club
+
 
 
 urlpatterns = [
@@ -48,5 +49,5 @@ urlpatterns = [
     path('club/<int:club_id>/edit/', get_club_details_for_edit, name='get_club_details_for_edit'),
     path("get_clubs_for_officer/", get_clubs_for_officer, name="get_clubs_for_officer"),
     path("send_email_to_members/", send_email_to_members, name="send_email_to_members"),
-    path("club/<int:club_id>/defaultContact", update_contact_info, name="update_contact_info"),
+    path("leaveClub/", leave_club, name="leave_club")
 ]
