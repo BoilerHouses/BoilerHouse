@@ -30,6 +30,7 @@ const ClubApplication = () => {
   const navigate = useNavigate();
   const [culture, setCulture] = useState("");
   const [timeCommitment, setTimeCommitment] = useState("");
+  const [targetAudience, setTargetAudience] = useState("");
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -86,6 +87,10 @@ const ClubApplication = () => {
     setInterest(event.target.value);
   };
 
+  const handleTargetAudienceChange = (e) => {
+    setTargetAudience(e.target.value);
+  };
+
   const handleDescriptionChange = (e) => {
     setDescription(e.target.value);
   };
@@ -120,6 +125,7 @@ const ClubApplication = () => {
     formData.append("description", description);
     formData.append("culture", culture);
     formData.append("time_commitment", timeCommitment);
+    formData.append("target_audience", targetAudience);
     galleryImages.forEach((image, index) => {
       formData.append(`gallery[${index}]`, image);
     });
@@ -236,6 +242,26 @@ const ClubApplication = () => {
                 <MenuItem value={"16+ hours"}>16+ hours</MenuItem>
               </Select>
             </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Target Audience"
+              variant="filled"
+              value={targetAudience}
+              onChange={handleTargetAudienceChange}
+              InputLabelProps={{
+                style: { color: "black", fontSize: "1.2rem" },
+              }}
+              InputProps={{
+                style: {
+                  backgroundColor: "rgba(255, 255, 255, 0.2)",
+                  borderRadius: "8px",
+                  color: "black",
+                },
+              }}
+            />
           </Grid>
 
           <Grid item xs={12}>
