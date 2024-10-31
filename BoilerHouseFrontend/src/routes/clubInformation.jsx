@@ -737,7 +737,7 @@ const ClubInformation = () => {
               }
               onClick={() => navigate(`/club/${clubId}/edit`)}
           >
-            Edit Culture and Time Commitment
+            Edit Culture, Time Commitment, Audience
           </button>
 
           <button
@@ -1009,6 +1009,14 @@ const ClubInformation = () => {
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
         {clubData.culture || "No culture information provided."}
+      </Typography>
+
+      {/* Club Targeted Audience */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Targeted Audience:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {clubData.targetedAudience || "No audience information provided."}
       </Typography>
 
       {/* Club Time Commitment */}

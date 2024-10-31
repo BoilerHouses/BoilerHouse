@@ -125,7 +125,7 @@ const ClubApplication = () => {
     formData.append("description", description);
     formData.append("culture", culture);
     formData.append("time_commitment", timeCommitment);
-    formData.append("target_audience", targetAudience);
+    formData.append("targetedAudience", targetAudience);
     galleryImages.forEach((image, index) => {
       formData.append(`gallery[${index}]`, image);
     });
