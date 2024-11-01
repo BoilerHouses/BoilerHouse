@@ -393,6 +393,7 @@ def join_club(request):
     if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
         club.pending_members.add(user)
     club.save()
+
     ret_club = model_to_dict(club)
     officer_list = []
     for i in ret_club['officers']:
@@ -406,6 +407,7 @@ def join_club(request):
     ret_club['officers'] = officer_list
     ret_club['members'] = member_list
     ret_club['pending_members'] = pending_list
+
     return Response({'club': ret_club}, 200)
 
 @api_view(['GET'])

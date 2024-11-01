@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from "react-router-dom";
 
 import axios from 'axios';
-import { NavigateBeforeTwoTone } from '@mui/icons-material';
 
 const OfficerAnswers = () => {
   const [qaData, setQaData] = useState([]);
@@ -15,7 +14,7 @@ const OfficerAnswers = () => {
         const response = await axios.get(`http://127.0.0.1:8000/api/club/officer/answers/${clubId}/${username}/`); // Replace with your endpoint
         setQaData(response.data); // Assuming response.data is an array of { question, answer }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        alert("Error fetching data:", error);
       } finally {
         setLoading(false);
       }

@@ -88,6 +88,7 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
+        console.log(response.data.club)
         setClubData(response.data.club);
         setIsLoading(false);
         setJoined(response.data.joined);
@@ -102,7 +103,7 @@ const ClubInformation = () => {
         setMostCommonGradYears(response.data.common_grad_years);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
 
@@ -147,7 +148,7 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching meetings!", error);
+        alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
   }, [clubId]);
@@ -169,7 +170,7 @@ const ClubInformation = () => {
         console.log(response);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
       });
   };
 
@@ -203,7 +204,7 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -238,7 +239,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -262,7 +263,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -285,7 +286,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -309,7 +310,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -333,7 +334,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -360,7 +361,6 @@ const ClubInformation = () => {
         setPending(true)
       })
       .catch((error) => {
-        console.error("There was an error joining club!", error);
         alert("There was an error joining club!", error);
         setIsLoading(false);
       });
@@ -382,7 +382,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -763,7 +763,7 @@ const ClubInformation = () => {
         </div>
         <button
             className={
-              joined || pending
+              joined
                   ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
                   : "hidden"
             }
@@ -1068,7 +1068,7 @@ const ClubInformation = () => {
         Officers ({clubData.officers.length}):
       </Typography>
 
-      <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.officers.map((profile, index) => (
           <div
             index={profile[3]}
@@ -1096,7 +1096,7 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):
       </Typography>
-      <div className="overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
             index={profile[3]}
@@ -1308,7 +1308,7 @@ const ClubInformation = () => {
       <div
         className={
           officer && clubData.pending_members.length > 0
-            ? "overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2"
+            ? "overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2"
             : "hidden"
         }
       >
