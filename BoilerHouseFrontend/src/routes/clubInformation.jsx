@@ -751,6 +751,16 @@ const ClubInformation = () => {
             Contact Us!
           </button>
           <button
+             className={
+               officer && clubData.is_approved
+                   ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                   : "hidden"
+             }
+             onClick={() => navigate(`/club/${clubId}/clubDues`)}
+          >
+             Set Club Dues
+          </button>
+          <button
               className={
                 !officer && clubData.is_approved && joined && accepting && !pending
                     ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
@@ -1042,6 +1052,17 @@ const ClubInformation = () => {
       <Typography variant="body1" gutterBottom color="black">
         {clubData.clubPhoneNumber || "No phone number information provided."}
       </Typography>
+
+      {/* Club Dues */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Club Dues:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {"$" + clubData.clubDues || "No club dues information provided."}
+      </Typography>
+
+
+
 
 
       {/* Interests */}
