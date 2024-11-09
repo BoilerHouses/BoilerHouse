@@ -106,9 +106,9 @@ def insert_user_data(conn):
 def insert_club_data(conn):
     with conn.cursor() as cursor:
         club_query = f'''
-                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience") VALUES 
+                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues") VALUES
                         ('test club', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
-                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '')
+                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', 0.00)
                     '''
 
         cursor.execute(club_query) 

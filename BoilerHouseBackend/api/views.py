@@ -991,4 +991,25 @@ def update_contact_info(request, club_id):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@api_view(['PUT'])
+def update_club_dues(request, club_id):
+    #Updates default club contact info
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    try:
+        club = Club.objects.get(pk=request.data.get('club_id'))
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
+    try:
+        if request.data.get('clubDues'):
+            club.clubDues = request.data.get('clubDues')
+        club.save()
+        return Response({"message": "Club information updated successfully"}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
+
 
