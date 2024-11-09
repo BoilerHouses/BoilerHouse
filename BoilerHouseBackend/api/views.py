@@ -912,6 +912,7 @@ def get_club_details_for_edit(request, club_id):
             "name": club.name,
             "culture": club.culture,
             "time_commitment": club.time_commitment,
+            "clubDues": club.clubDues,
             # Add any other fields you want to make editable
         }
         

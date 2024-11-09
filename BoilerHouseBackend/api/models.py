@@ -55,7 +55,7 @@ class Club(models.Model):
     clubEmail = models.CharField(max_length=100, default='')
     pending_officers = models.ManyToManyField(User, related_name='pending_officer_list')
     targetedAudience = models.CharField(max_length=2048, default='')
-    clubDues = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    clubDues = models.CharField(max_length=2048, default='')
 
 
 
