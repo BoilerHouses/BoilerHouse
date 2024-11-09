@@ -52,11 +52,13 @@ const ClubDues = () => {
     event.preventDefault();
 
     // Check if dues is a valid number
-    if (isNaN(dues) || dues === "") {
+    if (isNaN(dues) || dues === "" || parseFloat(dues) < 0) {
       alert("Please enter a valid number for the club dues.");
       return;
     }
 
+
+    console.log(dues);
     setIsLoading(true);
     const token = localStorage.getItem("token");
 

@@ -1005,8 +1005,7 @@ def update_club_dues(request, club_id):
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
     try:
-        if request.data.get('clubDues'):
-            club.clubDues = request.data.get('clubDues')
+        club.clubDues = request.data.get('clubDues')
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
