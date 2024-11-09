@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { TextField, Button, Rating, Box } from "@mui/material";
 import axios from "axios";
 const RatingForm = ({clubId}) => {
   const [review, setReview] = useState("");
   const [rating, setRating] = useState(0);
+  const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,6 +23,7 @@ const RatingForm = ({clubId}) => {
       })
       .then((response) => {
         console.log(response);
+        navigate(0);
       })
       .catch((error) => {
         console.error("There was an error creating your rating!", error);

@@ -501,10 +501,15 @@ def get_club_information(request):
             if i.username in club.responses:
                 submittedForm = True
             pending_list.append((i.pk, i.name, i.profile_picture, i.username, submittedForm))
+        rating_list = []
+
+        for i in club.ratings.all():
+            rating_list.append({'review': i.review, 'rating': i.rating, 'author': i.author.username})
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
         ret_club['pending_officers'] = []
+        ret_club['ratings'] = rating_list
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
             deleted = deleted and club.deletion_votes[user.username]
@@ -912,6 +917,7 @@ def get_club_details_for_edit(request, club_id):
             "name": club.name,
             "culture": club.culture,
             "time_commitment": club.time_commitment,
+            "clubDues": club.clubDues,
             # Add any other fields you want to make editable
         }
         
@@ -1014,5 +1020,25 @@ def update_contact_info(request, club_id):
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['PUT'])
+def update_club_dues(request, club_id):
+    #Updates default club contact info
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    try:
+        club = Club.objects.get(pk=request.data.get('club_id'))
+    except Club.DoesNotExist:
+        return Response({"error": "Club not found"}, status=404)
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
+    try:
+        club.clubDues = request.data.get('clubDues')
+        club.save()
+        return Response({"message": "Club information updated successfully"}, status=200)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)
+
 
 

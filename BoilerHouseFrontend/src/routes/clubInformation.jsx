@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
 import RatingForm from "./ratingComponent";
@@ -10,6 +10,8 @@ import {
   Chip,
   Avatar,
   Card,
+  Rating,
+
   CardContent,
   Dialog,
   DialogTitle,
@@ -44,7 +46,7 @@ const ClubInformation = () => {
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
-
+  const [averageRating, setAverageRating] = useState(2.5);
   const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
@@ -100,6 +102,12 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
+        let avg = 0
+        response.data.club.ratings.forEach((e) => {
+          avg += e.rating
+        })
+        avg /= response.data.club.ratings.length
+        setAverageRating(avg.toFixed(2))
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -751,6 +759,16 @@ const ClubInformation = () => {
             Contact Us!
           </button>
           <button
+             className={
+               officer && clubData.is_approved
+                   ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                   : "hidden"
+             }
+             onClick={() => navigate(`/club/${clubId}/clubDues`)}
+          >
+             Set Club Dues
+          </button>
+          <button
               className={
                 !officer && clubData.is_approved && joined && accepting && !pending
                     ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
@@ -1042,6 +1060,17 @@ const ClubInformation = () => {
       <Typography variant="body1" gutterBottom color="black">
         {clubData.clubPhoneNumber || "No phone number information provided."}
       </Typography>
+
+      {/* Club Dues */}
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Club Dues:
+      </Typography>
+      <Typography variant="body1" gutterBottom color="black">
+        {"$" + clubData.clubDues || "No club dues information provided."}
+      </Typography>
+
+
+
 
 
       {/* Interests */}
@@ -1366,6 +1395,51 @@ const ClubInformation = () => {
         ))}
       </div>
       <RatingForm clubId={clubId}/>
+      <Box
+        className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-full max-w-lg overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
+        sx={{ maxHeight: '400px' }}
+      >
+        <Box className="mb-4 bg-slate-200 rounded">
+          <Typography variant="body1" color="text.secondary">
+            {`Average Rating: ${averageRating}`}
+          </Typography>
+        </Box>
+        {clubData.ratings &&
+          clubData.ratings.map((rating, index) => (
+            <Box
+              key={index}
+              className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
+            >
+              <Box className="flex items-center p-4">
+                <Box className="flex-shrink-0 bg-primary-500 text-white font-bold w-10 h-10 flex items-center justify-center rounded-full mr-4 bg-slate-300">
+                  {rating.author[0]}
+                </Box>
+
+                <Box className="flex-1">
+                  <Typography variant="body1" color="text.secondary">
+                    {rating.review}
+                  </Typography>
+
+                  <Box className="flex items-center mt-2">
+                    <Rating value={rating.rating} precision={0.5} readOnly />
+                    <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold' }}>
+                      {rating.rating}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Link to={`/profile/${rating.author}`} className="text-primary-500 font-bold ml-4">
+                  <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
+                    {rating.author}
+                  </Typography>
+                </Link>
+              </Box>
+            </Box>
+          ))}
+      </Box>
+
+
+
       {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
