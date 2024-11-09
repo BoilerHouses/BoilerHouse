@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
-
+import RatingForm from "./ratingComponent";
 import {
   CircularProgress,
   Typography,
@@ -1365,7 +1365,7 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-
+      <RatingForm clubId={clubId}/>
       {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
         <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
@@ -1385,6 +1385,7 @@ const ClubInformation = () => {
               ))}
           </div>
         </div>
+
       </div>
 
       <div className={clubData.gallery.length > 0 ? "" : "hidden"}>

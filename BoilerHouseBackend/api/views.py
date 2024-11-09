@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from datetime import datetime
-from .models import User, LoginPair, Club
+from .models import User, LoginPair, Club, Rating
 from .user_controller import find_user_obj, save_login_pair, generate_token, verify_token, edit_user_obj, resetPasswordEmail, send_club_approved_email, send_email_to_club_members
 from .bucket_controller import find_buckets
 import json
@@ -969,6 +969,30 @@ def leave_club(request):
     club.save()
     return Response("success", status = 200)
 
+@api_view(['POST'])
+def create_rating(request, club_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    data = {}
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return Response({"error": "Invalid JSON Document"}, status=422)
+    if 'rating' not in data or 'review' not in data:
+        return Response({"error": "Invalid Request, Missing Parameters!"}, status=400)
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({'error': 'club not found!'}, status=404)
+    if user not in club.members.all():
+        return Response({'error': 'Only users in the can leave ratings!'}, status=403)
+    try:
+        Rating.create(author=user, club=club, rating=data['rating'], review=data['review'])
+        return Response(status=200)
+    except Exception as e:
+        print(e)
+        return Response({"error": str(e)}, status=500)
 @api_view(['PUT'])
 def update_contact_info(request, club_id):
     #Updates default club contact info
