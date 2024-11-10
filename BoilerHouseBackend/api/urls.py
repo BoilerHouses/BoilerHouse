@@ -5,6 +5,7 @@ from .views import get_user_profile, save_club_information, get_all_clubs, set_a
 from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
 from .views import set_answers, get_answers, get_meeting_times, set_meeting_times, set_deletion, get_club_details_for_edit, update_club_info, get_clubs_for_officer, send_email_to_members
 from .views import set_accepting_applications, set_officer_questions, get_officer_questions, set_officer_answers, get_officer_answers, modify_user_to_officer, leave_club, update_contact_info
+from .views import create_rating
 from .views import update_club_dues
 
 urlpatterns = [
@@ -26,6 +27,7 @@ urlpatterns = [
     path('get_user_profile', get_user_profile, name="get_user_profile"),
     path('setAvailability/', set_availability, name="setAvailability"),
     path('club/', get_club_information, name="get_club_information"),
+    path('rating/create/<int:club_id>/', create_rating, name="create_rating"),
     path('club/join/', join_club, name="join_club"),
     path('club/delete/vote/', set_deletion, name="delete_club"),
     path('club/join/approval/', modify_user_to_club, name="modify_user_club"),
