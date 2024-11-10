@@ -17,6 +17,13 @@ const ViewClubs = () => {
   const [selectedClubSize, setSelectedClubSize] = useState("None");
   const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("None");
   const [timeCommitmentFilter, setTimeCommitmentFilter] = useState("None");
+  const [selectedAvailability, setSelectedAvailability] = useState("None");
+
+  // userAvailability is stored as a JSON object
+  const [userAvailability, setUserAvailability] = useState({});
+
+  const [selectedAvailabilityFilter, setSelectedAvailabilityFilter] =
+    useState("None");
 
   const [selectedCulture, setSelectedCulture] = useState("");
   const [cultureFilter, setCultureFilter] = useState("");
@@ -48,7 +55,6 @@ const ViewClubs = () => {
           .then((res) => {
             setData(res.data.clubs);
             setFilteredData(res.data.clubs);
-            console.log(res.data.clubs);
             setIsLoadingClubs(false);
           })
           .catch(() => {
@@ -58,6 +64,24 @@ const ViewClubs = () => {
       }
     };
     fetchClubs();
+
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("username");
+      if (token) {
+        const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+          headers: {
+            Authorization: token,
+          },
+          params: {
+            username: userId,
+          },
+        });
+        const availability = response.data.availability;
+        setUserAvailability(availability);
+      }
+    };
+    fetchProfile();
   }, []);
 
   const handleClick = (event) => {
@@ -74,6 +98,10 @@ const ViewClubs = () => {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const changeSelectedAvailability = (event) => {
+    setSelectedAvailability(event.target.value);
   };
 
   const applyFilters = () => {
@@ -108,6 +136,7 @@ const ViewClubs = () => {
 
     setTimeCommitmentFilter(selectedTimeCommitment);
     setCultureFilter(selectedCulture);
+    setSelectedAvailabilityFilter(selectedAvailability);
   };
 
   const clearFilters = () => {
@@ -120,6 +149,8 @@ const ViewClubs = () => {
     setTimeCommitmentFilter("None");
     setSelectedCulture("");
     setCultureFilter("");
+    setSelectedAvailability("None");
+    setSelectedAvailabilityFilter("None");
   };
 
   useEffect(() => {
@@ -130,41 +161,62 @@ const ViewClubs = () => {
     maxClubSize,
     timeCommitmentFilter,
     cultureFilter,
+    selectedAvailabilityFilter,
   ]);
 
   const handleFilter = () => {
-    let newClubList = [];
+    let searchTermFilterList = new Set();
+    let sizeFilerList = new Set();
+    let timeCommitmentFilterList = new Set();
+    let cultureFilterList = new Set();
+    let availabilityFilterList = new Set();
+
+    const useSizeFilter = selectedClubSize !== "None";
+    const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
+    const useCultureFilter = cultureFilter.length > 0;
+    const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
 
     data.forEach((club) => {
+      const clubId = club.id;
       const members = club.num_members;
-      if (
-        members >= minClubSize &&
-        members <= maxClubSize &&
-        club.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ) {
-        if (timeCommitmentFilter === "None" && cultureFilter === "") {
-          newClubList.push(club);
-        } else if (timeCommitmentFilter === "None") {
-          if (
-            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
-          ) {
-            newClubList.push(club);
-          }
-        } else if (cultureFilter === "") {
-          if (club.time_commitment === timeCommitmentFilter) {
-            newClubList.push(club);
-          }
-        } else {
-          if (
-            club.time_commitment === timeCommitmentFilter &&
-            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
-          ) {
-            newClubList.push(club);
-          }
-        }
+
+      if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+        searchTermFilterList.add(clubId);
+      }
+
+      if (members >= minClubSize && members <= maxClubSize) {
+        sizeFilerList.add(clubId);
+      }
+
+      if (club.time_commitment === timeCommitmentFilter) {
+        timeCommitmentFilterList.add(clubId);
+      }
+
+      if (club.culture.toLowerCase().includes(cultureFilter.toLowerCase())) {
+        cultureFilterList.add(clubId);
       }
     });
-    setFilteredData(newClubList);
+
+    let filteredList = searchTermFilterList;
+    if (useSizeFilter) {
+      filteredList = filteredList.intersection(sizeFilerList);
+    }
+    if (useTimeCommitmentFilter) {
+      filteredList = filteredList.intersection(timeCommitmentFilterList);
+    }
+    if (useCultureFilter) {
+      filteredList = filteredList.intersection(cultureFilterList);
+    }
+
+    let filteredClubs = []
+
+    data.forEach((club) => {
+      if (filteredList.has(club.id)) {
+        filteredClubs.push(club)
+      }
+    })
+
+    setFilteredData(filteredClubs);
   };
 
   const handleCultureFilter = (e) => {
@@ -191,7 +243,7 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
+            <div className="absolute right-0 mt-2 p-4 bg-white border border-gray-300 rounded shadow-lg z-10">
               <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">Number of Members</Typography>
@@ -278,6 +330,35 @@ const ViewClubs = () => {
                 }}
                 className="flex-grow p-3 border border-gray-300 rounded"
               />
+
+              <Typography variant="h6">Availability</Typography>
+              <Typography variant="subtitle1">
+                Filter by your availability
+              </Typography>
+              <Typography variant="subtitle2">
+                Note: If you haven&apos;t filled out your availability in your
+                profile, you are assumed to be free all the time. This filter
+                returns clubs with at least one meeting in the future in which
+                you are free. Clubs with no future meetings are also returned.
+              </Typography>
+
+              <FormControl component="fieldset">
+                <RadioGroup
+                  value={selectedAvailability}
+                  onChange={changeSelectedAvailability}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="Filter by Availability"
+                    control={<Radio />}
+                    label="Filter by Availability"
+                  />
+                </RadioGroup>
+              </FormControl>
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"
