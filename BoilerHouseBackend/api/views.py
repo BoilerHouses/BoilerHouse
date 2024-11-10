@@ -756,12 +756,31 @@ def modify_user_to_club(request):
     if not club or request.query_params['user'] not in [x.username for x in list(club.pending_members.all())]:
         return Response({"error": "User or Club does not exist"}, status=404)
     member = User.objects.filter(username=request.query_params['user']).first()
+    if ('approved' in request.query_params):
+        if (request.query_params['approved'] == 'Y'):
+            #send email to member notifying that they are now in the club
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been approved!"
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
+            club.members.add(member)
+        else:
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been denied."
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
     club.pending_members.remove(member)
     club.responses.pop(member.username, None)
-    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
-        club.members.add(member)
     club.save()
-    return Response("Sucess!", 200)
+    return Response("Success!", 200)
 
 
 @api_view(['GET'])
@@ -1071,6 +1090,8 @@ def update_club_dues(request, club_id):
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
 
 
 
