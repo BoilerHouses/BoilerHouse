@@ -822,7 +822,7 @@ const ClubInformation = () => {
              }
              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
-             Set Club Dues
+             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
               className={
