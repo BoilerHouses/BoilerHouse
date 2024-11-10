@@ -1127,7 +1127,7 @@ const ClubInformation = () => {
               ) : (
                 <>
                   {clubData.dueName && <div>{"Due Name: " + clubData.dueName}</div>}
-                  {clubData.clubDues ? <div>{"Amount: $" + clubData.clubDues}</div> : <div>$0</div>}
+                  {clubData.clubDues ? <div>{"Amount: $" + clubData.clubDues}</div> : <div>Amount: $0</div>}
                   {clubData.dueDate && <div>{"Due Date: " + clubData.dueDate}</div>}
                 </>
               )}
