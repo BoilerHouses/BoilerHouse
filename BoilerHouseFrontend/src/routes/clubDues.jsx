@@ -14,7 +14,9 @@ import axios from "axios";
 const ClubDues = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
-  const [dues, setDues] = useState(""); // State to hold club dues
+  const [dues, setDues] = useState(""); // State to hold club dues amount
+  const [dueName, setDueName] = useState(""); // State to hold due name
+  const [dueDate, setDueDate] = useState(""); // State to hold due date
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -32,9 +34,11 @@ const ClubDues = () => {
           },
         });
         const clubData = response.data;
-        console.log(clubData.clubDues)
-        if (clubData.clubDues !== undefined) {
-          setDues(clubData.clubDues.toString()); // Set dues if it exists, converting to string for input display
+        console.log(clubData);
+        if (clubData) {
+          setDues(clubData.clubDues ? clubData.clubDues.toString() : "");
+          setDueName(clubData.clubDueName || ""); // Pre-fill if data is available
+          setDueDate(clubData.clubDueDate || ""); // Pre-fill if data is available
         }
       } catch (error) {
         console.error("Error fetching club data:", error);
@@ -51,14 +55,12 @@ const ClubDues = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    // Check if dues is a valid number
-    if (isNaN(dues) || dues === "" || parseFloat(dues) < 0) {
-      alert("Please enter a valid number for the club dues.");
+    // Validate inputs
+    if (!dueName || isNaN(dues) || dues === "" || parseFloat(dues) < 0 || !dueDate) {
+      alert("Please enter valid values for all fields.");
       return;
     }
 
-
-    console.log(dues);
     setIsLoading(true);
     const token = localStorage.getItem("token");
 
@@ -67,7 +69,9 @@ const ClubDues = () => {
         `http://127.0.0.1:8000/api/club/${clubId}/clubDues`,
         {
           club_id: clubId,
+          clubDueName: dueName,
           clubDues: parseFloat(dues), // Convert to a float to ensure numeric value
+          clubDueDate: dueDate,
         },
         {
           headers: {
@@ -102,6 +106,16 @@ const ClubDues = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             <TextField
               fullWidth
+              label="Due Name"
+              value={dueName}
+              onChange={(e) => setDueName(e.target.value)}
+              className="bg-white !my-3.5"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              fullWidth
               label="Club Dues"
               type="number" // Set input type to number to restrict non-numeric input
               value={dues} // Display current dues value
@@ -109,6 +123,17 @@ const ClubDues = () => {
               InputProps={{
                 startAdornment: <InputAdornment position="start">$</InputAdornment>,
               }}
+              className="bg-white !my-3.5"
+              InputLabelProps={{
+                shrink: true,
+              }}
+            />
+            <TextField
+              fullWidth
+              label="Due Date"
+              type="date" // Set input type to date for a date picker
+              value={dueDate}
+              onChange={(e) => setDueDate(e.target.value)}
               className="bg-white !my-3.5"
               InputLabelProps={{
                 shrink: true,

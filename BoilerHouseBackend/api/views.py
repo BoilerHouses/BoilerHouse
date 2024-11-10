@@ -913,6 +913,8 @@ def get_club_details_for_edit(request, club_id):
             "culture": club.culture,
             "time_commitment": club.time_commitment,
             "clubDues": club.clubDues,
+            "dueName": club.dueName,
+            "dueDate": club.dueDate,
             # Add any other fields you want to make editable
         }
         
@@ -1006,6 +1008,8 @@ def update_club_dues(request, club_id):
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
     try:
         club.clubDues = request.data.get('clubDues')
+        club.dueName = request.data.get('dueName')
+        club.dueDate = request.data.get('dueDate')
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:

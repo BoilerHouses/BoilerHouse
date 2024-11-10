@@ -1058,7 +1058,9 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
+        {clubData.dueName || "No club dues information provided."}
         {"$" + clubData.clubDues || "No club dues information provided."}
+        {clubData.dueDate || "No club dues information provided."}
       </Typography>
 
 
