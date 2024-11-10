@@ -266,17 +266,22 @@ const ViewClubs = () => {
         availabilityFilterList.add(clubId);
       }
 
-      meetings.forEach((meeting) => {
-        const day = getDayOfWeek(meeting.date);
-        const startTime = convertTo24Hour(meeting.startTime);
-        const endTime = convertTo24Hour(meeting.endTime);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-        const userAvailabilityForDay = userAvailabilityTranslated[day];
-        userAvailabilityForDay.forEach((time) => {
-          if (time[0] <= startTime && time[1] >= endTime) {
-            availabilityFilterList.add(clubId);
-          }
-        });
+      meetings.forEach((meeting) => {
+        if (new Date(meeting.date) >= today) {
+          const day = getDayOfWeek(meeting.date);
+          const startTime = convertTo24Hour(meeting.startTime);
+          const endTime = convertTo24Hour(meeting.endTime);
+
+          const userAvailabilityForDay = userAvailabilityTranslated[day];
+          userAvailabilityForDay.forEach((time) => {
+            if (time[0] <= startTime && time[1] >= endTime) {
+              availabilityFilterList.add(clubId);
+            }
+          });
+        }
       });
     });
 
