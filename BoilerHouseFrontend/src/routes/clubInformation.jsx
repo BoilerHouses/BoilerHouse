@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import dayjs from "dayjs";
-
+import RatingForm from "./ratingComponent";
 import {
   CircularProgress,
   Typography,
@@ -10,6 +10,8 @@ import {
   Chip,
   Avatar,
   Card,
+  Rating,
+
   CardContent,
   Dialog,
   DialogTitle,
@@ -44,10 +46,14 @@ const ClubInformation = () => {
   const [meetings, setMeetings] = useState([]);
   const [getMeetingError, setGetMeetingError] = useState(false);
   const [selectedMeeting, setSelectedMeeting] = useState(null);
-
+  const [averageRating, setAverageRating] = useState(2.5);
   const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
+
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [updatedReview, setUpdatedReview] = useState('');
+  const [updatedRating, setUpdatedRating] = useState(0);
 
   const [startDate, setStartDate] = useState(today);
   const [startTime, setStartTime] = useState(sixPM);
@@ -89,6 +95,7 @@ const ClubInformation = () => {
       })
       .then((response) => {
         setClubData(response.data.club);
+        console.log(response.data.club)
         setIsLoading(false);
         setJoined(response.data.joined);
         setPending(response.data.pending)
@@ -100,6 +107,12 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
+        let avg = 0
+        response.data.club.ratings.forEach((e) => {
+          avg += e.rating
+        })
+        avg /= response.data.club.ratings.length
+        setAverageRating(avg.toFixed(2))
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
@@ -206,6 +219,42 @@ const ClubInformation = () => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
+  };
+
+  const startEditing = (rating) => {
+    setEditingReviewId(rating.id);
+    setUpdatedReview(rating.review);
+    setUpdatedRating(rating.rating);
+  };
+
+  const cancelEditing = () => {
+    setEditingReviewId(null);
+    setUpdatedReview('');
+    setUpdatedRating(0);
+  };
+
+  const saveUpdatedReview = (id) => {
+      const token = localStorage.getItem("token");
+      const data = {
+          id: id,
+          review: updatedReview,
+          rating: updatedRating
+      }
+      axios
+        .post(`http://127.0.0.1:8000/api/rating/create/${clubId}/`, data, {
+          headers: {
+            Authorization: token,
+          }
+          
+        })
+        .then((response) => {
+          console.log(response);
+          navigate(0);
+        })
+        .catch((error) => {
+          console.error("There was an error creating your rating!", error);
+        });
+        cancelEditing();
   };
 
   const handleMemberProfile = (event) => {
@@ -477,6 +526,21 @@ const ClubInformation = () => {
       });
   };
 
+  const deleteRating = (e) => {
+    const rating_id = e.target.getAttribute('index')
+    const token = localStorage.getItem("token")
+    axios.get(`http://127.0.0.1:8000/api/rating/delete/${rating_id}`, {
+      headers: {
+        Authorization: token,
+      }
+    }).then((response) => {
+      console.log(response);
+      navigate(0);
+    })
+    .catch((error) => {
+      console.error("There was an error creating your rating!", error);
+    });
+  }
   // delete a meeting
   const deleteMeeting = () => {
     const index = meetings.findIndex(
@@ -1388,6 +1452,105 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
+      <RatingForm clubId={clubId}/>
+      <Box
+      className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
+      sx={{ maxHeight: '400px' }}
+    >
+      <Box className="mb-4 bg-slate-200 rounded">
+        <Typography variant="body1" color="text.secondary">
+          {`Average Rating: ${averageRating}`}
+        </Typography>
+      </Box>
+      {clubData.ratings &&
+        clubData.ratings.map((rating, index) => (
+          <Box
+            key={index}
+            className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
+          >
+            <Box className="flex items-center p-4">
+              <img
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full mr-4"
+                src={rating.portrait}
+                alt="User avatar"
+              />
+              <Box className="flex-1">
+                {editingReviewId === rating.id ? (
+                  <>
+                    <TextField
+                      value={updatedReview}
+                      onChange={(e) => setUpdatedReview(e.target.value)}
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      className="mb-2"
+                    />
+                    <Rating
+                      value={updatedRating}
+                      precision={0.5}
+                      onChange={(e, newValue) => setUpdatedRating(newValue)}
+                    />
+                    <Box className="flex items-center mt-2 space-x-2">
+                      <Button variant="contained" color="primary" onClick={() => saveUpdatedReview(rating.id)}>
+                        Save
+                      </Button>
+                      <Button variant="outlined" color="secondary" onClick={cancelEditing}>
+                        Cancel
+                      </Button>
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1" color="text.secondary">
+                      {rating.review}
+                    </Typography>
+                    <Box className="flex items-center mt-2">
+                      <Rating value={rating.rating} precision={0.5} readOnly />
+                      <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold' }}>
+                        {rating.rating}
+                      </Typography>
+                    </Box>
+                  </>
+                )}
+              </Box>
+
+              <Link to={`/profile/${rating.author}`} className="text-primary-500 font-bold ml-4">
+                <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
+                  {rating.author}
+                </Typography>
+              </Link>
+              
+              {rating.author === localStorage.getItem("username") && (
+                <>
+                  {editingReviewId === rating.id ? (
+                    <Button
+                      onClick={cancelEditing}
+                      className="ml-4 text-red-500"
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => startEditing(rating)}
+                      className="ml-4 text-blue-500"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => deleteRating(rating.id)}
+                    className="ml-4 rounded bg-red-500 py-2 px-2 text-white transform hover:scale-105 hover:shadow-lg"
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Box>
+        ))}
+    </Box>
+
+
 
       {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
@@ -1408,6 +1571,7 @@ const ClubInformation = () => {
               ))}
           </div>
         </div>
+
       </div>
 
       <div className={clubData.gallery.length > 0 ? "" : "hidden"}>

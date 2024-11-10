@@ -69,6 +69,18 @@ class Club(models.Model):
         club.members.add(owner)
         return club
 
+class Rating(models.Model):
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="ratings")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ratings")
+    review = models.CharField(max_length=1000, default='')
+    rating = models.FloatField(default=2.5)
+
+    @classmethod
+    def create(cls, author, club, review, rating):
+        rating = cls(author=author, club=club, review=review, rating=rating)
+        rating.save()
+        return rating
+
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)
     password = models.CharField(max_length=255)
