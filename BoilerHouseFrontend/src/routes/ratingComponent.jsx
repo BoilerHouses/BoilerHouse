@@ -31,7 +31,7 @@ const RatingForm = ({clubId}) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-lg mx-auto p-6 bg-gray-100 mt-10 rounded-lg shadow-md">
+    <form onSubmit={handleSubmit} className="w-2/3 mx-auto p-6 bg-gray-100 mt-10 rounded-lg shadow-md">
       <Box className="mb-4">
         <TextField
           label="Review"

@@ -464,6 +464,21 @@ def set_availability(request):
 
     return Response(status=200) 
 
+
+@api_view(['GET'])
+def delete_rating(request, rating_id):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    rating = Rating.objects.filter(pk=rating_id).first()
+    if not rating:
+        return Response({'error': 'Rating not found'}, status=404)
+    if user != rating.author:
+        return Response({'error': 'You can only delete your own ratings!'}, status=400)
+    rating.delete()
+    return Response('Success!', status=200)
+    
+
 @api_view(['GET'])
 def get_club_information(request):
     user = verify_token(request.headers.get('Authorization'))
@@ -504,7 +519,7 @@ def get_club_information(request):
         rating_list = []
 
         for i in club.ratings.all():
-            rating_list.append({'review': i.review, 'rating': i.rating, 'author': i.author.username})
+            rating_list.append({'id': i.pk, 'review': i.review, 'rating': i.rating, 'author': i.author.username, 'portrait': i.author.profile_picture})
         ret_club['officers'] = officer_list
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
@@ -994,11 +1009,22 @@ def create_rating(request, club_id):
     if user not in club.members.all():
         return Response({'error': 'Only users in the can leave ratings!'}, status=403)
     try:
-        Rating.create(author=user, club=club, rating=data['rating'], review=data['review'])
-        return Response(status=200)
+        if 'id' in data:
+            rating = Rating.objects.filter(pk=data['id']).first()
+            if not rating:
+               return Response({'error': 'Rating not found!'}, status=404) 
+            rating.rating = data['rating']
+            rating.review = data['review']
+            rating.save()
+            return Response(status=200)
+        else:
+            Rating.create(author=user, club=club, rating=data['rating'], review=data['review'])
+            return Response(status=200)
     except Exception as e:
         print(e)
         return Response({"error": str(e)}, status=500)
+
+
 @api_view(['PUT'])
 def update_contact_info(request, club_id):
     #Updates default club contact info
