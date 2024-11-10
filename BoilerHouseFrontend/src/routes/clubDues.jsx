@@ -15,8 +15,8 @@ const ClubDues = () => {
   const { clubId } = useParams();
   const navigate = useNavigate();
   const [dues, setDues] = useState(""); // State to hold club dues amount
-  const [dueName, setDueName] = useState(""); // State to hold due name
-  const [dueDate, setDueDate] = useState(""); // State to hold due date
+  const [clubDueName, setClubDueName] = useState(""); // State to hold due name
+  const [clubDueDate, setClubDueDate] = useState(""); // State to hold due date
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -37,8 +37,8 @@ const ClubDues = () => {
         console.log(clubData);
         if (clubData) {
           setDues(clubData.clubDues ? clubData.clubDues.toString() : "");
-          setDueName(clubData.clubDueName || ""); // Pre-fill if data is available
-          setDueDate(clubData.clubDueDate || ""); // Pre-fill if data is available
+          setClubDueName(clubData.dueName || ""); // Pre-fill if data is available
+          setClubDueDate(clubData.dueDate || ""); // Pre-fill if data is available
         }
       } catch (error) {
         console.error("Error fetching club data:", error);
@@ -56,7 +56,7 @@ const ClubDues = () => {
     event.preventDefault();
 
     // Validate inputs
-    if (!dueName || isNaN(dues) || dues === "" || parseFloat(dues) < 0 || !dueDate) {
+    if (!clubDueName || isNaN(dues) || dues === "" || parseFloat(dues) < 0 || !clubDueDate) {
       alert("Please enter valid values for all fields.");
       return;
     }
@@ -69,9 +69,9 @@ const ClubDues = () => {
         `http://127.0.0.1:8000/api/club/${clubId}/clubDues`,
         {
           club_id: clubId,
-          clubDueName: dueName,
+          dueName: clubDueName,
           clubDues: parseFloat(dues), // Convert to a float to ensure numeric value
-          clubDueDate: dueDate,
+          dueDate: clubDueDate,
         },
         {
           headers: {
@@ -107,8 +107,8 @@ const ClubDues = () => {
             <TextField
               fullWidth
               label="Due Name"
-              value={dueName}
-              onChange={(e) => setDueName(e.target.value)}
+              value={clubDueName}
+              onChange={(e) => setClubDueName(e.target.value)}
               className="bg-white !my-3.5"
               InputLabelProps={{
                 shrink: true,
@@ -132,8 +132,8 @@ const ClubDues = () => {
               fullWidth
               label="Due Date"
               type="date" // Set input type to date for a date picker
-              value={dueDate}
-              onChange={(e) => setDueDate(e.target.value)}
+              value={clubDueDate}
+              onChange={(e) => setClubDueDate(e.target.value)}
               className="bg-white !my-3.5"
               InputLabelProps={{
                 shrink: true,

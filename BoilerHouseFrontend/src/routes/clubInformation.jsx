@@ -1122,9 +1122,15 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
-        {clubData.dueName || "No club dues information provided."}
-        {"$" + clubData.clubDues || "No club dues information provided."}
-        {clubData.dueDate || "No club dues information provided."}
+        {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
+          "No club dues information provided."
+        ) : (
+          <>
+            {clubData.dueName && <div>{clubData.dueName}</div>}
+            {clubData.clubDues ? <div>${clubData.clubDues}</div> : <div>$0</div>}
+            {clubData.dueDate && <div>{clubData.dueDate}</div>}
+          </>
+        )}
       </Typography>
 
 
