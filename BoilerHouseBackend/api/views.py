@@ -1065,6 +1065,10 @@ def update_club_dues(request, club_id):
         club.clubDues = request.data.get('clubDues')
         club.dueName = request.data.get('dueName')
         club.dueDate = request.data.get('dueDate')
+        subject = f"Update to club dues for {club.name} "
+        content = f"Club Name: {club.name}\n Amount: {club.clubDues}\n Due Date: {club.dueDate}\n Description: {club.dueName}"
+        if not send_email_to_club_members(subject, content, club):
+            return Response({"error"}, status=500)
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
