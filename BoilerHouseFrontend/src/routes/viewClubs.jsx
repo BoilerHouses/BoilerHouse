@@ -164,6 +164,36 @@ const ViewClubs = () => {
     selectedAvailabilityFilter,
   ]);
 
+  // convert 12 hour time to 24 hour time
+  function convertTo24Hour(time12Hour) {
+    const [time, modifier] = time12Hour.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    // Convert hours to a number
+    hours = parseInt(hours, 10);
+
+    // Adjust hours based on whether it's AM or PM
+    if (modifier.toLowerCase() === "pm" && hours !== 12) {
+      hours += 12;
+    } else if (modifier.toLowerCase() === "am" && hours === 12) {
+      hours = 0;
+    }
+
+    // Format hours and minutes to always be two digits
+    const hoursStr = String(hours).padStart(2, "0");
+    const minutesStr = String(minutes).padStart(2, "0");
+
+    return `${hoursStr}:${minutesStr}`;
+  }
+
+  // given a date, returns the day of the week
+  function getDayOfWeek(dateString) {
+    const date = new Date(dateString);
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    return daysOfWeek[date.getDay()];
+  }
+
   const handleFilter = () => {
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
@@ -175,6 +205,34 @@ const ViewClubs = () => {
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
     const useCultureFilter = cultureFilter.length > 0;
     const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
+
+    const startHour = 8;
+    const interval = 30;
+
+    // turns day, index into time
+    // Sunday, 0 => Sunday 8AM
+    const getSlot = (day, x) => {
+      const hour = Math.floor(x / (60 / interval)) + startHour;
+      const minutes = (x % (60 / interval)) * interval;
+
+      return `${String(hour).padStart(2, "0")}:${String(minutes).padStart(
+        2,
+        "0"
+      )}`;
+    };
+
+    let userAvailabilityTranslated = {};
+    let hasUserSetAvailability = false;
+    Object.entries(userAvailability).forEach(([day, times]) => {
+      userAvailabilityTranslated[day] = [];
+      times.forEach((time) => {
+        hasUserSetAvailability = true;
+        userAvailabilityTranslated[day].push([
+          getSlot(day, time.start),
+          getSlot(day, time.end),
+        ]);
+      });
+    });
 
     data.forEach((club) => {
       const clubId = club.id;
@@ -195,6 +253,31 @@ const ViewClubs = () => {
       if (club.culture.toLowerCase().includes(cultureFilter.toLowerCase())) {
         cultureFilterList.add(clubId);
       }
+
+      const meetings = club.meetings;
+
+      // add club to filter if it has no meetings
+      if (meetings.length == 0) {
+        availabilityFilterList.add(clubId);
+      }
+
+      // add club to filter is user hasn't filled out availability
+      if (!hasUserSetAvailability) {
+        availabilityFilterList.add(clubId);
+      }
+
+      meetings.forEach((meeting) => {
+        const day = getDayOfWeek(meeting.date);
+        const startTime = convertTo24Hour(meeting.startTime);
+        const endTime = convertTo24Hour(meeting.endTime);
+
+        const userAvailabilityForDay = userAvailabilityTranslated[day];
+        userAvailabilityForDay.forEach((time) => {
+          if (time[0] <= startTime && time[1] >= endTime) {
+            availabilityFilterList.add(clubId);
+          }
+        });
+      });
     });
 
     let filteredList = searchTermFilterList;
@@ -207,14 +290,17 @@ const ViewClubs = () => {
     if (useCultureFilter) {
       filteredList = filteredList.intersection(cultureFilterList);
     }
+    if (useAvailabilityFilter) {
+      filteredList = filteredList.intersection(availabilityFilterList);
+    }
 
-    let filteredClubs = []
+    let filteredClubs = [];
 
     data.forEach((club) => {
       if (filteredList.has(club.id)) {
-        filteredClubs.push(club)
+        filteredClubs.push(club);
       }
-    })
+    });
 
     setFilteredData(filteredClubs);
   };
