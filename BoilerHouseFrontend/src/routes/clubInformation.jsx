@@ -51,6 +51,10 @@ const ClubInformation = () => {
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
 
+  const [editingReviewId, setEditingReviewId] = useState(null);
+  const [updatedReview, setUpdatedReview] = useState('');
+  const [updatedRating, setUpdatedRating] = useState(0);
+
   const [startDate, setStartDate] = useState(today);
   const [startTime, setStartTime] = useState(sixPM);
   const [endTime, setEndTime] = useState(sixPM.add(1, "hour"));
@@ -92,6 +96,7 @@ const ClubInformation = () => {
       .then((response) => {
         console.log(response.data.club)
         setClubData(response.data.club);
+        console.log(response.data.club)
         setIsLoading(false);
         setJoined(response.data.joined);
         setPending(response.data.pending)
@@ -215,6 +220,42 @@ const ClubInformation = () => {
         alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
+  };
+
+  const startEditing = (rating) => {
+    setEditingReviewId(rating.id);
+    setUpdatedReview(rating.review);
+    setUpdatedRating(rating.rating);
+  };
+
+  const cancelEditing = () => {
+    setEditingReviewId(null);
+    setUpdatedReview('');
+    setUpdatedRating(0);
+  };
+
+  const saveUpdatedReview = (id) => {
+      const token = localStorage.getItem("token");
+      const data = {
+          id: id,
+          review: updatedReview,
+          rating: updatedRating
+      }
+      axios
+        .post(`http://127.0.0.1:8000/api/rating/create/${clubId}/`, data, {
+          headers: {
+            Authorization: token,
+          }
+          
+        })
+        .then((response) => {
+          console.log(response);
+          navigate(0);
+        })
+        .catch((error) => {
+          console.error("There was an error creating your rating!", error);
+        });
+        cancelEditing();
   };
 
   const handleMemberProfile = (event) => {
@@ -485,6 +526,21 @@ const ClubInformation = () => {
       });
   };
 
+  const deleteRating = (e) => {
+    const rating_id = e.target.getAttribute('index')
+    const token = localStorage.getItem("token")
+    axios.get(`http://127.0.0.1:8000/api/rating/delete/${rating_id}`, {
+      headers: {
+        Authorization: token,
+      }
+    }).then((response) => {
+      console.log(response);
+      navigate(0);
+    })
+    .catch((error) => {
+      console.error("There was an error creating your rating!", error);
+    });
+  }
   // delete a meeting
   const deleteMeeting = () => {
     const index = meetings.findIndex(
@@ -1066,7 +1122,15 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
-        {"$" + clubData.clubDues || "No club dues information provided."}
+        {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
+          "No club dues information provided."
+        ) : (
+          <>
+            {clubData.dueName && <div>{clubData.dueName}</div>}
+            {clubData.clubDues ? <div>${clubData.clubDues}</div> : <div>$0</div>}
+            {clubData.dueDate && <div>{clubData.dueDate}</div>}
+          </>
+        )}
       </Typography>
 
 
@@ -1396,47 +1460,101 @@ const ClubInformation = () => {
       </div>
       <RatingForm clubId={clubId}/>
       <Box
-        className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-full max-w-lg overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
-        sx={{ maxHeight: '400px' }}
-      >
-        <Box className="mb-4 bg-slate-200 rounded">
-          <Typography variant="body1" color="text.secondary">
-            {`Average Rating: ${averageRating}`}
-          </Typography>
-        </Box>
-        {clubData.ratings &&
-          clubData.ratings.map((rating, index) => (
-            <Box
-              key={index}
-              className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
-            >
-              <Box className="flex items-center p-4">
-                <Box className="flex-shrink-0 bg-primary-500 text-white font-bold w-10 h-10 flex items-center justify-center rounded-full mr-4 bg-slate-300">
-                  {rating.author[0]}
-                </Box>
-
-                <Box className="flex-1">
-                  <Typography variant="body1" color="text.secondary">
-                    {rating.review}
-                  </Typography>
-
-                  <Box className="flex items-center mt-2">
-                    <Rating value={rating.rating} precision={0.5} readOnly />
-                    <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold' }}>
-                      {rating.rating}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Link to={`/profile/${rating.author}`} className="text-primary-500 font-bold ml-4">
-                  <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
-                    {rating.author}
-                  </Typography>
-                </Link>
-              </Box>
-            </Box>
-          ))}
+      className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
+      sx={{ maxHeight: '400px' }}
+    >
+      <Box className="mb-4 bg-slate-200 rounded">
+        <Typography variant="body1" color="text.secondary">
+          {`Average Rating: ${averageRating}`}
+        </Typography>
       </Box>
+      {clubData.ratings &&
+        clubData.ratings.map((rating, index) => (
+          <Box
+            key={index}
+            className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
+          >
+            <Box className="flex items-center p-4">
+              <img
+                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full mr-4"
+                src={rating.portrait}
+                alt="User avatar"
+              />
+              <Box className="flex-1">
+                {editingReviewId === rating.id ? (
+                  <>
+                    <TextField
+                      value={updatedReview}
+                      onChange={(e) => setUpdatedReview(e.target.value)}
+                      fullWidth
+                      variant="outlined"
+                      size="small"
+                      className="mb-2"
+                    />
+                    <Rating
+                      value={updatedRating}
+                      precision={0.5}
+                      onChange={(e, newValue) => setUpdatedRating(newValue)}
+                    />
+                    <Box className="flex items-center mt-2 space-x-2">
+                      <Button variant="contained" color="primary" onClick={() => saveUpdatedReview(rating.id)}>
+                        Save
+                      </Button>
+                      <Button variant="outlined" color="secondary" onClick={cancelEditing}>
+                        Cancel
+                      </Button>
+                    </Box>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1" color="text.secondary">
+                      {rating.review}
+                    </Typography>
+                    <Box className="flex items-center mt-2">
+                      <Rating value={rating.rating} precision={0.5} readOnly />
+                      <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold' }}>
+                        {rating.rating}
+                      </Typography>
+                    </Box>
+                  </>
+                )}
+              </Box>
+
+              <Link to={`/profile/${rating.author}`} className="text-primary-500 font-bold ml-4">
+                <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
+                  {rating.author}
+                </Typography>
+              </Link>
+              
+              {rating.author === localStorage.getItem("username") && (
+                <>
+                  {editingReviewId === rating.id ? (
+                    <Button
+                      onClick={cancelEditing}
+                      className="ml-4 text-red-500"
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => startEditing(rating)}
+                      className="ml-4 text-blue-500"
+                    >
+                      Edit
+                    </Button>
+                  )}
+                  <Button
+                    onClick={() => deleteRating(rating.id)}
+                    className="ml-4 rounded bg-red-500 py-2 px-2 text-white transform hover:scale-105 hover:shadow-lg"
+                  >
+                    Delete
+                  </Button>
+                </>
+              )}
+            </Box>
+          </Box>
+        ))}
+    </Box>
 
 
 
