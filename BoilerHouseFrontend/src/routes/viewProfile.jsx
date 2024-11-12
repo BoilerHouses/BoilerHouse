@@ -90,6 +90,8 @@ const ViewProfile = () => {
         <p className="italic mb-4">{user.bio}</p>
         <p className={recommendedUsers[userId] > threshold ? "italic mb-4" : "hidden"}>This user has similar interests to you!</p>
         <p className={userId in recommendedUsers ? "italic mb-4" : "hidden"}>{`Your similarity score is: ${((1 + recommendedUsers[userId]) * 100).toFixed(2)}`}</p>
+        <p className={recommendedUsers[userId] > threshold ? "italic mb-4" : "hidden"}>{`Get in contact with ${user.name} at ${user.email}`}</p>
+
 
         <div className="text-gray-800">
           <p>
