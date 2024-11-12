@@ -21,6 +21,9 @@ from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv
 from django.conf import settings
+import numpy as np
+from scipy.linalg import svd
+import math
 import uuid
 import os
 import boto3
@@ -989,6 +992,52 @@ def leave_club(request):
         club.pending_members.remove(user)
     club.save()
     return Response("success", status = 200)
+
+
+@api_view(['GET'])
+def find_similar_users(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    user_list = [x for x in User.objects.all() if x.pk != user.pk]
+    word_dict = {}
+    for x in user_list:
+        for i in x.interests:
+            word_dict[i] = True
+    for i in user.interests:
+        word_dict[i] = True
+    document_list = []
+    for x in user_list:
+        vector = []
+        for word in word_dict.keys():
+            vector.append(x.interests.count(word))
+        document_list.append(vector)
+    document_list = np.transpose(np.array(document_list))
+    qT = []
+    for word in word_dict.keys():
+        qT.append(user.interests.count(word))
+    U, S, V = svd(document_list, full_matrices= False)
+    k = 3
+    U_k = U[:,:k]
+    S_inv = []
+    VT_k = np.transpose(V)[:, :k]
+    for i in range(0, k):
+        t = [0] * k
+        t[i] = 1/ S[i]
+        S_inv.append(t)
+    temp = np.matmul(qT, U_k)
+    new_q = np.matmul(temp, S_inv)
+    cosine_list = []
+    user_dict = {}
+    for d in VT_k:
+        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
+        cosine_list.append(-100000 if np.isnan(t) else t)
+    for i in range(0, len(cosine_list)):
+        user_dict[user_list[i].username] = cosine_list[i]
+    reccomended_user_list = [user for user in user_dict.keys() if user_dict[user] >= 0.65]
+    return Response({"user_list": reccomended_user_list }, status=200)
+
+
 
 @api_view(['POST'])
 def create_rating(request, club_id):

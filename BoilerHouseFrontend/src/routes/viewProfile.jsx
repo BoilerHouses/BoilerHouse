@@ -19,6 +19,7 @@ const ViewProfile = () => {
     interests: ["Jai"],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [recommendedUsers, setRecommendedUsers] = useState([])
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +35,18 @@ const ViewProfile = () => {
           },
         });
         setUser(response.data);
+        
+        axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+          headers: {
+            Authorization: token,
+          }
+        })
+        .then((response) => {
+          setRecommendedUsers(response.data.user_list)
+        })
+        .catch((error) => {
+          console.error("There was an error fetching the reccomended users!", error);
+        });
         setIsLoading(false);
       }
     };
@@ -44,7 +57,7 @@ const ViewProfile = () => {
     return <div>Loading..</div>;
   } else {
     return (
-      <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
+      <div className={recommendedUsers.includes(userId) ? "relative border rounded-lg p-6 max-w-full mx-auto bg-yellow-300 shadow-md" : "relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md"}>
         {/* Edit Profile Button */}
         <button
           className={
@@ -74,6 +87,8 @@ const ViewProfile = () => {
         </div>
 
         <p className="italic mb-4">{user.bio}</p>
+        <p className={recommendedUsers.includes(userId) ? "italic mb-4" : "hidden"}>This user has similar interests to you!</p>
+
         <div className="text-gray-800">
           <p>
             <strong>Major:</strong> {user.major.join(", ")}

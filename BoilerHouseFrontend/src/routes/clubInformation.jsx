@@ -50,6 +50,7 @@ const ClubInformation = () => {
   const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
+  const [recommendedUsers, setRecommendedUsers] = useState([])
 
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [updatedReview, setUpdatedReview] = useState('');
@@ -108,15 +109,30 @@ const ClubInformation = () => {
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
         let avg = 0
-        response.data.club.ratings.forEach((e) => {
-          avg += e.rating
-        })
-        avg /= response.data.club.ratings.length
-        setAverageRating(avg.toFixed(2))
+        if (club.ratings) {
+          response.data.club.ratings.forEach((e) => {
+            avg += e.rating
+          })
+          avg /= response.data.club.ratings.length
+          setAverageRating(avg.toFixed(2))
+        }
+        
       })
       .catch((error) => {
         console.error("There was an error fetching the club data!", error);
         setIsLoading(false);
+      });
+      axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+        headers: {
+          Authorization: token,
+        }
+      })
+      .then((response) => {
+        console.log(response.data.user_list)
+        setRecommendedUsers(response.data.user_list)
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the reccomended users!", error);
       });
 
     axios({
@@ -1159,7 +1175,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            className={recommendedUsers.includes(profile[3])? "flex items-center bg-yellow-300 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500" : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1187,7 +1203,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            className={recommendedUsers.includes(profile[3]) ? "flex items-center bg-yellow-300 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500" : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1452,7 +1468,7 @@ const ClubInformation = () => {
       </div>
       <RatingForm clubId={clubId}/>
       <Box
-      className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
+      className={`${(clubData.ratings && clubData.ratings.length === 0) ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
       sx={{ maxHeight: '400px' }}
     >
       <Box className="mb-4 bg-slate-200 rounded">
