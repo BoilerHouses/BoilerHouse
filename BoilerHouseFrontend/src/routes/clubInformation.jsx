@@ -1151,6 +1151,7 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Tags:
       </Typography>
+      
       <Box sx={{ display: "flex", flexWrap: "wrap", mt: 2 }}>
         {clubData.interests &&
           clubData.interests.map((interest, index) => (
@@ -1165,7 +1166,17 @@ const ClubInformation = () => {
             />
           ))}
       </Box>
-
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Similar User Key:
+      </Typography>
+      <div className="flex">
+        <span className="mr-2">Fairly Similar User</span>
+        <div className="bg-yellow-200 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-300 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-400 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-500 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <span className="ml-2">Very Similar User</span>
+      </div>
       {/* Officers Section */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Officers ({clubData.officers.length}):
