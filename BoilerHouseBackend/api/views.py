@@ -1034,7 +1034,8 @@ def find_similar_users(request):
         cosine_list.append(-100000 if np.isnan(t) else t)
     for i in range(0, len(cosine_list)):
         user_dict[user_list[i].username] = cosine_list[i]
-    reccomended_user_list = [user for user in user_dict.keys() if user_dict[user] >= 0.65]
+    threshold = 0.65
+    reccomended_user_list = [user for user in user_dict.keys() if user_dict[user] >= threshold]
     return Response({"user_list": reccomended_user_list }, status=200)
 
 
