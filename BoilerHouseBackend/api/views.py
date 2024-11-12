@@ -1031,7 +1031,7 @@ def find_similar_users(request):
     user_dict = {}
     for d in VT_k:
         t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
-        cosine_list.append(-100000 if np.isnan(t) else t)
+        cosine_list.append(-1 if np.isnan(t) else t)
     for i in range(0, len(cosine_list)):
         user_dict[user_list[i].username] = cosine_list[i]
     return Response({"user_list": user_dict }, status=200)
