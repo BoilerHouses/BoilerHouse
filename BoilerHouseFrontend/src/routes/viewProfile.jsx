@@ -20,6 +20,7 @@ const ViewProfile = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([])
+  const threshold = 0.65
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -57,7 +58,7 @@ const ViewProfile = () => {
     return <div>Loading..</div>;
   } else {
     return (
-      <div className={recommendedUsers.includes(userId) ? "relative border rounded-lg p-6 max-w-full mx-auto bg-yellow-300 shadow-md" : "relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md"}>
+      <div className={recommendedUsers[userId] >= threshold ? `relative border rounded-lg p-6 max-w-full mx-auto bg-yellow-${300 + (100 * Math.round(Math.round( ((recommendedUsers[userId] - threshold) * 700)) / 100))} shadow-md` : "relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md"}>
         {/* Edit Profile Button */}
         <button
           className={
@@ -87,7 +88,8 @@ const ViewProfile = () => {
         </div>
 
         <p className="italic mb-4">{user.bio}</p>
-        <p className={recommendedUsers.includes(userId) ? "italic mb-4" : "hidden"}>This user has similar interests to you!</p>
+        <p className={recommendedUsers[userId] > threshold ? "italic mb-4" : "hidden"}>This user has similar interests to you!</p>
+        <p className="italic mb-4">{`Your similarity score is: ${(recommendedUsers[userId] * 100).toFixed(2)}`}</p>
 
         <div className="text-gray-800">
           <p>
