@@ -112,7 +112,7 @@ def build_interested_user(username, name, is_admin):
     interests = []
     if (use_major_specific <= 8):
         interests.append(MAJOR_INTERESTS[major_index])
-    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 2))
+    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 3))
     for group in interest_groups:
         interests.extend(random.sample(group, 2))
     interests = "{" + ",".join(f'"{interest}"' for interest in interests) + "}"
