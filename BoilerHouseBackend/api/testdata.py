@@ -45,16 +45,14 @@ LARGE_CLUB_MEMBERS = 250
 MEMBER_NAME = "test"
 
 MAJOR_INTERESTS = ["Development", "Math", "Model UN", "Math", "Coding", "Medical"]
-GROUP_ONE_INTERESTS = ["Television", "Cinema", "Movies"]
-GROUP_TWO_INTERESTS = ["Music", "Music Production", "Spotify"]
-GROUP_THREE_INTERESTS = ["Reading", "Novels", "Books"]
-GROUP_FOUR_INTERESTS = ["League of Legends", "Roblox", "Pokemon"]
-GROUP_FIVE_INTERESTS = ["Suits", "The Sopranos", "Breaking Bad", "Game of Thrones", "Succession", "Barry", "Arcane"]
-GROUP_SIX_INTERESTS = ["Brooklyn Nine Nine", "Friends", "The Office", "Parks n Rec", "Silicon Valley", "Young Sheldon"]
-GROUP_SEVEN_INTERESTS = ["Cooking", "Baking", "Food"]
-GROUP_EIGHT_INTERESTS = ["Sleeping", "Relaxing"]
-GROUP_NINE_INTERESTS = ["Basketball", "Football", "Soccer", "Baseball", "F1"]
-GROUPS_OF_INTERESTS = [GROUP_ONE_INTERESTS, GROUP_TWO_INTERESTS, GROUP_THREE_INTERESTS, GROUP_FOUR_INTERESTS, GROUP_FIVE_INTERESTS, GROUP_SIX_INTERESTS, GROUP_SEVEN_INTERESTS, GROUP_EIGHT_INTERESTS, GROUP_NINE_INTERESTS]
+GROUPS_OF_INTERESTS = [["Television", "TV", "Cinema", "Movies", "Breaking Bad", "Game of Thrones", "Suits", "The Dark Knight", "Lord of the Rings", "Film"],
+                         ["Music", "Spotify", "Drake", "Travis Scott", "Kendrick Lamar", "Kanye West"], 
+                         ["League of Legends", "Roblox", "Pokemon", "Valorant", "Minecraft", "Call of Duty", "Fortnite"], 
+                         ["Brooklyn Nine Nine", "Friends", "The Office", "Parks n Rec", "Silicon Valley", "Young Sheldon", "How I met your Mother", "Superstore", "Two Broke Girls"], 
+                         ["Reading", "Novels", "Books", "Harry Potter", "Jane Austen", "Literature", "Fantasy"],
+                          ["Cooking", "Baking", "Food", "Eating", "Cuisines"],
+                           ["Sleeping", "Relaxing", "Going out"], 
+                           ["Basketball", "Football", "Soccer", "Baseball", "F1"]]
 
 def drop_tables(conn):
     queries = ["DROP SCHEMA public CASCADE;"
@@ -114,7 +112,7 @@ def build_interested_user(username, name, is_admin):
     interests = []
     if (use_major_specific <= 8):
         interests.append(MAJOR_INTERESTS[major_index])
-    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 3))
+    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 2))
     for group in interest_groups:
         interests.extend(random.sample(group, 2))
     interests = "{" + ",".join(f'"{interest}"' for interest in interests) + "}"
