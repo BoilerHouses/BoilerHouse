@@ -41,7 +41,7 @@ USERNAME = ["admin1@gmail.com", "admin2@gmail.com", "admin3@gmail.com", "user1@g
             "user2@gmail.com", "user3@gmail.com", "user4@gmail.com", "user5@gmail.com", "asawaarin0@gmail.com", 
             "rohit.kannan203@gmail.com", "thisisadhi@gmail.com", "victorgao0308@gmail.com"]
 NAME = ["admin1", "admin2", "admin3", "user1", "user2", "user3", "user4", "user5", "wipe", "dyude", "baab", "vickyg"]
-LARGE_CLUB_MEMBERS = 250
+LARGE_CLUB_MEMBERS = 99
 MEMBER_NAME = "test"
 
 MAJOR_INTERESTS = ["Development", "Math", "Model UN", "Math", "Coding", "Medical"]
@@ -148,25 +148,9 @@ def insert_user_data(conn):
 def insert_club_data(conn):
     with conn.cursor() as cursor:
         club_query = f'''
-                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues") VALUES
-                        ('test club1', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
-                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '')
-                    '''
-
-        cursor.execute(club_query) 
-
-        club_query = f'''
-                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues") VALUES
-                        ('test club2', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
-                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '')
-                    '''
-
-        cursor.execute(club_query) 
-
-        club_query = f'''
-                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues") VALUES
-                        ('test club3', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
-                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '')
+                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
+                        ('test club', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
 
         cursor.execute(club_query) 
@@ -179,30 +163,34 @@ def insert_club_data(conn):
         cursor.execute(club_query) 
 
         conn.commit()
-        for i in range(1, 5):
-            member_queries = [
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 1)",
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 2)",
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 9)",
-                          f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 9)",
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 10)",
-                          f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 10)",
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 11)",
-                          f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 11)",
-                          f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 12)",
-                          f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 12)",
-                          ]
-            if i > 1:
-                member_count = random.randint(50, 115)
-                chosen_ids = {}
-                for j in range(member_count):
-                    chosen_id = random.randint(30, 450)
-                    while chosen_id in chosen_ids:
-                        chosen_id = random.randint(20, 450)
-                    chosen_ids[chosen_id] = True
-                    member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {chosen_id})")
-            for query in member_queries:
-                cursor.execute(query)
+ 
+        # member_queries = [
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 1)",
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 2)",
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 9)",
+        #                   "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 9)",
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 10)",
+        #                   "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 10)",
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 11)",
+        #                   "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 11)",
+        #                   "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 12)",
+        #                   "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 12)",
+        #                   ]
+        
+        member_queries = [
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 1)",
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 2)",
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 9)",
+                            "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 1)",
+                            "INSERT INTO api_club_officers (club_id, user_id) VALUES (1, 2)",
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 10)",
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 11)",
+                            "INSERT INTO api_club_members (club_id, user_id) VALUES (1, 12)",
+                            ]
+        
+    
+        for query in member_queries:
+            cursor.execute(query)
 
         conn.commit()
 
@@ -227,9 +215,9 @@ def generate_large_club(conn):
         conn.commit()
 
         club_query = f'''
-                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail") VALUES 
+                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience") VALUES 
                         ('big club', 'test', 'test', '16+ hours', '{{"cs", "ds"}}', '{IMAGE}',
-                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '')
+                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '')
                     '''
         cursor.execute(club_query)
         conn.commit()
@@ -260,6 +248,6 @@ if __name__ == "__main__":
         else:
             insert_user_data(conn)
             insert_club_data(conn)
-            #generate_large_club(conn)
+            generate_large_club(conn)
             close_connection(conn)
             print("Test data inserted successfully.")

@@ -17,6 +17,13 @@ const ViewClubs = () => {
   const [selectedClubSize, setSelectedClubSize] = useState("None");
   const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("None");
   const [timeCommitmentFilter, setTimeCommitmentFilter] = useState("None");
+  const [selectedAvailability, setSelectedAvailability] = useState("None");
+
+  // userAvailability is stored as a JSON object
+  const [userAvailability, setUserAvailability] = useState({});
+
+  const [selectedAvailabilityFilter, setSelectedAvailabilityFilter] =
+    useState("None");
 
   const [selectedCulture, setSelectedCulture] = useState("");
   const [cultureFilter, setCultureFilter] = useState("");
@@ -48,7 +55,6 @@ const ViewClubs = () => {
           .then((res) => {
             setData(res.data.clubs);
             setFilteredData(res.data.clubs);
-            console.log(res.data.clubs);
             setIsLoadingClubs(false);
           })
           .catch(() => {
@@ -58,6 +64,24 @@ const ViewClubs = () => {
       }
     };
     fetchClubs();
+
+    const fetchProfile = async () => {
+      const token = localStorage.getItem("token");
+      const userId = localStorage.getItem("username");
+      if (token) {
+        const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
+          headers: {
+            Authorization: token,
+          },
+          params: {
+            username: userId,
+          },
+        });
+        const availability = response.data.availability;
+        setUserAvailability(availability);
+      }
+    };
+    fetchProfile();
   }, []);
 
   const handleClick = (event) => {
@@ -74,6 +98,10 @@ const ViewClubs = () => {
 
   const handleSearchChange = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const changeSelectedAvailability = (event) => {
+    setSelectedAvailability(event.target.value);
   };
 
   const applyFilters = () => {
@@ -108,6 +136,7 @@ const ViewClubs = () => {
 
     setTimeCommitmentFilter(selectedTimeCommitment);
     setCultureFilter(selectedCulture);
+    setSelectedAvailabilityFilter(selectedAvailability);
   };
 
   const clearFilters = () => {
@@ -120,6 +149,8 @@ const ViewClubs = () => {
     setTimeCommitmentFilter("None");
     setSelectedCulture("");
     setCultureFilter("");
+    setSelectedAvailability("None");
+    setSelectedAvailabilityFilter("None");
   };
 
   useEffect(() => {
@@ -130,41 +161,153 @@ const ViewClubs = () => {
     maxClubSize,
     timeCommitmentFilter,
     cultureFilter,
+    selectedAvailabilityFilter,
   ]);
 
+  // convert 12 hour time to 24 hour time
+  function convertTo24Hour(time12Hour) {
+    const [time, modifier] = time12Hour.split(" ");
+    let [hours, minutes] = time.split(":");
+
+    // Convert hours to a number
+    hours = parseInt(hours, 10);
+
+    // Adjust hours based on whether it's AM or PM
+    if (modifier.toLowerCase() === "pm" && hours !== 12) {
+      hours += 12;
+    } else if (modifier.toLowerCase() === "am" && hours === 12) {
+      hours = 0;
+    }
+
+    // Format hours and minutes to always be two digits
+    const hoursStr = String(hours).padStart(2, "0");
+    const minutesStr = String(minutes).padStart(2, "0");
+
+    return `${hoursStr}:${minutesStr}`;
+  }
+
+  // given a date, returns the day of the week
+  function getDayOfWeek(dateString) {
+    const date = new Date(dateString);
+    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+    return daysOfWeek[date.getDay()];
+  }
+
   const handleFilter = () => {
-    let newClubList = [];
+    let searchTermFilterList = new Set();
+    let sizeFilerList = new Set();
+    let timeCommitmentFilterList = new Set();
+    let cultureFilterList = new Set();
+    let availabilityFilterList = new Set();
+
+    const useSizeFilter = selectedClubSize !== "None";
+    const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
+    const useCultureFilter = cultureFilter.length > 0;
+    const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
+
+    const startHour = 8;
+    const interval = 30;
+
+    // turns day, index into time
+    // Sunday, 0 => Sunday 8AM
+    const getSlot = (day, x) => {
+      const hour = Math.floor(x / (60 / interval)) + startHour;
+      const minutes = (x % (60 / interval)) * interval;
+
+      return `${String(hour).padStart(2, "0")}:${String(minutes).padStart(
+        2,
+        "0"
+      )}`;
+    };
+
+    let userAvailabilityTranslated = {};
+    let hasUserSetAvailability = false;
+    Object.entries(userAvailability).forEach(([day, times]) => {
+      userAvailabilityTranslated[day] = [];
+      times.forEach((time) => {
+        hasUserSetAvailability = true;
+        userAvailabilityTranslated[day].push([
+          getSlot(day, time.start),
+          getSlot(day, time.end),
+        ]);
+      });
+    });
 
     data.forEach((club) => {
+      const clubId = club.id;
       const members = club.num_members;
-      if (
-        members >= minClubSize &&
-        members <= maxClubSize &&
-        club.name.toLowerCase().includes(searchTerm.toLowerCase())
-      ) {
-        if (timeCommitmentFilter === "None" && cultureFilter === "") {
-          newClubList.push(club);
-        } else if (timeCommitmentFilter === "None") {
-          if (
-            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
-          ) {
-            newClubList.push(club);
-          }
-        } else if (cultureFilter === "") {
-          if (club.time_commitment === timeCommitmentFilter) {
-            newClubList.push(club);
-          }
-        } else {
-          if (
-            club.time_commitment === timeCommitmentFilter &&
-            club.culture.toLowerCase().includes(cultureFilter.toLowerCase())
-          ) {
-            newClubList.push(club);
-          }
+
+      if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+        searchTermFilterList.add(clubId);
+      }
+
+      if (members >= minClubSize && members <= maxClubSize) {
+        sizeFilerList.add(clubId);
+      }
+
+      if (club.time_commitment === timeCommitmentFilter) {
+        timeCommitmentFilterList.add(clubId);
+      }
+
+      if (club.culture.toLowerCase().includes(cultureFilter.toLowerCase())) {
+        cultureFilterList.add(clubId);
+      }
+
+      const meetings = club.meetings;
+
+      // add club to filter if it has no meetings
+      if (meetings.length == 0) {
+        availabilityFilterList.add(clubId);
+      }
+
+      // add club to filter is user hasn't filled out availability
+      if (!hasUserSetAvailability) {
+        availabilityFilterList.add(clubId);
+      }
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      meetings.forEach((meeting) => {
+        if (new Date(meeting.date) >= today) {
+          const day = getDayOfWeek(meeting.date);
+          const startTime = convertTo24Hour(meeting.startTime);
+          const endTime = convertTo24Hour(meeting.endTime);
+
+          const userAvailabilityForDay = userAvailabilityTranslated[day];
+          userAvailabilityForDay.forEach((time) => {
+            if (time[0] <= startTime && time[1] >= endTime) {
+              availabilityFilterList.add(clubId);
+            }
+          });
         }
+      });
+    });
+
+    let filteredList = searchTermFilterList;
+    if (useSizeFilter) {
+      filteredList = filteredList.intersection(sizeFilerList);
+    }
+    if (useTimeCommitmentFilter) {
+      filteredList = filteredList.intersection(timeCommitmentFilterList);
+    }
+    if (useCultureFilter) {
+      filteredList = filteredList.intersection(cultureFilterList);
+    }
+    if (useAvailabilityFilter) {
+      filteredList = filteredList.intersection(availabilityFilterList);
+    }
+
+    let filteredClubs = [];
+
+    data.forEach((club) => {
+      if (filteredList.has(club.id)) {
+        filteredClubs.push(club);
       }
     });
-    setFilteredData(newClubList);
+
+    setFilteredData(filteredClubs);
   };
 
   const handleCultureFilter = (e) => {
@@ -191,7 +334,7 @@ const ViewClubs = () => {
             Filters
           </button>
           {openFilterMenu && (
-            <div className="absolute right-0 mt-2 p-2 bg-white border border-gray-300 rounded shadow-lg justify-center z-10">
+            <div className="absolute right-0 mt-2 p-4 bg-white border border-gray-300 rounded shadow-lg z-10">
               <Typography variant="h6">Club Size</Typography>
               <FormControl component="fieldset">
                 <Typography variant="subtitle1">Number of Members</Typography>
@@ -278,6 +421,35 @@ const ViewClubs = () => {
                 }}
                 className="flex-grow p-3 border border-gray-300 rounded"
               />
+
+              <Typography variant="h6">Availability</Typography>
+              <Typography variant="subtitle1">
+                Filter by your availability
+              </Typography>
+              <Typography variant="subtitle2">
+                Note: If you haven&apos;t filled out your availability in your
+                profile, you are assumed to be free all the time. This filter
+                returns clubs with at least one meeting in the future in which
+                you are free. Clubs with no future meetings are also returned.
+              </Typography>
+
+              <FormControl component="fieldset">
+                <RadioGroup
+                  value={selectedAvailability}
+                  onChange={changeSelectedAvailability}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="Filter by Availability"
+                    control={<Radio />}
+                    label="Filter by Availability"
+                  />
+                </RadioGroup>
+              </FormControl>
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"

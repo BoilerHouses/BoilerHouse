@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import axios from 'axios';
-import { NavigateBeforeTwoTone } from '@mui/icons-material';
+import axios from "axios";
+import { NavigateBeforeTwoTone } from "@mui/icons-material";
 
 const Answers = () => {
   const [qaData, setQaData] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const { clubId, username } = useParams(); 
+  const { clubId, username } = useParams();
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/api/clubs/responses/fetch/', {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/api/clubs/responses/fetch/",
+          {
             params: {
-                club: clubId,
-                username: username
-            }
-        }); // Replace with your endpoint
+              club: clubId,
+              username: username,
+            },
+          }
+        ); // Replace with your endpoint
         setQaData(response.data); // Assuming response.data is an array of { question, answer }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        alert("Error fetching data:", error);
       } finally {
         setLoading(false);
       }

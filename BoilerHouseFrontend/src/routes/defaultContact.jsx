@@ -22,22 +22,25 @@ const DefaultContact = () => {
   useEffect(() => {
     const fetchClubData = async () => {
       if (!clubId) {
-        console.error("Club ID is undefined");
+        alert("Club ID is undefined");
         return;
       }
 
       try {
         const token = localStorage.getItem("token");
-        const response = await axios.get(`http://127.0.0.1:8000/api/club/${clubId}/edit/`, {
-          headers: {
-            Authorization: token,
-          },
-        });
+        const response = await axios.get(
+          `http://127.0.0.1:8000/api/club/${clubId}/edit/`,
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        );
         const clubData = response.data;
         setCulture(clubData.clubPhoneNumber);
         setTimeCommitment(clubData.clubEmail);
       } catch (error) {
-        console.error("Error fetching club data:", error);
+        alert("Error getting club data");
         if (error.response && error.response.status === 403) {
           alert("You don't have permission to edit this club");
           navigate(`/club/${clubId}`);
@@ -57,45 +60,42 @@ const DefaultContact = () => {
     event.preventDefault();
 
     if (!validateEmail(email)) {
-        setEmailError("Please enter a valid email address.");
-        return;
+      setEmailError("Please enter a valid email address.");
+      return;
     } else {
-        setEmailError(""); // Clear any existing error if email is valid
+      setEmailError(""); // Clear any existing error if email is valid
     }
 
     setIsLoading(true);
 
     const token = localStorage.getItem("token");
     try {
-        const response = await axios.put(
+      const response = await axios.put(
         `http://127.0.0.1:8000/api/club/${clubId}/defaultContact`, // Adjust to match your backend endpoint URL
         {
-            club_id: clubId,
-            clubEmail: email,
-            clubPhoneNumber: culture, // Change 'culture' to the state variable for the phone number if necessary
+          club_id: clubId,
+          clubEmail: email,
+          clubPhoneNumber: culture, // Change 'culture' to the state variable for the phone number if necessary
         },
         {
-            headers: {
-                Authorization: token,
-            },
+          headers: {
+            Authorization: token,
+          },
         }
-    );
+      );
 
-    if (response.status === 200) {
-         setIsLoading(false);
-         navigate(`/club/${clubId}`);
-    } else {
-         setIsLoading(false);
-         console.error("Server error:", response.data);
-         alert("Error updating club information: " + response.data.error);
-    }
-    } catch (error) {
+      if (response.status === 200) {
         setIsLoading(false);
-        console.error("Error updating club information:", error);
+        navigate(`/club/${clubId}`);
+      } else {
+        setIsLoading(false);
         alert("Error updating club information");
-     }
+      }
+    } catch {
+      setIsLoading(false);
+      alert("Error updating club information");
+    }
   };
-
 
   return (
     <div className="flex items-center justify-center my-14">

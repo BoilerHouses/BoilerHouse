@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import {useParams, useNavigate} from 'react-router-dom'
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 const OfficerQuestionnaire = () => {
   const navigate = useNavigate();
   const { clubId } = useParams(); // Get club ID from the route parameters
-  const [questions, setQuestions] = useState([{ text: "What's your name?", required: true }]);
+  const [questions, setQuestions] = useState([
+    { text: "What's your name?", required: true },
+  ]);
 
   useEffect(() => {
     // Fetch club information when the component loads
@@ -13,17 +15,16 @@ const OfficerQuestionnaire = () => {
       .get(`http://127.0.0.1:8000/api/club/officer/${clubId}/questions/get/`, {
         headers: {
           Authorization: token,
-        }
+        },
       })
       .then((response) => {
-        
-        if(Array.isArray(response.data.questions)) {
-          setQuestions(response.data.questions)
+        if (Array.isArray(response.data.questions)) {
+          setQuestions(response.data.questions);
         }
-        console.log(questions)
+        console.log(questions);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
       });
   }, [clubId]);
 
@@ -41,10 +42,10 @@ const OfficerQuestionnaire = () => {
 
   const addQuestion = () => {
     if (questions.length >= 15) {
-      alert('You can have up to 15 questions!');
+      alert("You can have up to 15 questions!");
       return;
     }
-    setQuestions([...questions, { text: '', required: false }]);
+    setQuestions([...questions, { text: "", required: false }]);
   };
 
   const removeQuestion = (index) => {
@@ -53,28 +54,34 @@ const OfficerQuestionnaire = () => {
   };
 
   const handleSubmit = (event) => {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem("token");
     const data = {
-        questions: questions
-    }
-    axios.post(`http://127.0.0.1:8000/api/club/officer/${clubId}/questions/set/`, data, {
-      headers:{
-        'Authorization': token,
-      },
-      
-    })
-    .then((response) => {
-        alert('Success!')
-        navigate(`/club/${clubId}`)
-    })
-    .catch((error) => {
-      console.error("There was an error fetching the club data!", error);
-    });
-  }
+      questions: questions,
+    };
+    axios
+      .post(
+        `http://127.0.0.1:8000/api/club/officer/${clubId}/questions/set/`,
+        data,
+        {
+          headers: {
+            Authorization: token,
+          },
+        }
+      )
+      .then((response) => {
+        alert("Success!");
+        navigate(`/club/${clubId}`);
+      })
+      .catch((error) => {
+        alert("There was an error fetching the club data!", error);
+      });
+  };
 
   return (
     <div className="max-w-lg mx-auto mt-10 p-5 border border-gray-300 rounded shadow">
-      <h1 className="text-xl font-bold mb-4">Create a Questionnaire For Officer Applications</h1>
+      <h1 className="text-xl font-bold mb-4">
+        Create a Questionnaire For Officer Applications
+      </h1>
       {questions.map((question, index) => (
         <div key={index} className="mb-4 flex items-center">
           <input
@@ -108,8 +115,10 @@ const OfficerQuestionnaire = () => {
       >
         + Add Question
       </button>
-      <button className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition my-5"
-        onClick={handleSubmit}>
+      <button
+        className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition my-5"
+        onClick={handleSubmit}
+      >
         Submit
       </button>
     </div>
