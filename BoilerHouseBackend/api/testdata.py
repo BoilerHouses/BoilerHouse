@@ -50,9 +50,9 @@ GROUPS_OF_INTERESTS = [["Television", "TV", "Cinema", "Movies", "Breaking Bad", 
                          ["League of Legends", "Roblox", "Pokemon", "Valorant", "Minecraft", "Call of Duty", "Fortnite"], 
                          ["Brooklyn Nine Nine", "Friends", "The Office", "Parks n Rec", "Silicon Valley", "Young Sheldon", "How I met your Mother", "Superstore", "Two Broke Girls"], 
                          ["Reading", "Novels", "Books", "Harry Potter", "Jane Austen", "Literature", "Fantasy"],
-                          ["Cooking", "Baking", "Food", "Eating", "Cuisines"],
-                           ["Sleeping", "Relaxing", "Going out"], 
-                           ["Basketball", "Football", "Soccer", "Baseball", "F1"]]
+                         ["Cooking", "Baking", "Food", "Eating", "Cuisines"],
+                         ["Sleeping", "Relaxing", "Going out"], 
+                         ["Basketball", "Football", "Soccer", "Baseball", "F1"]]
 
 def drop_tables(conn):
     queries = ["DROP SCHEMA public CASCADE;"
@@ -112,9 +112,9 @@ def build_interested_user(username, name, is_admin):
     interests = []
     if (use_major_specific <= 8):
         interests.append(MAJOR_INTERESTS[major_index])
-    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 3))
+    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 2))
     for group in interest_groups:
-        interests.extend(random.sample(group, 2))
+        interests.extend(random.sample(group, 4 - len(interest_groups)))
     interests = "{" + ",".join(f'"{interest}"' for interest in interests) + "}"
     bio = random.sample(BIO, 1)[0]
     grad_year = random.sample(GRAD_YEAR, 1)[0]
@@ -191,14 +191,10 @@ def insert_club_data(conn):
                           f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 12)",
                           ]
             if i > 1:
-                member_count = random.randint(50, 115)
-                chosen_ids = {}
-                for j in range(member_count):
-                    chosen_id = random.randint(30, 450)
-                    while chosen_id in chosen_ids:
-                        chosen_id = random.randint(20, 450)
-                    chosen_ids[chosen_id] = True
-                    member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {chosen_id})")
+                id_list = range(35, 450)
+                chosen_ids = random.sample(id_list, random.randint(50, 115))
+                for j in chosen_ids:
+                    member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})")
             for query in member_queries:
                 cursor.execute(query)
 
