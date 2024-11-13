@@ -7,6 +7,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  TextField,
 } from "@mui/material";
 import axios from "axios";
 
@@ -18,6 +19,12 @@ const ViewClubs = () => {
   const [selectedTimeCommitment, setSelectedTimeCommitment] = useState("None");
   const [timeCommitmentFilter, setTimeCommitmentFilter] = useState("None");
   const [selectedAvailability, setSelectedAvailability] = useState("None");
+
+  const [minClubDue, setMinClubDue] = useState("");
+  const [maxClubDue, setMaxClubDue] = useState("");
+
+  const [clubDueError, setClubDueError] = useState(false);
+  const [clubDueHelperText, setClubDueHelperText] = useState("");
 
   // userAvailability is stored as a JSON object
   const [userAvailability, setUserAvailability] = useState({});
@@ -104,7 +111,52 @@ const ViewClubs = () => {
     setSelectedAvailability(event.target.value);
   };
 
+  const handleMinClubDue = (event) => {
+    const newVal = event.target.value;
+
+    const regex = /^(0|[1-9]\d*)(\.\d{0,2})?$|^$/;
+
+    const valid = regex.test(newVal);
+
+    if (!valid) {
+      return;
+    }
+    setMinClubDue(newVal);
+  };
+
+  const handleMaxClubDue = (event) => {
+    const newVal = event.target.value;
+
+    const regex = /^(0|[1-9]\d*)(\.\d{0,2})?$|^$/;
+
+    const valid = regex.test(newVal);
+
+    if (!valid) {
+      return;
+    }
+
+    if (parseFloat(newVal) < parseFloat(minClubDue)) {
+      setClubDueError(true);
+      setClubDueHelperText("Max cannot be smaller than min.");
+    } else {
+      setClubDueError(false);
+      setClubDueHelperText("");
+    }
+
+    setMaxClubDue(newVal);
+  };
+
+  const resetClubDues = () => {
+    setMinClubDue("");
+    setMaxClubDue("");
+    setClubDueError(false);
+    setClubDueHelperText("");
+  };
+
   const applyFilters = () => {
+    if (clubDueError) {
+      return;
+    }
     setOpenFilterMenu(false);
 
     switch (selectedClubSize) {
@@ -151,6 +203,10 @@ const ViewClubs = () => {
     setCultureFilter("");
     setSelectedAvailability("None");
     setSelectedAvailabilityFilter("None");
+    setMinClubDue("");
+    setMaxClubDue("");
+    setClubDueError(false);
+    setClubDueHelperText("");
   };
 
   useEffect(() => {
@@ -450,6 +506,45 @@ const ViewClubs = () => {
                   />
                 </RadioGroup>
               </FormControl>
+
+              <Typography variant="h6">Club Dues</Typography>
+              <Typography variant="subtitle1">
+                Filter by amount of club dues (in $)
+              </Typography>
+              <Typography variant="subtitle2">
+                Leave blank if you don&apos;t want to use this filter.
+              </Typography>
+
+              <div className="flex items-center space-x-2">
+                <TextField
+                  placeholder="Min"
+                  InputProps={{ inputProps: { min: 0, step: "any" } }}
+                  value={minClubDue}
+                  error={clubDueError}
+                  helperText={clubDueHelperText}
+                  onChange={handleMinClubDue}
+                  variant="outlined"
+                  size="small"
+                />
+                <TextField
+                  placeholder="Max"
+                  InputProps={{ inputProps: { min: 0, step: "any" } }}
+                  value={maxClubDue}
+                  onChange={handleMaxClubDue}
+                  helperText={clubDueHelperText}
+                  error={clubDueError}
+                  variant="outlined"
+                  size="small"
+                />
+              </div>
+
+              <Button
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={resetClubDues}
+              >
+                Reset Club Due Filter
+              </Button>
+
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"

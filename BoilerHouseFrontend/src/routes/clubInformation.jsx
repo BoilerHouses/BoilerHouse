@@ -112,7 +112,7 @@ const ClubInformation = () => {
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
         let avg = 0
-        if (club.ratings) {
+        if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
             avg += e.rating
           })
@@ -123,6 +123,7 @@ const ClubInformation = () => {
       })
       .catch((error) => {
         alert("There was an error fetching the club data!", error);
+        console.log(error)
         setIsLoading(false);
       });
       axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
