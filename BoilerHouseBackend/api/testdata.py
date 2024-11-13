@@ -134,8 +134,8 @@ def insert_user_data(conn):
             queries = build_interested_user(username, name, "user" not in name)   
             for query in queries:   
                 cursor.execute(query)  
-        for i in range(10, 500):
-            username = f'user{i}'
+        for i in range(10, 200):
+            username = f'user{i}@purdue.edu'
             name = f'user{i}'
             queries = build_interested_user(username, name, False)   
             for query in queries:   
@@ -191,7 +191,7 @@ def insert_club_data(conn):
                           f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 12)",
                           ]
             if i > 1:
-                id_list = range(35, 450)
+                id_list = range(35, 170)
                 chosen_ids = random.sample(id_list, random.randint(50, 115))
                 for j in chosen_ids:
                     member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})")
