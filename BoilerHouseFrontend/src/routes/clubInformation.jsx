@@ -50,6 +50,9 @@ const ClubInformation = () => {
   const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
+  const [recommendedUsers, setRecommendedUsers] = useState([])
+
+  const threshold = 0.7
 
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [updatedReview, setUpdatedReview] = useState('');
@@ -94,6 +97,7 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
+        console.log(response.data.club)
         setClubData(response.data.club);
         console.log(response.data.club)
         setIsLoading(false);
@@ -108,15 +112,31 @@ const ClubInformation = () => {
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
         let avg = 0
-        response.data.club.ratings.forEach((e) => {
-          avg += e.rating
-        })
-        avg /= response.data.club.ratings.length
-        setAverageRating(avg.toFixed(2))
+        if (response.data.club.ratings) {
+          response.data.club.ratings.forEach((e) => {
+            avg += e.rating
+          })
+          avg /= response.data.club.ratings.length
+          setAverageRating(avg.toFixed(2))
+        }
+        
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
+        console.log(error)
         setIsLoading(false);
+      });
+      axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+        headers: {
+          Authorization: token,
+        }
+      })
+      .then((response) => {
+        console.log(response.data.user_list)
+        setRecommendedUsers(response.data.user_list)
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the reccomended users!", error);
       });
 
     axios({
@@ -160,7 +180,7 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching meetings!", error);
+        alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
   }, [clubId]);
@@ -182,7 +202,7 @@ const ClubInformation = () => {
         console.log(response);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
       });
   };
 
@@ -216,7 +236,7 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -287,7 +307,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -311,7 +331,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -334,7 +354,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -358,7 +378,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -382,7 +402,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -409,7 +429,6 @@ const ClubInformation = () => {
         setPending(true)
       })
       .catch((error) => {
-        console.error("There was an error joining club!", error);
         alert("There was an error joining club!", error);
         setIsLoading(false);
       });
@@ -431,7 +450,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -837,7 +856,7 @@ const ClubInformation = () => {
         </div>
         <button
             className={
-              joined || pending
+              joined
                   ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
                   : "hidden"
             }
@@ -1141,6 +1160,7 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Tags:
       </Typography>
+      
       <Box sx={{ display: "flex", flexWrap: "wrap", mt: 2 }}>
         {clubData.interests &&
           clubData.interests.map((interest, index) => (
@@ -1155,19 +1175,29 @@ const ClubInformation = () => {
             />
           ))}
       </Box>
-
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        Similar User Key:
+      </Typography>
+      <div className="flex">
+        <span className="mr-2">Fairly Similar User</span>
+        <div className="bg-yellow-200 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-300 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-400 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div className="bg-yellow-500 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <span className="ml-2">Very Similar User</span>
+      </div>
       {/* Officers Section */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Officers ({clubData.officers.length}):
       </Typography>
 
-      <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.officers.map((profile, index) => (
           <div
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1189,13 +1219,13 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):
       </Typography>
-      <div className="overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className="flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1401,7 +1431,7 @@ const ClubInformation = () => {
       <div
         className={
           officer && clubData.pending_members.length > 0
-            ? "overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2"
+            ? "overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2"
             : "hidden"
         }
       >
@@ -1460,7 +1490,7 @@ const ClubInformation = () => {
       </div>
       <RatingForm clubId={clubId}/>
       <Box
-      className={`${clubData.ratings.length === 0 ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
+      className={`${(clubData.ratings && clubData.ratings.length === 0) ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
       sx={{ maxHeight: '400px' }}
     >
       <Box className="mb-4 bg-slate-200 rounded">

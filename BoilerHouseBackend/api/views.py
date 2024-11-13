@@ -21,6 +21,9 @@ from django.utils.encoding import force_str
 from django.forms.models import model_to_dict
 from dotenv import load_dotenv
 from django.conf import settings
+import numpy as np
+from scipy.linalg import svd
+import math
 import uuid
 import os
 import boto3
@@ -393,6 +396,7 @@ def join_club(request):
     if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
         club.pending_members.add(user)
     club.save()
+
     ret_club = model_to_dict(club)
     officer_list = []
     for i in ret_club['officers']:
@@ -406,6 +410,7 @@ def join_club(request):
     ret_club['officers'] = officer_list
     ret_club['members'] = member_list
     ret_club['pending_members'] = pending_list
+
     return Response({'club': ret_club}, 200)
 
 @api_view(['GET'])
@@ -754,12 +759,31 @@ def modify_user_to_club(request):
     if not club or request.query_params['user'] not in [x.username for x in list(club.pending_members.all())]:
         return Response({"error": "User or Club does not exist"}, status=404)
     member = User.objects.filter(username=request.query_params['user']).first()
+    if ('approved' in request.query_params):
+        if (request.query_params['approved'] == 'Y'):
+            #send email to member notifying that they are now in the club
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been approved!"
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
+            club.members.add(member)
+        else:
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been denied."
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
     club.pending_members.remove(member)
     club.responses.pop(member.username, None)
-    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
-        club.members.add(member)
     club.save()
-    return Response("Sucess!", 200)
+    return Response("Success!", 200)
 
 
 @api_view(['GET'])
@@ -992,6 +1016,51 @@ def leave_club(request):
     club.save()
     return Response("success", status = 200)
 
+
+@api_view(['GET'])
+def find_similar_users(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    user_list = [x for x in User.objects.all() if x.pk != user.pk]
+    word_dict = {}
+    for x in user_list:
+        for i in x.interests:
+            word_dict[i] = True
+    for i in user.interests:
+        word_dict[i] = True
+    document_list = []
+    for x in user_list:
+        vector = []
+        for word in word_dict.keys():
+            vector.append(x.interests.count(word))
+        document_list.append(vector)
+    document_list = np.transpose(np.array(document_list))
+    qT = []
+    for word in word_dict.keys():
+        qT.append(user.interests.count(word))
+    U, S, V = svd(document_list, full_matrices= False)
+    k = 3
+    U_k = U[:,:k]
+    S_inv = []
+    VT_k = np.transpose(V)[:, :k]
+    for i in range(0, k):
+        t = [0] * k
+        t[i] = 1/ S[i]
+        S_inv.append(t)
+    temp = np.matmul(qT, U_k)
+    new_q = np.matmul(temp, S_inv)
+    cosine_list = []
+    user_dict = {}
+    for d in VT_k:
+        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
+        cosine_list.append(-1 if np.isnan(t) else t)
+    for i in range(0, len(cosine_list)):
+        user_dict[user_list[i].username] = cosine_list[i]
+    return Response({"user_list": user_dict }, status=200)
+
+
+
 @api_view(['POST'])
 def create_rating(request, club_id):
     user = verify_token(request.headers.get('Authorization'))
@@ -1073,6 +1142,8 @@ def update_club_dues(request, club_id):
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+
 
 
 

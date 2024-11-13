@@ -2,11 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Box, Button, CircularProgress, Snackbar, Alert } from "@mui/material";
 import axios from "axios";
 
-
-
-// translates a coordinate into a time pair
-// (0, 0) => Sunday, 08:00
-
 const Availability = () => {
   const [selectedSlots, setSelectedSlots] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -29,44 +24,46 @@ const Availability = () => {
   const [toggleMode, setToggleMode] = useState("on");
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-const startHour = 8;
-const endHour = 22;
-const interval = 30;
+  const startHour = 8;
+  const endHour = 22;
+  const interval = 30;
 
-const generateTimeSlots = () => {
-  const slots = [];
-  for (let hour = startHour; hour < endHour; hour++) {
-    for (let minute = 0; minute < 60; minute += interval) {
-      slots.push(
-        `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
-      );
+  const generateTimeSlots = () => {
+    const slots = [];
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += interval) {
+        slots.push(
+          `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`
+        );
+      }
     }
-  }
-  return slots;
-};
+    return slots;
+  };
 
-// translates a day, time pair into a coordinate (x, y) on the table
-// Sunday, 08:00 => (0,0)
-const getCoord = (day, time) => {
-  const x = daysOfWeek.indexOf(day);
-  const hour = parseInt(time.substring(0, 2)) - startHour;
-  const minutes = parseInt(time.substring(3, 5));
-  const y = hour * (60 / interval) + minutes / interval;
-  return [x, y];
-};
-const getSlot = (x, y) => {
-  const day = daysOfWeek[x];
+  // translates a day, time pair into a coordinate (x, y) on the table
+  // Sunday, 08:00 => (0,0)
+  const getCoord = (day, time) => {
+    const x = daysOfWeek.indexOf(day);
+    const hour = parseInt(time.substring(0, 2)) - startHour;
+    const minutes = parseInt(time.substring(3, 5));
+    const y = hour * (60 / interval) + minutes / interval;
+    return [x, y];
+  };
 
-  const hour = Math.floor(y / (60 / interval)) + startHour;
-  const minutes = (y % (60 / interval)) * interval;
+  // translates a coordinate into a time pair
+  // (0, 0) => Sunday, 08:00
+  const getSlot = (x, y) => {
+    const day = daysOfWeek[x];
 
-  return `${day}-${String(hour).padStart(2, "0")}:${String(minutes).padStart(
-    2,
-    "0"
-  )}`;
-};
-const timeSlots = generateTimeSlots();
+    const hour = Math.floor(y / (60 / interval)) + startHour;
+    const minutes = (y % (60 / interval)) * interval;
 
+    return `${day}-${String(hour).padStart(2, "0")}:${String(minutes).padStart(
+      2,
+      "0"
+    )}`;
+  };
+  const timeSlots = generateTimeSlots();
 
   const isSelected = (day, time) => {
     return selectedSlots.includes(`${day}-${time}`);
@@ -227,7 +224,7 @@ const timeSlots = generateTimeSlots();
         try {
           response = await axios.get("http://127.0.0.1:8000/api/profile/", {
             params: {
-              username: localStorage.getItem('username')
+              username: localStorage.getItem("username"),
             },
             headers: {
               Authorization: token,
