@@ -49,11 +49,12 @@ GROUP_ONE_INTERESTS = ["Television", "Cinema", "Movies"]
 GROUP_TWO_INTERESTS = ["Music", "Music Production", "Spotify"]
 GROUP_THREE_INTERESTS = ["Reading", "Novels", "Books"]
 GROUP_FOUR_INTERESTS = ["League of Legends", "Roblox", "Pokemon"]
-GROUP_FIVE_INTERESTS = ["Suits", "The Sopranos", "Breaking Bad", "Game of Thrones"]
-GROUP_SIX_INTERESTS = ["Brooklyn Nine Nine", "Friends", "The Office", "Parks n Rec"]
+GROUP_FIVE_INTERESTS = ["Suits", "The Sopranos", "Breaking Bad", "Game of Thrones", "Succession", "Barry", "Arcane"]
+GROUP_SIX_INTERESTS = ["Brooklyn Nine Nine", "Friends", "The Office", "Parks n Rec", "Silicon Valley", "Young Sheldon"]
 GROUP_SEVEN_INTERESTS = ["Cooking", "Baking", "Food"]
 GROUP_EIGHT_INTERESTS = ["Sleeping", "Relaxing"]
-GROUPS_OF_INTERESTS = [GROUP_ONE_INTERESTS, GROUP_TWO_INTERESTS, GROUP_THREE_INTERESTS, GROUP_FOUR_INTERESTS, GROUP_FIVE_INTERESTS, GROUP_SIX_INTERESTS, GROUP_SEVEN_INTERESTS, GROUP_EIGHT_INTERESTS]
+GROUP_NINE_INTERESTS = ["Basketball", "Football", "Soccer", "Baseball", "F1"]
+GROUPS_OF_INTERESTS = [GROUP_ONE_INTERESTS, GROUP_TWO_INTERESTS, GROUP_THREE_INTERESTS, GROUP_FOUR_INTERESTS, GROUP_FIVE_INTERESTS, GROUP_SIX_INTERESTS, GROUP_SEVEN_INTERESTS, GROUP_EIGHT_INTERESTS, GROUP_NINE_INTERESTS]
 
 def drop_tables(conn):
     queries = ["DROP SCHEMA public CASCADE;"
@@ -135,7 +136,7 @@ def insert_user_data(conn):
             queries = build_interested_user(username, name, "user" not in name)   
             for query in queries:   
                 cursor.execute(query)  
-        for i in range(10, 120):
+        for i in range(10, 500):
             username = f'user{i}'
             name = f'user{i}'
             queries = build_interested_user(username, name, False)   
@@ -192,12 +193,12 @@ def insert_club_data(conn):
                           f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 12)",
                           ]
             if i > 1:
-                member_count = random.randint(10, 60)
+                member_count = random.randint(50, 115)
                 chosen_ids = {}
                 for j in range(member_count):
-                    chosen_id = random.randint(20, 70)
+                    chosen_id = random.randint(30, 450)
                     while chosen_id in chosen_ids:
-                        chosen_id = random.randint(20, 90)
+                        chosen_id = random.randint(20, 450)
                     chosen_ids[chosen_id] = True
                     member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {chosen_id})")
             for query in member_queries:
