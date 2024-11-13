@@ -1143,7 +1143,39 @@ def update_club_dues(request, club_id):
     except Exception as e:
         return Response({"error": str(e)}, status=500)
 
+@api_view(['GET'])
+def add_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.add(new_user)
+    club.save()
+    return Response("success", status=200)
 
+@api_view(['GET'])
+def remove_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.remove(new_user)
+    club.save()
+    return Response("success", status=200)
 
 
 
