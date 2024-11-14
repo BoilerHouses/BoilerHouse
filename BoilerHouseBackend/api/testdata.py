@@ -52,7 +52,7 @@ GROUPS_OF_INTERESTS = [["Television", "TV", "Cinema", "Movies", "Breaking Bad", 
                          ["Reading", "Novels", "Books", "Harry Potter", "Jane Austen", "Literature", "Fantasy"],
                          ["Cooking", "Baking", "Food", "Eating", "Cuisines"],
                          ["Sleeping", "Relaxing", "Going out"], 
-                         ["Basketball", "Football", "Soccer", "Baseball", "F1"]]
+                         ["Sports", "Basketball", "Football", "Soccer", "Baseball", "F1"]]
 
 def drop_tables(conn):
     queries = ["DROP SCHEMA public CASCADE;"
@@ -101,7 +101,7 @@ def build_insert_user_query(username, name, is_admin):
             grad_year, major, availability) VALUES ('{username}', {is_admin}, '{password}', '{name}', '{bio}', '{interests}', 
             true, '{IMAGE}', {grad_year}, '{majors}', '{{}}'::json);
             ''']     
-def build_interested_user(username, name, is_admin):
+def build_interested_user(username, name, is_admin, group):
     load_dotenv()
     password = cryptocode.encrypt(PASSWORD, os.getenv("ENCRYPTION_KEY"))
 
@@ -112,9 +112,9 @@ def build_interested_user(username, name, is_admin):
     interests = []
     if (use_major_specific <= 8):
         interests.append(MAJOR_INTERESTS[major_index])
-    interest_groups = random.sample(GROUPS_OF_INTERESTS, random.randint(1, 2))
-    for group in interest_groups:
-        interests.extend(random.sample(group, 4 - len(interest_groups)))
+    if group == -1:
+        group = random.randint(0, len(GROUPS_OF_INTERESTS) - 1)
+    interests.extend(random.sample(GROUPS_OF_INTERESTS[group], random.randint(2, len(GROUPS_OF_INTERESTS[group]))))
     interests = "{" + ",".join(f'"{interest}"' for interest in interests) + "}"
     bio = random.sample(BIO, 1)[0]
     grad_year = random.sample(GRAD_YEAR, 1)[0]
@@ -129,25 +129,31 @@ def build_interested_user(username, name, is_admin):
             ''']    
 
 def insert_user_data(conn):
+    id_list = {}
     with conn.cursor() as cursor:  
         for username, name in zip(USERNAME, NAME):
-            queries = build_interested_user(username, name, "user" not in name)   
+            queries = build_interested_user(username, name, "user" not in name, -1)   
             for query in queries:   
                 cursor.execute(query)  
-        for i in range(10, 200):
+        for i in range(13, 500):
             username = f'user{i}@purdue.edu'
             name = f'user{i}'
-            queries = build_interested_user(username, name, False)   
+            interest_index = i % len(GROUPS_OF_INTERESTS)
+            if interest_index not in id_list:
+                id_list[interest_index] = []
+            id_list[interest_index].append(i)
+            queries = build_interested_user(username, name, False, interest_index)   
             for query in queries:   
                 cursor.execute(query)  
         conn.commit()
+    return id_list
 
 
-def insert_club_data(conn):
+def insert_club_data(conn, id_list):
     with conn.cursor() as cursor:
         club_query = f'''
                         INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
-                        ('test club1', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        ('Computer Science Club', 'We Love Computer Science', 'Relaxed Academic Club', '1-5 hours', '{{"Computer Science", "Coding"}}', '{IMAGE}',
                         '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
 
@@ -155,7 +161,7 @@ def insert_club_data(conn):
 
         club_query = f'''
                         INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
-                        ('test club2', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        ('Book Club', 'We read books!', 'Very relaxed and casual', '1-5 hours', '{{"Books", "Reading", "Literature"}}', '{IMAGE}',
                         '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
 
@@ -163,7 +169,7 @@ def insert_club_data(conn):
 
         club_query = f'''
                         INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
-                        ('test club3', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        ('Movie Club', 'We watch movies!', 'Relaxed and Casual', '1-5 hours', '{{"Movies", "Cinema", "TV"}}', '{IMAGE}',
                         '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
 
@@ -171,13 +177,20 @@ def insert_club_data(conn):
 
         club_query = f'''
                         INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
-                        ('test club4', 'test desc', 'test culture', '1-5 hours', '{{"cs", "ds"}}', '{IMAGE}',
+                        ('Music Club', 'We listen and create music', 'You get whatever you put in', '1-5 hours', '{{"Music", "Music Production", "Spotify"}}', '{IMAGE}',
                         '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
         cursor.execute(club_query) 
 
+        club_query = f'''
+                        INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
+                        ('Sports Club', 'We watch sports', 'Casual Fun!', '1-5 hours', '{{"Sports", "Basketball", "Football"}}', '{IMAGE}',
+                        '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
+                    '''
+        cursor.execute(club_query) 
+        interest_map = {1: 1, 2: 4, 3: 0, 4: 1, 5:7}
         conn.commit()
-        for i in range(1, 5):
+        for i in range(1, 6):
             member_queries = [
                           f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 1)",
                           f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, 2)",
@@ -191,10 +204,20 @@ def insert_club_data(conn):
                           f"INSERT INTO api_club_officers (club_id, user_id) VALUES ({i}, 12)",
                           ]
             if i > 1:
-                id_list = range(35, 170)
-                chosen_ids = random.sample(id_list, random.randint(50, 115))
-                for j in chosen_ids:
-                    member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})")
+                for j in id_list[interest_map[i]]:
+                    join_club = random.randint(1, 25)
+                    if (join_club <= 6):
+                        member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})")
+                rand_list = random.sample(range(1, 6), random.randint(1, 2))
+                for x in rand_list:
+                    if x == i:
+                        continue
+                    for j in id_list[interest_map[x]]:
+                        join_club = random.randint(1, 12)
+                        if (join_club <= 1):
+                            query = f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})"
+                            if query not in member_queries:
+                                member_queries.append(query)
             for query in member_queries:
                 cursor.execute(query)
 
@@ -252,8 +275,8 @@ if __name__ == "__main__":
             print("Migrated successfully.")
 
         else:
-            insert_user_data(conn)
-            insert_club_data(conn)
+            id_list = insert_user_data(conn)
+            insert_club_data(conn, id_list)
             #generate_large_club(conn)
             close_connection(conn)
             print("Test data inserted successfully.")

@@ -52,7 +52,7 @@ const ClubInformation = () => {
   const [editMeeting, setEditMeeting] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([])
 
-  const threshold = 0.7
+  const threshold = .01
 
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [updatedReview, setUpdatedReview] = useState('');
@@ -1225,6 +1225,7 @@ const ClubInformation = () => {
       </Typography>
       <div className="flex">
         <span className="mr-2">Fairly Similar User</span>
+        <div className="bg-yellow-100 rounded" style={{ width: '30px', height: '30px' }}></div>
         <div className="bg-yellow-200 rounded" style={{ width: '30px', height: '30px' }}></div>
         <div className="bg-yellow-300 rounded" style={{ width: '30px', height: '30px' }}></div>
         <div className="bg-yellow-400 rounded" style={{ width: '30px', height: '30px' }}></div>
@@ -1242,7 +1243,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${100 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * (400 / (1 - threshold)))) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1270,7 +1271,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"}
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${100 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * (400 / (1 - threshold)))) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img

@@ -23,6 +23,7 @@ from dotenv import load_dotenv
 from django.conf import settings
 import numpy as np
 from scipy.linalg import svd
+from sklearn import preprocessing
 import math
 import uuid
 import os
@@ -1040,7 +1041,7 @@ def find_similar_users(request):
     for word in word_dict.keys():
         qT.append(user.interests.count(word))
     U, S, V = svd(document_list, full_matrices= False)
-    k = 3
+    k = 35
     U_k = U[:,:k]
     S_inv = []
     VT_k = np.transpose(V)[:, :k]
@@ -1227,6 +1228,81 @@ def ban_member(request):
     club.save()
 
     return Response({"message": f"{member_username} has been banned from the club"}, status=200)
+
+
+@api_view(['GET'])
+def get_recommendations(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user is None or user == 'Invalid token':
+        return Response({'error': 'invalid token'}, status=400)
+    user_list = [x for x in User.objects.all() if x.pk != user.pk]
+    word_dict = {}
+    for x in user_list:
+        for i in x.interests:
+            word_dict[i] = True
+    for i in user.interests:
+        word_dict[i] = True
+    document_list = []
+    for x in user_list:
+        vector = []
+        for word in word_dict.keys():
+            vector.append(x.interests.count(word))
+        document_list.append(vector)
+    document_list = np.transpose(np.array(document_list))
+    qT = []
+    for word in word_dict.keys():
+        qT.append(user.interests.count(word))
+    U, S, V = svd(document_list, full_matrices= False)
+    k = 35
+    U_k = U[:,:k]
+    S_inv = []
+    VT_k = np.transpose(V)[:, :k]
+    for i in range(0, k):
+        t = [0] * k
+        t[i] = 1/ S[i]
+        S_inv.append(t)
+    temp = np.matmul(qT, U_k)
+    new_q = np.matmul(temp, S_inv)
+    cosine_list = []
+    user_dict = {}
+    for d in VT_k:
+        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
+        cosine_list.append(-1 if np.isnan(t) else t)
+    for i in range(0, len(cosine_list)):
+        user_dict[user_list[i].username] = cosine_list[i]
+    total_similarity = 0
+    for i in user_dict.keys():
+        total_similarity += (user_dict[i] + 1)
+    club_dict = {}
+    average_similarity_scores = []
+    proportionate_similarity_scores = []  
+    for club in Club.objects.all():
+        average_similarity = 0
+        proportionate_similarity = 0
+        count = 0
+        for member in club.members.all():
+            if member.username in user_dict:
+                average_similarity += (user_dict[member.username] + 1)
+                proportionate_similarity += (user_dict[member.username] + 1)
+                count += 1
+        average_similarity /= count
+        proportionate_similarity /= total_similarity
+        club_dict[club.name] = (average_similarity, proportionate_similarity)
+        
+        average_similarity_scores.append(average_similarity)
+        proportionate_similarity_scores.append(proportionate_similarity)
+
+    average_mean = np.mean(np.array(average_similarity_scores))
+    average_std =  np.std(np.array(average_similarity_scores))
+    proportionate_mean = np.mean(np.array(proportionate_similarity_scores))
+    proportionate_std =  np.std(np.array(proportionate_similarity_scores))
+    final_score = {}
+    for club in club_dict.keys():
+        club_scores = club_dict[club]
+        score = (club_scores[0] - average_mean) / average_std
+        score += (club_scores[1] - proportionate_mean) / proportionate_std
+        final_score[club] = score
+    return Response({"club_list": final_score }, status=200)
 
 
 
