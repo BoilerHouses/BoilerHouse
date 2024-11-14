@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import {useParams, useNavigate} from 'react-router-dom'
-import axios from 'axios'
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 const OfficerQuestions = ({ questions }) => {
   const navigate = useNavigate();
   const { clubId } = useParams();
@@ -10,9 +10,9 @@ const OfficerQuestions = ({ questions }) => {
 
   const handleChange = (index, value) => {
     setAnswers((prev) => ({ ...prev, [index]: value }));
-    let a = pairSet
-    a[index].answer = value
-    setPairSet(a)
+    let a = pairSet;
+    a[index].answer = value;
+    setPairSet(a);
   };
 
   useEffect(() => {
@@ -25,39 +25,43 @@ const OfficerQuestions = ({ questions }) => {
         },
       })
       .then((response) => {
-        console.log(response.data)
-        setQuestionSet(response.data.questions)
-        let pairSet = []
-        response.data.questions.forEach(element => {
-            pairSet.push({question: element.text, answer: ''})
+        console.log(response.data);
+        setQuestionSet(response.data.questions);
+        let pairSet = [];
+        response.data.questions.forEach((element) => {
+          pairSet.push({ question: element.text, answer: "" });
         });
-        setPairSet(pairSet)
+        setPairSet(pairSet);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
-        alert("There was an error fetching the club data!")
+        alert("There was an error fetching the club data!");
       });
   }, [clubId]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(pairSet)
+    console.log(pairSet);
     const data = {
-        response: pairSet
-    }
+      response: pairSet,
+    };
     const token = localStorage.getItem("token");
 
-    axios.post(`http://127.0.0.1:8000/api/club/officer/answers/${clubId}/set/`, data, {
-        headers: {
+    axios
+      .post(
+        `http://127.0.0.1:8000/api/club/officer/answers/${clubId}/set/`,
+        data,
+        {
+          headers: {
             Authorization: token,
-          }
-    }).then((response) => {
-        navigate(`/club/${clubId}`)
+          },
+        }
+      )
+      .then((response) => {
+        navigate(`/club/${clubId}`);
       })
       .catch((error) => {
-        alert("There was an error saving your responses!")
+        alert("There was an error saving your responses!");
       });
-    
   };
 
   return (
@@ -70,17 +74,14 @@ const OfficerQuestions = ({ questions }) => {
           </label>
           <input
             type="text"
-            value={answers[index] || ''}
+            value={answers[index] || ""}
             onChange={(e) => handleChange(index, e.target.value)}
             className="mt-1 p-2 border rounded"
             required={question.required}
           />
         </div>
       ))}
-      <button
-        type="submit"
-        className="mt-4 p-2 bg-blue-500 text-white rounded"
-      >
+      <button type="submit" className="mt-4 p-2 bg-blue-500 text-white rounded">
         Submit
       </button>
     </form>

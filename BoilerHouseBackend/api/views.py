@@ -396,6 +396,7 @@ def join_club(request):
     if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
         club.pending_members.add(user)
     club.save()
+
     ret_club = model_to_dict(club)
     officer_list = []
     for i in ret_club['officers']:
@@ -409,6 +410,7 @@ def join_club(request):
     ret_club['officers'] = officer_list
     ret_club['members'] = member_list
     ret_club['pending_members'] = pending_list
+
     return Response({'club': ret_club}, 200)
 
 @api_view(['GET'])
@@ -757,12 +759,31 @@ def modify_user_to_club(request):
     if not club or request.query_params['user'] not in [x.username for x in list(club.pending_members.all())]:
         return Response({"error": "User or Club does not exist"}, status=404)
     member = User.objects.filter(username=request.query_params['user']).first()
+    if ('approved' in request.query_params):
+        if (request.query_params['approved'] == 'Y'):
+            #send email to member notifying that they are now in the club
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been approved!"
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
+            club.members.add(member)
+        else:
+            subject = f"Update on your application to {club.name}"
+            content = f"You application to join {club.name} has been denied."
+            try:
+                email = EmailMessage(subject, content, to={member.username})
+                email.send()
+            except Exception as e:
+                print(e)
+                return Response("error", 400)
     club.pending_members.remove(member)
     club.responses.pop(member.username, None)
-    if ('approved' in request.query_params and request.query_params['approved'] == 'Y'):
-        club.members.add(member)
     club.save()
-    return Response("Sucess!", 200)
+    return Response("Success!", 200)
 
 
 @api_view(['GET'])
@@ -936,6 +957,8 @@ def get_club_details_for_edit(request, club_id):
             "culture": club.culture,
             "time_commitment": club.time_commitment,
             "clubDues": club.clubDues,
+            "dueName": club.dueName,
+            "dueDate": club.dueDate,
             # Add any other fields you want to make editable
         }
         
@@ -1109,10 +1132,103 @@ def update_club_dues(request, club_id):
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
     try:
         club.clubDues = request.data.get('clubDues')
+        club.dueName = request.data.get('dueName')
+        club.dueDate = request.data.get('dueDate')
+        subject = f"Update to club dues for {club.name} "
+        content = f"Club Name: {club.name}\n Amount: {club.clubDues}\n Due Date: {club.dueDate}\n Description: {club.dueName}"
+        if not send_email_to_club_members(subject, content, club):
+            return Response({"error"}, status=500)
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+def add_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.add(new_user)
+    club.save()
+    return Response("success", status=200)
+
+@api_view(['GET'])
+def remove_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.remove(new_user)
+    club.save()
+    return Response("success", status=200)
+
+@api_view(['POST'])
+def kick_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
+
+@api_view(['POST'])
+def ban_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.banned_members.add(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been banned from the club"}, status=200)
+
+
 
 
 

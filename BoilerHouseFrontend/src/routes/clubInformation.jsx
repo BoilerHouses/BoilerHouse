@@ -97,6 +97,7 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
+        console.log(response.data.club)
         setClubData(response.data.club);
         console.log(response.data.club)
         setIsLoading(false);
@@ -111,7 +112,7 @@ const ClubInformation = () => {
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
         let avg = 0
-        if (club.ratings) {
+        if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
             avg += e.rating
           })
@@ -121,7 +122,8 @@ const ClubInformation = () => {
         
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
+        console.log(error)
         setIsLoading(false);
       });
       axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
@@ -178,10 +180,55 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching meetings!", error);
+        alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
   }, [clubId]);
+
+  const handleKickMember = (memberId) => {
+      const token = localStorage.getItem("token");
+
+      axios
+        .post(
+          `http://127.0.0.1:8000/api/club/kick_member/`, // Assuming this endpoint kicks a member
+          {
+            club_id: clubId,
+            member_username: memberId,
+          },
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        )
+        .then(() => {
+          // Redirect to the club information page
+          alert("The member has been successfully kicked from the club.");
+          window.location.reload();
+        })
+        .catch((error) => {
+          alert("There was an error with kicking the member!", error);
+        });
+  };
+
+  const handleMemberBan = (event) => {
+      const token = localStorage.getItem("token");
+      axios.post(`http://127.0.0.1:8000/api/club/ban_member/`, {
+          club_id: clubId,
+          member_username: event.target.getAttribute("index")
+      }, {
+          headers: {
+              Authorization: token,
+          }
+      })
+      .then(() => {
+          window.location.reload();
+      })
+      .catch((error) => {
+          alert("There was an error with banning the member!", error);
+          setIsLoading(false);
+      });
+  };
 
   const handleCheckboxChange = () => {
     const token = localStorage.getItem("token");
@@ -200,7 +247,7 @@ const ClubInformation = () => {
         console.log(response);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
       });
   };
 
@@ -234,7 +281,7 @@ const ClubInformation = () => {
         }
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -305,7 +352,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -329,7 +376,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -352,7 +399,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -376,7 +423,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -400,7 +447,7 @@ const ClubInformation = () => {
         window.location.reload();
       })
       .catch((error) => {
-        console.error("There was an error with approval!", error);
+        alert("There was an error with approval!", error);
         setIsLoading(false);
       });
   };
@@ -427,7 +474,6 @@ const ClubInformation = () => {
         setPending(true)
       })
       .catch((error) => {
-        console.error("There was an error joining club!", error);
         alert("There was an error joining club!", error);
         setIsLoading(false);
       });
@@ -449,7 +495,7 @@ const ClubInformation = () => {
         navigate(`/clubs`);
       })
       .catch((error) => {
-        console.error("There was an error fetching the club data!", error);
+        alert("There was an error fetching the club data!", error);
         setIsLoading(false);
       });
   };
@@ -840,7 +886,7 @@ const ClubInformation = () => {
              }
              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
-             Set Club Dues
+             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
               className={
@@ -855,7 +901,7 @@ const ClubInformation = () => {
         </div>
         <button
             className={
-              joined || pending
+              joined
                   ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
                   : "hidden"
             }
@@ -1140,8 +1186,16 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
-        {"$" + clubData.clubDues || "No club dues information provided."}
-      </Typography>
+              {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
+                "No club dues information provided."
+              ) : (
+                <>
+                  {clubData.dueName && <div>{"Due Name: " + clubData.dueName}</div>}
+                  {clubData.clubDues ? <div>{"Amount: $" + clubData.clubDues}</div> : <div>Amount: $0</div>}
+                  {clubData.dueDate && <div>{"Due Date: " + clubData.dueDate}</div>}
+                </>
+              )}
+            </Typography>
 
 
 
@@ -1182,7 +1236,7 @@ const ClubInformation = () => {
         Officers ({clubData.officers.length}):
       </Typography>
 
-      <div className="overflow-y-auto max-h-60 w-1/4 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.officers.map((profile, index) => (
           <div
             index={profile[3]}
@@ -1210,13 +1264,13 @@ const ClubInformation = () => {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Members ({clubData.members.length}):
       </Typography>
-      <div className="overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2">
+      <div className="overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2">
         {clubData.members.map((profile, index) => (
           <div
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1264,6 +1318,17 @@ const ClubInformation = () => {
               onClick={handleOfficerDeny}
             >
               Deny
+            </button>
+            <button
+              className={
+                officer
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => handleKickMember(profile[3])}
+            >
+              Kick
             </button>
           </div>
         ))}
@@ -1422,7 +1487,7 @@ const ClubInformation = () => {
       <div
         className={
           officer && clubData.pending_members.length > 0
-            ? "overflow-y-auto max-h-60 w-1/3 bg-white rounded-lg shadow-md pl-3 p-2"
+            ? "overflow-y-auto max-h-60 w-1/2 bg-white rounded-lg shadow-md pl-3 p-2"
             : "hidden"
         }
       >
