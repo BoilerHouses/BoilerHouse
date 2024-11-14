@@ -1177,5 +1177,58 @@ def remove_paid_dues(request):
     club.save()
     return Response("success", status=200)
 
+@api_view(['POST'])
+def kick_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
+
+@api_view(['POST'])
+def ban_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.banned_members.add(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been banned from the club"}, status=200)
+
+
+
 
 

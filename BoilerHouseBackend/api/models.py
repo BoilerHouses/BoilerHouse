@@ -59,6 +59,7 @@ class Club(models.Model):
     dueName = models.CharField(max_length=2048, default='')
     dueDate = models.DateField(null=True, blank=True)
     paid_dues = models.ManyToManyField(User, related_name='clubs_with_paid_dues')
+    banned_members = models.ManyToManyField(User, related_name='banned_clubs')
 
 
 
