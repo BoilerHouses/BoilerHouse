@@ -29,6 +29,8 @@ import uuid
 import os
 import boto3
 import cryptocode
+from django.utils import timezone
+from dateutil import parser
 
 
 
@@ -1327,6 +1329,36 @@ def get_recommendations(request):
         final_score[club] = score
     return Response({"club_list": final_score }, status=200)
 
+
+
+@api_view(['GET'])
+def get_upcoming_meetings(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    user_clubs = Club.objects.filter(members=user)
+
+    upcoming_meetings = []
+
+    for club in user_clubs:
+        for meeting in club.meetings:
+            meeting_date = timezone.datetime.fromisoformat(meeting['date'])
+            if meeting_date >= timezone.now():
+                upcoming_meetings.append({
+                'id': meeting.get('id', ''),
+                'club_name': club.name,
+                'date': meeting['date'],
+                'location': meeting.get('location', ''),
+                'description': meeting.get('description', '')
+            })
+
+        # Sort meetings by date
+    upcoming_meetings.sort(key=lambda x: x['date'])
+
+        # Limit to 10 upcoming meetings
+    upcoming_meetings = upcoming_meetings[:10]
+
+    return Response(upcoming_meetings, status=200)
 
 
 
