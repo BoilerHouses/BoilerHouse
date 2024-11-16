@@ -203,7 +203,11 @@ const ClubInformation = () => {
           window.location.reload();
         })
         .catch((error) => {
-          alert("There was an error with kicking the member!", error);
+          if (error.status == 400) {
+            alert("You cannot kick yourself from the club", error);
+          } else {
+            alert("There was an error with kicking the member!", error);
+          }
         });
   };
 

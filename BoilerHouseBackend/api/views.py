@@ -1198,7 +1198,11 @@ def kick_member(request):
     if not member or member not in club.members.all():
         return Response({"error": "User not found in club members"}, status=404)
 
+    if user.username == member_username:
+        return Response({"error": "You cannot kick yourself from the club"}, status=400)
     club.members.remove(member)
+    if member in list(club.officers.all()):
+        club.officers.remove(member)
     club.save()
 
     return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
