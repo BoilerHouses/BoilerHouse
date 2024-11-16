@@ -414,8 +414,6 @@ const ViewClubs = () => {
     });
 
 
-    console.log(clubTagsFilterList);
-
     let filteredList = searchTermFilterList;
     if (useSizeFilter) {
       filteredList = filteredList.intersection(sizeFilerList);

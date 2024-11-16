@@ -217,12 +217,6 @@ const ClubInformation = () => {
       });
   };
 
-  const handleMemberBan = (event) => {
-    const token = localStorage.getItem("token");
-    axios
-      .post(
-        `http://127.0.0.1:8000/api/club/ban_member/`,
-        {
   const handleMemberBan = (memberId) => {
       console.log(memberId)
       const token = localStorage.getItem("token");
