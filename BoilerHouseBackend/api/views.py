@@ -349,10 +349,15 @@ def get_all_clubs(request):
     if not user.is_admin and approved == 'False':
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
+
+
     clubs = []
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
+
+
+        print(model_to_dict(x))
 
         members = x.members.count()
         t = model_to_dict(x)
@@ -360,6 +365,7 @@ def get_all_clubs(request):
         t['members'] = []
         t['pending_members'] = []
         t['pending_officers'] = []
+        t['banned_members']  = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
