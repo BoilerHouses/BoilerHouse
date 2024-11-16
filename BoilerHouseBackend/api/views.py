@@ -365,7 +365,7 @@ def get_all_clubs(request):
         t['members'] = []
         t['pending_members'] = []
         t['pending_officers'] = []
-        t['banned_members']  = []
+        t['banned_members'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
@@ -385,6 +385,7 @@ def get_example_clubs(request):
         t['members'] = [model_to_dict(a) for a in x.members.all()]
         t['pending_members'] = [model_to_dict(a) for a in x.pending_members.all()]
         t['pending_officers'] = []
+        t['banned_members'] = []
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -400,6 +401,10 @@ def join_club(request):
     club = Club.objects.filter(name=request.query_params['club_name']).first()
     if (not club.is_approved):
         return Response({'error': 'Club is not Active!'}, status=400)
+
+    if user in club.banned_members.all():
+        return Response({'error': 'You are banned from this club and cannot join.'}, status=403)
+
     if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
         club.pending_members.add(user)
     club.save()
@@ -536,6 +541,7 @@ def get_club_information(request):
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
         ret_club['pending_officers'] = []
+        ret_club['banned_members'] = []
         ret_club['ratings'] = rating_list
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
@@ -1233,11 +1239,18 @@ def ban_member(request):
     if not member or member not in club.members.all():
         return Response({"error": "User not found in club members"}, status=404)
 
+    if user.username == member_username:
+        return Response({"error": "You cannot ban yourself from the club"}, status=400)
+
+
     club.members.remove(member)
+    if member in list(club.officers.all()):
+        club.officers.remove(member)
+
     club.banned_members.add(member)
     club.save()
 
-    return Response({"message": f"{member_username} has been banned from the club"}, status=200)
+    return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
 
 
 @api_view(['GET'])
