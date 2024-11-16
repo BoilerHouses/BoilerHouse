@@ -97,9 +97,7 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.club)
         setClubData(response.data.club);
-        console.log(response.data.club)
         setIsLoading(false);
         setJoined(response.data.joined);
         setPending(response.data.pending)
@@ -132,7 +130,6 @@ const ClubInformation = () => {
         }
       })
       .then((response) => {
-        console.log(response.data.user_list)
         setRecommendedUsers(response.data.user_list)
       })
       .catch((error) => {
@@ -784,6 +781,7 @@ const ClubInformation = () => {
           <p className={officer && joined ? "text-red font-bold" : "hidden"}>
             {deletedCount + "/" + officerCount + " votes to delete club"}
           </p>
+          
         </div>
 
         <div className="flex justify-between">

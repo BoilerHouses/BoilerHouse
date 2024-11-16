@@ -23,6 +23,10 @@ const ViewClubs = () => {
   const [minClubDue, setMinClubDue] = useState("");
   const [maxClubDue, setMaxClubDue] = useState("");
 
+
+  const [minClubDueFilter, setMinClubDueFilter] = useState("");
+  const [maxClubDueFilter, setMaxClubDueFilter] = useState("");
+
   const [clubDueError, setClubDueError] = useState(false);
   const [clubDueHelperText, setClubDueHelperText] = useState("");
 
@@ -199,6 +203,20 @@ const ViewClubs = () => {
     setTimeCommitmentFilter(selectedTimeCommitment);
     setCultureFilter(selectedCulture);
     setSelectedAvailabilityFilter(selectedAvailability);
+
+
+
+    setMinClubDueFilter(parseFloat(minClubDue));
+    setMaxClubDueFilter(parseFloat(maxClubDue));
+
+
+    if (minClubDue === "") {
+      setMinClubDueFilter(0);
+    }
+    if (maxClubDue === "") {
+      setMaxClubDueFilter(Infinity);
+    }
+
   };
 
   const clearFilters = () => {
@@ -217,6 +235,8 @@ const ViewClubs = () => {
     setMaxClubDue("");
     setClubDueError(false);
     setClubDueHelperText("");
+    setMinClubDueFilter(0);
+    setMaxClubDueFilter(Infinity);
   };
 
   useEffect(() => {
@@ -228,6 +248,8 @@ const ViewClubs = () => {
     timeCommitmentFilter,
     cultureFilter,
     selectedAvailabilityFilter,
+    minClubDueFilter,
+    maxClubDueFilter
   ]);
 
   // convert 12 hour time to 24 hour time
@@ -266,11 +288,13 @@ const ViewClubs = () => {
     let timeCommitmentFilterList = new Set();
     let cultureFilterList = new Set();
     let availabilityFilterList = new Set();
+    let clubDueFilterList = new Set();
 
     const useSizeFilter = selectedClubSize !== "None";
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
     const useCultureFilter = cultureFilter.length > 0;
     const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
+    const useClubDueFilter = !(minClubDueFilter === 0 && maxClubDueFilter === Infinity);
 
     const startHour = 8;
     const interval = 30;
@@ -303,6 +327,10 @@ const ViewClubs = () => {
     data.forEach((club) => {
       const clubId = club.id;
       const members = club.num_members;
+      const dues = parseFloat(club.clubDues);
+
+      
+      
 
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         searchTermFilterList.add(clubId);
@@ -349,6 +377,11 @@ const ViewClubs = () => {
           });
         }
       });
+
+
+      if (!Number.isNaN(dues) && dues >= minClubDueFilter && dues <= maxClubDueFilter) {
+        clubDueFilterList.add(clubId);
+      }
     });
 
     let filteredList = searchTermFilterList;
@@ -363,6 +396,9 @@ const ViewClubs = () => {
     }
     if (useAvailabilityFilter) {
       filteredList = filteredList.intersection(availabilityFilterList);
+    }
+    if (useClubDueFilter) {
+      filteredList = filteredList.intersection(clubDueFilterList);
     }
 
     let filteredClubs = [];
