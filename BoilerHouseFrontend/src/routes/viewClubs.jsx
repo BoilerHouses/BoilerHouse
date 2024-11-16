@@ -329,9 +329,6 @@ const ViewClubs = () => {
       const members = club.num_members;
       const dues = parseFloat(club.clubDues);
 
-      
-      
-
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         searchTermFilterList.add(clubId);
       }
@@ -378,8 +375,8 @@ const ViewClubs = () => {
         }
       });
 
-
-      if (!Number.isNaN(dues) && dues >= minClubDueFilter && dues <= maxClubDueFilter) {
+      // treat clubs with no dues set as dues being $0
+      if (Number.isNaN(dues) || (!Number.isNaN(dues) && dues >= minClubDueFilter && dues <= maxClubDueFilter)) {
         clubDueFilterList.add(clubId);
       }
     });
@@ -558,7 +555,7 @@ const ViewClubs = () => {
                 Filter by amount of club dues (in $)
               </Typography>
               <Typography variant="subtitle2">
-                Leave blank if you don&apos;t want to use this filter.
+                Leave blank if you don&apos;t want to use this filter. Clubs with no dues set are treated as if their dues are $0.
               </Typography>
 
               <div className="flex items-center space-x-2">
