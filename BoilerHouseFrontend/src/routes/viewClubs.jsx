@@ -8,6 +8,8 @@ import {
   FormControlLabel,
   Radio,
   TextField,
+  Box, 
+  Chip
 } from "@mui/material";
 import axios from "axios";
 
@@ -22,7 +24,6 @@ const ViewClubs = () => {
 
   const [minClubDue, setMinClubDue] = useState("");
   const [maxClubDue, setMaxClubDue] = useState("");
-
 
   const [minClubDueFilter, setMinClubDueFilter] = useState("");
   const [maxClubDueFilter, setMaxClubDueFilter] = useState("");
@@ -45,6 +46,15 @@ const ViewClubs = () => {
   const [minClubSize, setMinClubSize] = useState(0);
   const [maxClubSize, setMaxClubSize] = useState(Infinity);
   const [error, setError] = useState(false);
+
+
+  const [tag, setTag] = useState("");
+  const [tagList, setTagList] = useState([]);
+  const [tagListFilter, setTagListFilter] = useState([]);
+
+
+  const [tagCount, setTagCount] = useState([]);
+
 
   const navigate = useNavigate();
 
@@ -134,7 +144,6 @@ const ViewClubs = () => {
       setClubDueHelperText("");
     }
 
-
     setMinClubDue(newVal);
   };
 
@@ -204,11 +213,8 @@ const ViewClubs = () => {
     setCultureFilter(selectedCulture);
     setSelectedAvailabilityFilter(selectedAvailability);
 
-
-
     setMinClubDueFilter(parseFloat(minClubDue));
     setMaxClubDueFilter(parseFloat(maxClubDue));
-
 
     if (minClubDue === "") {
       setMinClubDueFilter(0);
@@ -216,7 +222,7 @@ const ViewClubs = () => {
     if (maxClubDue === "") {
       setMaxClubDueFilter(Infinity);
     }
-
+    setTagListFilter(tagList);
   };
 
   const clearFilters = () => {
@@ -237,6 +243,8 @@ const ViewClubs = () => {
     setClubDueHelperText("");
     setMinClubDueFilter(0);
     setMaxClubDueFilter(Infinity);
+    setTagList([]);
+    setTagListFilter([]);
   };
 
   useEffect(() => {
@@ -249,7 +257,8 @@ const ViewClubs = () => {
     cultureFilter,
     selectedAvailabilityFilter,
     minClubDueFilter,
-    maxClubDueFilter
+    maxClubDueFilter,
+    tagListFilter
   ]);
 
   // convert 12 hour time to 24 hour time
@@ -294,7 +303,9 @@ const ViewClubs = () => {
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
     const useCultureFilter = cultureFilter.length > 0;
     const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
-    const useClubDueFilter = !(minClubDueFilter === 0 && maxClubDueFilter === Infinity);
+    const useClubDueFilter = !(
+      minClubDueFilter === 0 && maxClubDueFilter === Infinity
+    );
 
     const startHour = 8;
     const interval = 30;
@@ -324,10 +335,13 @@ const ViewClubs = () => {
       });
     });
 
+    console.log(tagListFilter)
+
     data.forEach((club) => {
       const clubId = club.id;
       const members = club.num_members;
       const dues = parseFloat(club.clubDues);
+
 
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         searchTermFilterList.add(clubId);
@@ -376,7 +390,12 @@ const ViewClubs = () => {
       });
 
       // treat clubs with no dues set as dues being $0
-      if (Number.isNaN(dues) || (!Number.isNaN(dues) && dues >= minClubDueFilter && dues <= maxClubDueFilter)) {
+      if (
+        Number.isNaN(dues) ||
+        (!Number.isNaN(dues) &&
+          dues >= minClubDueFilter &&
+          dues <= maxClubDueFilter)
+      ) {
         clubDueFilterList.add(clubId);
       }
     });
@@ -412,6 +431,37 @@ const ViewClubs = () => {
   const handleCultureFilter = (e) => {
     setSelectedCulture(e.target.value);
   };
+
+
+  const handleAddTag = (event) => {
+    if (event.key === "Enter" && tag) {
+      let a = tagList.filter((key, t) => key == tag);
+      if (a.length > 0) {
+        setTag("");
+        return;
+      }
+      setTagList((prevTags) => [...prevTags, (tagCount, tag)]);
+      setTagCount(tagCount + 1);
+      setTag("");
+    }
+  };
+
+
+  const handleTagChange = (event) => {
+    setTag(event.target.value);
+  };  
+
+
+  const handleDeleteTag = (tagToDelete) => {
+    setTagList((prevTags) =>
+      prevTags.filter((key, tag) => tag !== tagToDelete)
+    );
+  };
+
+  const resetTags = () => {
+    setTagList([]);
+  }
+
 
   return (
     <div className="container mx-auto p-5 max-w-[80%]">
@@ -555,7 +605,8 @@ const ViewClubs = () => {
                 Filter by amount of club dues (in $)
               </Typography>
               <Typography variant="subtitle2">
-                Leave blank if you don&apos;t want to use this filter. Clubs with no dues set are treated as if their dues are $0.
+                Leave blank if you don&apos;t want to use this filter. Clubs
+                with no dues set are treated as if their dues are $0.
               </Typography>
 
               <div className="flex items-center space-x-2">
@@ -586,6 +637,48 @@ const ViewClubs = () => {
                 onClick={resetClubDues}
               >
                 Reset Club Due Filter
+              </Button>
+
+              <Typography variant="h6">Tags/Majors</Typography>
+              <Typography variant="subtitle1">
+                Filter by club tags/majors
+              </Typography>
+              <Typography variant="subtitle2">
+                Press enter to add a new tag/major. Leave blank if you
+                don&apos;t want to use this filter. Returned clubs will have at
+                least one of the specified tags/majors specified.
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Enter tags/majors..."
+                name="tags"
+                value={tag}
+                onKeyDown={handleAddTag}
+                onChange={handleTagChange}
+                className="bg-white !mt-3.5"
+              />
+              <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap" }}>
+                {tagList.map((key, tag) => (
+                  <Chip
+                    key={tag}
+                    label={key}
+                    onDelete={() => handleDeleteTag(tag)}
+                    sx={{
+                      backgroundColor: "gold",
+                      color: "black",
+                      borderRadius: "16px",
+                      margin: "4px",
+                    }}
+                  />
+                ))}
+              </Box>
+
+              <Button
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={resetTags}
+              >
+                Reset Tags Filter
               </Button>
 
               <Button
