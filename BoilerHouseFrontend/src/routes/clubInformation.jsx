@@ -182,6 +182,51 @@ const ClubInformation = () => {
       });
   }, [clubId]);
 
+  const handleKickMember = (memberId) => {
+      const token = localStorage.getItem("token");
+
+      axios
+        .post(
+          `http://127.0.0.1:8000/api/club/kick_member/`, // Assuming this endpoint kicks a member
+          {
+            club_id: clubId,
+            member_username: memberId,
+          },
+          {
+            headers: {
+              Authorization: token,
+            },
+          }
+        )
+        .then(() => {
+          // Redirect to the club information page
+          alert("The member has been successfully kicked from the club.");
+          window.location.reload();
+        })
+        .catch((error) => {
+          alert("There was an error with kicking the member!", error);
+        });
+  };
+
+  const handleMemberBan = (event) => {
+      const token = localStorage.getItem("token");
+      axios.post(`http://127.0.0.1:8000/api/club/ban_member/`, {
+          club_id: clubId,
+          member_username: event.target.getAttribute("index")
+      }, {
+          headers: {
+              Authorization: token,
+          }
+      })
+      .then(() => {
+          window.location.reload();
+      })
+      .catch((error) => {
+          alert("There was an error with banning the member!", error);
+          setIsLoading(false);
+      });
+  };
+
   const handleCheckboxChange = () => {
     const token = localStorage.getItem("token");
     setAccepting(!accepting);
@@ -839,7 +884,7 @@ const ClubInformation = () => {
              }
              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
-             Set Club Dues
+             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
               className={
@@ -1139,16 +1184,16 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
-        {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
-          "No club dues information provided."
-        ) : (
-          <>
-            {clubData.dueName && <div>{clubData.dueName}</div>}
-            {clubData.clubDues ? <div>${clubData.clubDues}</div> : <div>$0</div>}
-            {clubData.dueDate && <div>{clubData.dueDate}</div>}
-          </>
-        )}
-      </Typography>
+              {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
+                "No club dues information provided."
+              ) : (
+                <>
+                  {clubData.dueName && <div>{"Due Name: " + clubData.dueName}</div>}
+                  {clubData.clubDues ? <div>{"Amount: $" + clubData.clubDues}</div> : <div>Amount: $0</div>}
+                  {clubData.dueDate && <div>{"Due Date: " + clubData.dueDate}</div>}
+                </>
+              )}
+            </Typography>
 
 
 
@@ -1223,7 +1268,7 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
+            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${200 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * 1000)) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"}
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1271,6 +1316,17 @@ const ClubInformation = () => {
               onClick={handleOfficerDeny}
             >
               Deny
+            </button>
+            <button
+              className={
+                officer
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => handleKickMember(profile[3])}
+            >
+              Kick
             </button>
           </div>
         ))}

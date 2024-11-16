@@ -1134,10 +1134,99 @@ def update_club_dues(request, club_id):
         club.clubDues = request.data.get('clubDues')
         club.dueName = request.data.get('dueName')
         club.dueDate = request.data.get('dueDate')
+        subject = f"Update to club dues for {club.name} "
+        content = f"Club Name: {club.name}\n Amount: {club.clubDues}\n Due Date: {club.dueDate}\n Description: {club.dueName}"
+        if not send_email_to_club_members(subject, content, club):
+            return Response({"error"}, status=500)
         club.save()
         return Response({"message": "Club information updated successfully"}, status=200)
     except Exception as e:
         return Response({"error": str(e)}, status=500)
+
+@api_view(['GET'])
+def add_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.add(new_user)
+    club.save()
+    return Response("success", status=200)
+
+@api_view(['GET'])
+def remove_paid_dues(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    if "club_id" not in request.query_params:
+        return Response({"error": "Missing club id"}, status=400)
+    if "user_id" not in request.query_params:
+        return Response({"error": "Missing user id"}, status=400)
+    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    if user not in club.officers.all():
+        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
+    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
+    club.paid_dues.remove(new_user)
+    club.save()
+    return Response("success", status=200)
+
+@api_view(['POST'])
+def kick_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
+
+@api_view(['POST'])
+def ban_member(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.data.get('club_id')
+    member_username = request.data.get('member_username')
+
+    club = Club.objects.filter(pk=club_id).first()
+    if not club:
+        return Response({"error": "Club not found"}, status=404)
+
+    if user not in club.officers.all():
+        return Response({"error": "Permission denied"}, status=403)
+
+    member = User.objects.filter(username=member_username).first()
+    if not member or member not in club.members.all():
+        return Response({"error": "User not found in club members"}, status=404)
+
+    club.members.remove(member)
+    club.banned_members.add(member)
+    club.save()
+
+    return Response({"message": f"{member_username} has been banned from the club"}, status=200)
 
 
 

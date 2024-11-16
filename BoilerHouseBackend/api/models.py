@@ -58,6 +58,8 @@ class Club(models.Model):
     clubDues = models.CharField(max_length=2048, default='')
     dueName = models.CharField(max_length=2048, default='')
     dueDate = models.DateField(null=True, blank=True)
+    paid_dues = models.ManyToManyField(User, related_name='clubs_with_paid_dues')
+    banned_members = models.ManyToManyField(User, related_name='banned_clubs')
 
 
 
@@ -80,6 +82,8 @@ class Rating(models.Model):
         rating = cls(author=author, club=club, review=review, rating=rating)
         rating.save()
         return rating
+
+
 
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)
