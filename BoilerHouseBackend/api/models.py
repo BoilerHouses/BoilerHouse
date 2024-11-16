@@ -61,8 +61,6 @@ class Club(models.Model):
     paid_dues = models.ManyToManyField(User, related_name='clubs_with_paid_dues')
     banned_members = models.ManyToManyField(User, related_name='banned_clubs')
 
-
-
     @classmethod
     def create(cls, name, description, culture, time_commitment, targetedAudience, interests, owner, icon, gallery):
         club = cls(name=name, description=description, culture=culture, time_commitment=time_commitment, targetedAudience=targetedAudience, interests=interests, icon=icon, gallery=gallery, officerQuestionnaire=[{'text': "What's your name?", 'required': True}])

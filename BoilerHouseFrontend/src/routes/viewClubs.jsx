@@ -298,6 +298,7 @@ const ViewClubs = () => {
     let cultureFilterList = new Set();
     let availabilityFilterList = new Set();
     let clubDueFilterList = new Set();
+    let clubTagsFilterList = new Set();
 
     const useSizeFilter = selectedClubSize !== "None";
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
@@ -306,6 +307,8 @@ const ViewClubs = () => {
     const useClubDueFilter = !(
       minClubDueFilter === 0 && maxClubDueFilter === Infinity
     );
+    const useClubTagsFilter = tagListFilter.length > 0;
+    
 
     const startHour = 8;
     const interval = 30;
@@ -335,13 +338,14 @@ const ViewClubs = () => {
       });
     });
 
-    console.log(tagListFilter)
 
     data.forEach((club) => {
+
+      console.log(club);
       const clubId = club.id;
       const members = club.num_members;
       const dues = parseFloat(club.clubDues);
-
+      const tags = club.interests;
 
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         searchTermFilterList.add(clubId);
@@ -398,7 +402,19 @@ const ViewClubs = () => {
       ) {
         clubDueFilterList.add(clubId);
       }
+
+
+      tags.forEach((clubTag) => {
+        tagListFilter.forEach((filterTag) => {
+          if (clubTag.toLowerCase() === filterTag.toLowerCase()) {
+            clubTagsFilterList.add(clubId);
+          }
+        })
+      })
     });
+
+
+    console.log(clubTagsFilterList);
 
     let filteredList = searchTermFilterList;
     if (useSizeFilter) {
@@ -416,6 +432,9 @@ const ViewClubs = () => {
     if (useClubDueFilter) {
       filteredList = filteredList.intersection(clubDueFilterList);
     }
+    if (useClubTagsFilter) {
+      filteredList = filteredList.intersection(clubTagsFilterList)
+    }
 
     let filteredClubs = [];
 
@@ -431,7 +450,6 @@ const ViewClubs = () => {
   const handleCultureFilter = (e) => {
     setSelectedCulture(e.target.value);
   };
-
 
   const handleAddTag = (event) => {
     if (event.key === "Enter" && tag) {
@@ -459,6 +477,7 @@ const ViewClubs = () => {
   };
 
   const resetTags = () => {
+    setTag(""); 
     setTagList([]);
   }
 
