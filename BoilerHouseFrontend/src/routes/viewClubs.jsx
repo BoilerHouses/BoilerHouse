@@ -121,6 +121,16 @@ const ViewClubs = () => {
     if (!valid) {
       return;
     }
+
+    if (parseFloat(newVal) > parseFloat(maxClubDue)) {
+      setClubDueError(true);
+      setClubDueHelperText("Max cannot be smaller than min.");
+    } else {
+      setClubDueError(false);
+      setClubDueHelperText("");
+    }
+
+
     setMinClubDue(newVal);
   };
 
