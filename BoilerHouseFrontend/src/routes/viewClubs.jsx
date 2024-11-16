@@ -340,6 +340,8 @@ const ViewClubs = () => {
       const members = club.num_members;
       let dues = parseFloat(club.clubDues);
 
+
+      // handle clubs with no dues set
       if (Number.isNaN(dues)) {
         dues = 0;
       }
