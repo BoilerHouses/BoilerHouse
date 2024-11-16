@@ -34,6 +34,7 @@ from dateutil import parser
 
 
 
+
 '''
 Look at the examples dir for examples of api requests, we can share a postman collection on a later day as well
 
@@ -1348,23 +1349,30 @@ def get_upcoming_meetings(request):
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     user_clubs = Club.objects.filter(members=user)
+    print(user_clubs)
 
     upcoming_meetings = []
 
     for club in user_clubs:
         for meeting in club.meetings:
-            meeting_date = timezone.datetime.fromisoformat(meeting['date'])
-            if meeting_date >= timezone.now():
-                upcoming_meetings.append({
-                'id': meeting.get('id', ''),
-                'club_name': club.name,
-                'date': meeting['date'],
-                'location': meeting.get('location', ''),
-                'description': meeting.get('description', '')
-            })
+            try:
+                meeting_date = parser.parse(meeting['date'])
+                if meeting_date.tzinfo is None:
+                    meeting_date = timezone.make_aware(meeting_date)
+
+                if meeting_date >= timezone.now():
+                    upcoming_meetings.append({
+                    'id': meeting.get('id', ''),
+                    'club_name': club.name,
+                    'date': meeting['date'],
+                    'location': meeting.get('location', ''),
+                    'description': meeting.get('description', '')
+                })
+            except ValueError:
+                continue
 
         # Sort meetings by date
-    upcoming_meetings.sort(key=lambda x: x['date'])
+    upcoming_meetings.sort(key=lambda x: parser.parse(x['date']))
 
         # Limit to 10 upcoming meetings
     upcoming_meetings = upcoming_meetings[:10]
