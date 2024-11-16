@@ -58,5 +58,4 @@ urlpatterns = [
     path("recommendations/clubs/", get_recommendations, name="reccomend_clubs"),
     path("club/kick_member/", kick_member, name="kick_member"),
     path("club/ban_member/", ban_member, name="ban_member"),
-
 ]

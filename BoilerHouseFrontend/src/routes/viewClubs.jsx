@@ -53,6 +53,10 @@ const ViewClubs = () => {
 
   const [tagCount, setTagCount] = useState([]);
 
+  const [similarInterestRange, setSimilarInterestRange] = useState("None");
+  const [similarInterestMin, setSimilarInterestMin] = useState(0);
+  const [similarInterestMax, setSimilarInterestMax] = useState(100);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -112,6 +116,10 @@ const ViewClubs = () => {
 
   const changeSelectedTimeCommitment = (event) => {
     setSelectedTimeCommitment(event.target.value);
+  };
+
+  const changeSelectedInterestRange = (event) => {
+    setSimilarInterestRange(event.target.value);
   };
 
   const handleSearchChange = (event) => {
@@ -206,6 +214,29 @@ const ViewClubs = () => {
         break;
     }
 
+    switch (similarInterestRange) {
+      case "None":
+        setSimilarInterestMin(0);
+        setSimilarInterestMax(100);
+        break;
+      case "0%-25%":
+        setSimilarInterestMin(0);
+        setSimilarInterestMax(25);
+        break;
+      case "26%-50%":
+        setSimilarInterestMin(26);
+        setSimilarInterestMax(50);
+        break;
+      case "51%-75%":
+        setSimilarInterestMin(51);
+        setSimilarInterestMax(75);
+        break;
+      case "76%-100%":
+        setSimilarInterestMin(76);
+        setSimilarInterestMax(100);
+        break;
+    }
+
     setTimeCommitmentFilter(selectedTimeCommitment);
     setCultureFilter(selectedCulture);
     setSelectedAvailabilityFilter(selectedAvailability);
@@ -242,6 +273,9 @@ const ViewClubs = () => {
     setMaxClubDueFilter(Infinity);
     setTagList([]);
     setTagListFilter([]);
+    setSimilarInterestMin(0);
+    setSimilarInterestMax(100);
+    setSimilarInterestRange("None");
   };
 
   useEffect(() => {
@@ -256,6 +290,8 @@ const ViewClubs = () => {
     minClubDueFilter,
     maxClubDueFilter,
     tagListFilter,
+    similarInterestMin,
+    similarInterestMax,
   ]);
 
   // convert 12 hour time to 24 hour time
@@ -289,6 +325,7 @@ const ViewClubs = () => {
   }
 
   const handleFilter = () => {
+    console.log(similarInterestMin, similarInterestMax);
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
     let timeCommitmentFilterList = new Set();
@@ -296,6 +333,7 @@ const ViewClubs = () => {
     let availabilityFilterList = new Set();
     let clubDueFilterList = new Set();
     let clubTagsFilterList = new Set();
+    let similarInterestFilterList = new Set();
 
     const useSizeFilter = selectedClubSize !== "None";
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
@@ -305,6 +343,9 @@ const ViewClubs = () => {
       minClubDueFilter === 0 && maxClubDueFilter === Infinity
     );
     const useClubTagsFilter = tagListFilter.length > 0;
+    const useSimilarInterestFilter = !(
+      similarInterestMin === 0 && similarInterestMax === 100
+    );
 
     const startHour = 8;
     const interval = 30;
@@ -334,12 +375,30 @@ const ViewClubs = () => {
       });
     });
 
+    console.log(userAvailabilityTranslated);
+    let recommendedUsers = [];
+
+    if (useSimilarInterestFilter) {
+      const token = localStorage.getItem("token");
+      axios
+        .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          recommendedUsers = response.data.user_list;
+          console.log(recommendedUsers)
+        })
+        .catch((error) => {
+          alert("There was an error fetching the recommended users!", error);
+        });
+    }
+
     data.forEach((club) => {
-      console.log(club);
       const clubId = club.id;
       const members = club.num_members;
       let dues = parseFloat(club.clubDues);
-
 
       // handle clubs with no dues set
       if (Number.isNaN(dues)) {
@@ -383,7 +442,6 @@ const ViewClubs = () => {
           const day = getDayOfWeek(meeting.date);
           const startTime = convertTo24Hour(meeting.startTime);
           const endTime = convertTo24Hour(meeting.endTime);
-
           const userAvailabilityForDay = userAvailabilityTranslated[day];
           userAvailabilityForDay.forEach((time) => {
             if (time[0] <= startTime && time[1] >= endTime) {
@@ -570,6 +628,9 @@ const ViewClubs = () => {
               </FormControl>
               <Typography variant="h6">Culture</Typography>
               <Typography variant="subtitle1">Filter by Culture</Typography>
+              <Typography variant="subtitle2">
+                Leave blank if you don&apos;t want to use this filter.
+              </Typography>
 
               <input
                 type="text"
@@ -690,6 +751,48 @@ const ViewClubs = () => {
               >
                 Reset Tags Filter
               </Button>
+
+              <Typography variant="h6">Similar Interest Students</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="subtitle1">
+                  Returns clubs with the specified % of students with simialar
+                  interests to you
+                </Typography>
+                <Typography variant="subtitle2">
+                  Note: calculations for this filter can take a while to run.
+                </Typography>
+
+                <RadioGroup
+                  value={similarInterestRange}
+                  onChange={changeSelectedInterestRange}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="0%-25%"
+                    control={<Radio />}
+                    label="0% - 25%"
+                  />
+                  <FormControlLabel
+                    value="26%-50%"
+                    control={<Radio />}
+                    label="26% - 50%"
+                  />
+                  <FormControlLabel
+                    value="51%-75%"
+                    control={<Radio />}
+                    label="51% - 75%"
+                  />
+                  <FormControlLabel
+                    value="76%-100%"
+                    control={<Radio />}
+                    label="76% - 100%"
+                  />
+                </RadioGroup>
+              </FormControl>
 
               <Button
                 variant="contained"
