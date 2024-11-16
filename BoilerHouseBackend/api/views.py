@@ -368,6 +368,7 @@ def get_all_clubs(request):
         t['pending_members'] = []
         t['pending_officers'] = []
         t['banned_members'] = []
+        t['paid_dues'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
@@ -388,6 +389,7 @@ def get_example_clubs(request):
         t['pending_members'] = [model_to_dict(a) for a in x.pending_members.all()]
         t['pending_officers'] = []
         t['banned_members'] = []
+        t['paid_dues'] = []
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -544,6 +546,7 @@ def get_club_information(request):
         ret_club['pending_members'] = pending_list
         ret_club['pending_officers'] = []
         ret_club['banned_members'] = []
+        ret_club['paid_dues'] = []
         ret_club['ratings'] = rating_list
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
