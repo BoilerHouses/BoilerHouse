@@ -217,6 +217,7 @@ const ClubInformation = () => {
       });
   };
 
+
   const handleMemberBan = (memberId) => {
       console.log(memberId)
       const token = localStorage.getItem("token");
@@ -877,58 +878,68 @@ const ClubInformation = () => {
 
         <div className="flex justify-between">
           <button
-            className={
-              officer && clubData.is_approved
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/club/${clubId}/edit`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/edit`)}
           >
             Edit Culture, Time Commitment, Audience
           </button>
 
           <button
-            className={
-              officer && clubData.is_approved
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/club/${clubId}/defaultContact`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/defaultContact`)}
           >
             Contact Us!
           </button>
           <button
-            className={
-              officer && clubData.is_approved
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/club/${clubId}/clubDues`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
-            className={
-              !officer &&
-              clubData.is_approved &&
-              joined &&
-              accepting &&
-              !pending
-                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                : "hidden"
-            }
-            onClick={() => navigate(`/officer_questions/${clubId}`)}
+              className={
+                officer && clubData.is_approved && clubData.clubDues
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/manageDues/${clubId}`)}
+          >
+            Manage Dues
+          </button>
+          <button
+              className={
+                !officer &&
+                clubData.is_approved &&
+                joined &&
+                accepting &&
+                !pending
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/officer_questions/${clubId}`)}
           >
             Apply To Be an Officer!
           </button>
         </div>
         <button
-          className={
-            joined
-              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
-              : "hidden"
-          }
-          onClick={handleLeaveClub}
+            className={
+              joined
+                  ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
+                  : "hidden"
+            }
+            onClick={handleLeaveClub}
         >
           Leave Club
         </button>
@@ -936,8 +947,8 @@ const ClubInformation = () => {
 
       <div className="relative">
         <button
-          className={
-            !clubData.is_approved
+            className={
+              !clubData.is_approved
               ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
               : "hidden"
           }
