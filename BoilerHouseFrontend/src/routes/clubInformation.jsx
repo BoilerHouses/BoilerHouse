@@ -212,22 +212,23 @@ const ClubInformation = () => {
         });
   };
 
-  const handleMemberBan = (event) => {
+  const handleMemberBan = (memberId) => {
+      console.log(memberId)
       const token = localStorage.getItem("token");
       axios.post(`http://127.0.0.1:8000/api/club/ban_member/`, {
           club_id: clubId,
-          member_username: event.target.getAttribute("index")
+          member_username: memberId
       }, {
           headers: {
               Authorization: token,
           }
       })
       .then(() => {
+          alert("The member has been successfully banned from the club.");
           window.location.reload();
       })
       .catch((error) => {
           alert("There was an error with banning the member!", error);
-          setIsLoading(false);
       });
   };
 
@@ -475,7 +476,11 @@ const ClubInformation = () => {
         setPending(true)
       })
       .catch((error) => {
-        alert("There was an error joining club!", error);
+        if (error.status == 403) {
+          alert("You are banned from this club", error);
+        } else {
+          alert("There was an error joining club!", error);
+        }
         setIsLoading(false);
       });
   };
@@ -1325,13 +1330,24 @@ const ClubInformation = () => {
             <button
               className={
                 officer
-                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  ? "bg-blue-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-blue-600 group-hover:block hidden"
                   : "hidden"
               }
               index={profile[3] + "..."}
               onClick={() => handleKickMember(profile[3])}
             >
               Kick
+            </button>
+            <button
+              className={
+                officer
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => handleMemberBan(profile[3])}
+            >
+              Ban
             </button>
           </div>
         ))}
