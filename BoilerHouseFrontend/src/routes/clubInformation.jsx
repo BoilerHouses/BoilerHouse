@@ -97,6 +97,7 @@ const ClubInformation = () => {
       })
       .then((response) => {
         setClubData(response.data.club);
+
         setIsLoading(false);
         setJoined(response.data.joined);
         setPending(response.data.pending)
@@ -880,14 +881,25 @@ const ClubInformation = () => {
             Contact Us!
           </button>
           <button
-             className={
-               officer && clubData.is_approved
-                   ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                   : "hidden"
-             }
-             onClick={() => navigate(`/club/${clubId}/clubDues`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
-             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
+            {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
+          </button>
+          <button
+              className={
+                officer && clubData.is_approved && clubData
+                    .clubDues
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/manageDues/${clubId}`)}
+          >
+            Manage Dues
           </button>
           <button
               className={
