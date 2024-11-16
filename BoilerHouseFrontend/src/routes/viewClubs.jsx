@@ -8,8 +8,8 @@ import {
   FormControlLabel,
   Radio,
   TextField,
-  Box, 
-  Chip
+  Box,
+  Chip,
 } from "@mui/material";
 import axios from "axios";
 
@@ -47,14 +47,11 @@ const ViewClubs = () => {
   const [maxClubSize, setMaxClubSize] = useState(Infinity);
   const [error, setError] = useState(false);
 
-
   const [tag, setTag] = useState("");
   const [tagList, setTagList] = useState([]);
   const [tagListFilter, setTagListFilter] = useState([]);
 
-
   const [tagCount, setTagCount] = useState([]);
-
 
   const navigate = useNavigate();
 
@@ -258,7 +255,7 @@ const ViewClubs = () => {
     selectedAvailabilityFilter,
     minClubDueFilter,
     maxClubDueFilter,
-    tagListFilter
+    tagListFilter,
   ]);
 
   // convert 12 hour time to 24 hour time
@@ -308,7 +305,6 @@ const ViewClubs = () => {
       minClubDueFilter === 0 && maxClubDueFilter === Infinity
     );
     const useClubTagsFilter = tagListFilter.length > 0;
-    
 
     const startHour = 8;
     const interval = 30;
@@ -338,13 +334,17 @@ const ViewClubs = () => {
       });
     });
 
-
     data.forEach((club) => {
-
       console.log(club);
       const clubId = club.id;
       const members = club.num_members;
-      const dues = parseFloat(club.clubDues);
+      let dues = parseFloat(club.clubDues);
+
+
+      // handle clubs with no dues set
+      if (Number.isNaN(dues)) {
+        dues = 0;
+      }
       const tags = club.interests;
 
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
@@ -393,26 +393,22 @@ const ViewClubs = () => {
         }
       });
 
-      // treat clubs with no dues set as dues being $0
       if (
-        Number.isNaN(dues) ||
-        (!Number.isNaN(dues) &&
-          dues >= minClubDueFilter &&
-          dues <= maxClubDueFilter)
+        !Number.isNaN(dues) &&
+        dues >= minClubDueFilter &&
+        dues <= maxClubDueFilter
       ) {
         clubDueFilterList.add(clubId);
       }
-
 
       tags.forEach((clubTag) => {
         tagListFilter.forEach((filterTag) => {
           if (clubTag.toLowerCase() === filterTag.toLowerCase()) {
             clubTagsFilterList.add(clubId);
           }
-        })
-      })
+        });
+      });
     });
-
 
     let filteredList = searchTermFilterList;
     if (useSizeFilter) {
@@ -431,7 +427,7 @@ const ViewClubs = () => {
       filteredList = filteredList.intersection(clubDueFilterList);
     }
     if (useClubTagsFilter) {
-      filteredList = filteredList.intersection(clubTagsFilterList)
+      filteredList = filteredList.intersection(clubTagsFilterList);
     }
 
     let filteredClubs = [];
@@ -462,11 +458,9 @@ const ViewClubs = () => {
     }
   };
 
-
   const handleTagChange = (event) => {
     setTag(event.target.value);
-  };  
-
+  };
 
   const handleDeleteTag = (tagToDelete) => {
     setTagList((prevTags) =>
@@ -475,10 +469,9 @@ const ViewClubs = () => {
   };
 
   const resetTags = () => {
-    setTag(""); 
+    setTag("");
     setTagList([]);
-  }
-
+  };
 
   return (
     <div className="container mx-auto p-5 max-w-[80%]">

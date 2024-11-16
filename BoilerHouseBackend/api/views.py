@@ -1159,38 +1159,29 @@ def update_club_dues(request, club_id):
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
-def add_paid_dues(request):
+def update_paid_dues(request):
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     if "club_id" not in request.query_params:
         return Response({"error": "Missing club id"}, status=400)
-    if "user_id" not in request.query_params:
-        return Response({"error": "Missing user id"}, status=400)
+    if "email" not in request.query_params:
+        return Response({"error": "Missing user email"}, status=400)
+    if "did_pay" not in request.query_params:
+        return Response({"error": "Missing did pay"}, status=400)
     club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    did_pay = request.query_params.get('did_pay')
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
-    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
-    club.paid_dues.add(new_user)
+    target_user = User.objects.filter(username=request.query_params.get('email')).first()
+    if did_pay == "true":
+        club.paid_dues.add(target_user)
+    else:
+        club.paid_dues.remove(target_user)
     club.save()
     return Response("success", status=200)
 
-@api_view(['GET'])
-def remove_paid_dues(request):
-    user = verify_token(request.headers.get('Authorization'))
-    if user == 'Invalid token':
-        return Response({'error': 'Invalid Auth Token'}, status=400)
-    if "club_id" not in request.query_params:
-        return Response({"error": "Missing club id"}, status=400)
-    if "user_id" not in request.query_params:
-        return Response({"error": "Missing user id"}, status=400)
-    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
-    if user not in club.officers.all():
-        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
-    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
-    club.paid_dues.remove(new_user)
-    club.save()
-    return Response("success", status=200)
+
 
 @api_view(['POST'])
 def kick_member(request):
@@ -1330,6 +1321,23 @@ def get_recommendations(request):
     return Response({"club_list": final_score }, status=200)
 
 
+@api_view(['GET'])
+def get_dues_information(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+
+    club_id = request.query_params.get('club_id')
+    club = Club.objects.filter(pk=club_id).first()
+    member_list = []
+    for member in club.members.all():
+        name = member.name
+        email = member.username
+        did_pay = False
+        if member in club.paid_dues.all():
+            did_pay = True
+        member_list.append({'name': name, 'email':email, 'did_pay':did_pay})
+    return Response({"dues_information":member_list}, status= 200)
 
 @api_view(['GET'])
 def get_upcoming_meetings(request):
@@ -1359,7 +1367,5 @@ def get_upcoming_meetings(request):
     upcoming_meetings = upcoming_meetings[:10]
 
     return Response(upcoming_meetings, status=200)
-
-
 
 
