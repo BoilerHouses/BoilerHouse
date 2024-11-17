@@ -360,8 +360,6 @@ def get_all_clubs(request):
             continue
 
 
-        print(model_to_dict(x))
-
         members = x.members.count()
         t = model_to_dict(x)
         t['officers'] = []
@@ -1349,7 +1347,6 @@ def get_upcoming_meetings(request):
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     user_clubs = Club.objects.filter(members=user)
-    print(user_clubs)
 
     upcoming_meetings = []
 
