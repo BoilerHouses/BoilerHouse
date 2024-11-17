@@ -8,12 +8,15 @@ import {
   ListItem,
   ListItemText,
   Divider,
+  Button,
 } from "@mui/material";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const UpcomingMeetings = () => {
   const [meetings, setMeetings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMeetings = async () => {
@@ -37,6 +40,11 @@ const UpcomingMeetings = () => {
 
     fetchMeetings();
   }, []);
+
+  const handleBackToProfile = () => {
+    const username = localStorage.getItem("username");
+    navigate(`/profile/${username}`);
+  };
 
   return (
     <div className="flex items-center justify-center my-14">
@@ -72,6 +80,15 @@ const UpcomingMeetings = () => {
           ) : (
             <Typography>No upcoming meetings found.</Typography>
           )}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleBackToProfile}
+            fullWidth
+            className="mt-4"
+          >
+            Back to Profile
+          </Button>
         </CardContent>
       </Card>
     </div>
