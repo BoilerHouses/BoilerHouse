@@ -55,6 +55,10 @@ const ViewProfile = () => {
     fetchProfile();
   }, []);
 
+  const handleViewMeetings = () => {
+    navigate("/upcoming_meetings");
+  };
+
   if (isLoading) {
     return <div>Loading..</div>;
   } else {
@@ -153,6 +157,18 @@ const ViewProfile = () => {
           }}
         >
           Reccomend
+        </button>
+
+        {/* New button for viewing upcoming meetings */}
+        <button
+          className={
+            localStorage.getItem("username") == userId
+            ? "absolute top-36 right-4 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"
+          }
+          onClick={handleViewMeetings}
+        >
+          View Upcoming Meetings
         </button>
       </div>
     );

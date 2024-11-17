@@ -29,6 +29,9 @@ import uuid
 import os
 import boto3
 import cryptocode
+from django.utils import timezone
+from dateutil import parser
+
 
 
 
@@ -355,6 +358,8 @@ def get_all_clubs(request):
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
+
+
         members = x.members.count()
         t = model_to_dict(x)
         t['officers'] = []
@@ -362,10 +367,10 @@ def get_all_clubs(request):
         t['pending_members'] = []
         t['pending_officers'] = []
         t['banned_members'] = []
+        t['paid_dues'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
-        t['paid_dues'] = []
         clubs.append(t)
 
 
@@ -532,6 +537,7 @@ def get_club_information(request):
                 submittedForm = True
             pending_list.append((i.pk, i.name, i.profile_picture, i.username, submittedForm))
         rating_list = []
+
         for i in club.ratings.all():
             rating_list.append({'id': i.pk, 'review': i.review, 'rating': i.rating, 'author': i.author.username, 'portrait': i.author.profile_picture})
         ret_club['officers'] = officer_list
@@ -539,8 +545,8 @@ def get_club_information(request):
         ret_club['pending_members'] = pending_list
         ret_club['pending_officers'] = []
         ret_club['banned_members'] = []
-        ret_club['ratings'] = rating_list
         ret_club['paid_dues'] = []
+        ret_club['ratings'] = rating_list
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
             deleted = deleted and club.deletion_votes[user.username]
@@ -1334,4 +1340,43 @@ def get_dues_information(request):
             did_pay = True
         member_list.append({'name': name, 'email':email, 'did_pay':did_pay})
     return Response({"dues_information":member_list}, status= 200)
+
+@api_view(['GET'])
+def get_upcoming_meetings(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    user_clubs = Club.objects.filter(members=user)
+
+    upcoming_meetings = []
+
+    for club in user_clubs:
+        for meeting in club.meetings:
+            try:
+                meeting_date = parser.parse(meeting['date'])
+                if meeting_date.tzinfo is None:
+                    meeting_date = timezone.make_aware(meeting_date)
+
+                if meeting_date >= timezone.now():
+                    upcoming_meetings.append({
+                    'id': meeting.get('id', ''),
+                    'club_name': club.name,
+                    'name' : meeting.get('meetingName',''),
+                    'date': meeting['date'],
+                    'startTime': meeting.get('startTime', ''),
+                    'endTime': meeting.get('endTime', ''),
+                    'location': meeting.get('meetingLocation', ''),
+                    'description': meeting.get('meetingAgenda', '')
+                })
+            except ValueError:
+                continue
+
+        # Sort meetings by date
+    upcoming_meetings.sort(key=lambda x: (parser.parse(x['date']), x['startTime']))
+
+        # Limit to 10 upcoming meetings
+    upcoming_meetings = upcoming_meetings[:10]
+
+    return Response(upcoming_meetings, status=200)
+
 

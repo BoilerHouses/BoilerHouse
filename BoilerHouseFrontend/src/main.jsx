@@ -34,7 +34,9 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import SendEmail from "./routes/sendEmail.jsx"
 import DefaultContact from "./routes/defaultContact"
 import ClubDues from "./routes/clubDues"
-import ManageDues from "./routes/manageDues.jsx"
+import ManageDues from "./routes/manageDues.jsx";
+import UpcomingMeetings from "./routes/upcomingMeetings"
+
 import "./index.css";
 
 const router = createBrowserRouter([
@@ -154,6 +156,10 @@ const router = createBrowserRouter([
       {
         path: "/club/:clubId/clubDues",
         element: <ClubDues />,
+      },
+      {
+        path: "/upcoming_meetings",
+        element: <UpcomingMeetings />,
       },
       {
         path:"/manageDues/:clubId",
