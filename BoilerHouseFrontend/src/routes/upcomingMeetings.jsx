@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 
 const UpcomingMeetings = () => {
   const [meetings, setMeetings] = useState([]);
@@ -46,6 +47,12 @@ const UpcomingMeetings = () => {
     navigate(`/profile/${username}`);
   };
 
+  const formatDateTime = (dateString, timeString) => {
+    const date = dayjs(dateString, "MM/DD/YY");
+    const time = dayjs(timeString, "h:mm a");
+    return date.format("MMMM D, YYYY") + " at " + time.format("h:mm A");
+  };
+
   return (
     <div className="flex items-center justify-center my-14">
       <Card className="w-full max-w-md">
@@ -61,14 +68,27 @@ const UpcomingMeetings = () => {
                 <div key={meeting.id}>
                   <ListItem>
                     <ListItemText
-                      primary={meeting.club_name}
+                      primary={
+                        <Typography variant="subtitle1" component="div">
+                          {meeting.club_name}
+                          <Typography variant="body2" color="textSecondary">
+                            {"Meeting Name: " + meeting.name}
+                          </Typography>
+                        </Typography>
+                      }
                       secondary={
                         <>
                           <Typography component="span" variant="body2" color="textPrimary">
-                            {new Date(meeting.date).toLocaleString()}
+                            Start: {formatDateTime(meeting.date, meeting.startTime)}
                           </Typography>
                           <br />
-                          {meeting.location}
+                          <Typography component="span" variant="body2" color="textPrimary">
+                            End: {formatDateTime(meeting.date, meeting.endTime)}
+                          </Typography>
+                          <br />
+                          Location: {meeting.location}
+                          <br />
+                          Agenda: {meeting.description}
                         </>
                       }
                     />

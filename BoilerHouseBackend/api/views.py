@@ -1361,15 +1361,18 @@ def get_upcoming_meetings(request):
                     upcoming_meetings.append({
                     'id': meeting.get('id', ''),
                     'club_name': club.name,
+                    'name' : meeting.get('meetingName',''),
                     'date': meeting['date'],
-                    'location': meeting.get('location', ''),
-                    'description': meeting.get('description', '')
+                    'startTime': meeting.get('startTime', ''),
+                    'endTime': meeting.get('endTime', ''),
+                    'location': meeting.get('meetingLocation', ''),
+                    'description': meeting.get('meetingAgenda', '')
                 })
             except ValueError:
                 continue
 
         # Sort meetings by date
-    upcoming_meetings.sort(key=lambda x: parser.parse(x['date']))
+    upcoming_meetings.sort(key=lambda x: (parser.parse(x['date']), x['startTime']))
 
         # Limit to 10 upcoming meetings
     upcoming_meetings = upcoming_meetings[:10]
