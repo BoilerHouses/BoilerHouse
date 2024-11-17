@@ -10,6 +10,7 @@ import {
   TextField,
   Box,
   Chip,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 
@@ -58,6 +59,8 @@ const ViewClubs = () => {
   const [similarInterestMax, setSimilarInterestMax] = useState(100);
 
   const [recommendedUsers, setRecommendedUsers] = useState([]);
+
+  const [isCalculatingFilters, setIsCalculatingFilters] = useState(false);
 
   const navigate = useNavigate();
 
@@ -204,8 +207,6 @@ const ViewClubs = () => {
     if (clubDueError) {
       return;
     }
-    setOpenFilterMenu(false);
-
     switch (selectedClubSize) {
       case "None":
         setMinClubSize(0);
@@ -343,8 +344,8 @@ const ViewClubs = () => {
     return daysOfWeek[date.getDay()];
   }
 
-  const handleFilter = () => {
-    console.log(similarInterestMin, similarInterestMax);
+  const handleFilter = async () => {
+    setIsCalculatingFilters(true);
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
     let timeCommitmentFilterList = new Set();
@@ -396,8 +397,9 @@ const ViewClubs = () => {
 
     const threshold = 0.01;
     const token = localStorage.getItem("token");
+    const currentUser = localStorage.getItem("username");
 
-    data.forEach(async (club) => {
+    for (const club of data) {
       const clubId = club.id;
       const members = club.num_members;
       let dues = parseFloat(club.clubDues);
@@ -473,18 +475,46 @@ const ViewClubs = () => {
       });
 
       if (useSimilarInterestFilter) {
-        const clubInfo = await axios.get("http://127.0.0.1:8000/api/club/", {
-          params: {
-            club_id: clubId,
-          },
-          headers: {
-            Authorization: token,
-          }
-        });
+        try {
+          const clubInfo = await axios.get("http://127.0.0.1:8000/api/club/", {
+            params: {
+              club_id: clubId,
+            },
+            headers: {
+              Authorization: token,
+            },
+          });
+          const members = clubInfo.data.club.members;
+          let total_members = members.length;
 
-        console.log(clubInfo);
+          let similar_member_count = 0;
+
+          members.forEach((member) => {
+            const email = member[3];
+            if (email === currentUser) {
+              total_members -= 1;
+            } else {
+              if (recommendedUsers[email] >= threshold) {
+                similar_member_count += 1;
+              }
+            }
+          });
+
+          const ratio = (similar_member_count / total_members) * 100;
+
+          if (ratio >= similarInterestMin && ratio <= similarInterestMax) {
+            similarInterestFilterList.add(clubId);
+          }
+        } catch (e) {
+          console.log(e);
+          alert(
+            "An error occurred while trying to apply this filter. Please try again later."
+          );
+          setIsCalculatingFilters(false);
+          return;
+        }
       }
-    });
+    }
 
     let filteredList = searchTermFilterList;
     if (useSizeFilter) {
@@ -505,7 +535,9 @@ const ViewClubs = () => {
     if (useClubTagsFilter) {
       filteredList = filteredList.intersection(clubTagsFilterList);
     }
-
+    if (useSimilarInterestFilter) {
+      filteredList = filteredList.intersection(similarInterestFilterList);
+    }
     let filteredClubs = [];
 
     data.forEach((club) => {
@@ -515,6 +547,8 @@ const ViewClubs = () => {
     });
 
     setFilteredData(filteredClubs);
+    setIsCalculatingFilters(false);
+    setOpenFilterMenu(false);
   };
 
   const handleCultureFilter = (e) => {
@@ -817,7 +851,11 @@ const ViewClubs = () => {
                 className="!mt-5 !mx-auto !justify-center"
                 onClick={applyFilters}
               >
-                Apply Filters
+                {isCalculatingFilters ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Apply Filters"
+                )}
               </Button>
               <Button
                 variant="contained"
