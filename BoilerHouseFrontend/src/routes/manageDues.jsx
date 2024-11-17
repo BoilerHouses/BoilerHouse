@@ -35,7 +35,8 @@ const ManageDues = () => {
             })
             .catch((error) => {
                 alert("Error updating the member's status");
-                success = false
+                console.log(error)
+                success = false;
             });
     };
 

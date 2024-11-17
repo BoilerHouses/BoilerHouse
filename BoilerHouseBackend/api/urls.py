@@ -59,5 +59,6 @@ urlpatterns = [
     path("club/kick_member/", kick_member, name="kick_member"),
     path("club/ban_member/", ban_member, name="ban_member"),
     path("meetings/upcoming/", get_upcoming_meetings, name="get_upcoming_meetings"),
-
+    path("club/update_paid_dues", update_paid_dues, name="update_paid_dues"),
+    path("club/get_dues_information", get_dues_information, name="get_dues_information"),
 ]
