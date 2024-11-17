@@ -355,10 +355,6 @@ def get_all_clubs(request):
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
-
-
-        print(model_to_dict(x))
-
         members = x.members.count()
         t = model_to_dict(x)
         t['officers'] = []

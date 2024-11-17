@@ -57,6 +57,8 @@ const ViewClubs = () => {
   const [similarInterestMin, setSimilarInterestMin] = useState(0);
   const [similarInterestMax, setSimilarInterestMax] = useState(100);
 
+  const [recommendedUsers, setRecommendedUsers] = useState([]);
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -104,6 +106,23 @@ const ViewClubs = () => {
       }
     };
     fetchProfile();
+    const token = localStorage.getItem("token");
+    const fetchRecommendedUsers = async () => {
+      axios
+        .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          setRecommendedUsers(response.data.user_list);
+        })
+        .catch((error) => {
+          alert("There was an error fetching the recommended users!", error);
+        });
+    };
+
+    fetchRecommendedUsers();
   }, []);
 
   const handleClick = (event) => {
@@ -375,27 +394,10 @@ const ViewClubs = () => {
       });
     });
 
-    console.log(userAvailabilityTranslated);
-    let recommendedUsers = [];
+    const threshold = 0.01;
+    const token = localStorage.getItem("token");
 
-    if (useSimilarInterestFilter) {
-      const token = localStorage.getItem("token");
-      axios
-        .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
-          headers: {
-            Authorization: token,
-          },
-        })
-        .then((response) => {
-          recommendedUsers = response.data.user_list;
-          console.log(recommendedUsers)
-        })
-        .catch((error) => {
-          alert("There was an error fetching the recommended users!", error);
-        });
-    }
-
-    data.forEach((club) => {
+    data.forEach(async (club) => {
       const clubId = club.id;
       const members = club.num_members;
       let dues = parseFloat(club.clubDues);
@@ -442,12 +444,15 @@ const ViewClubs = () => {
           const day = getDayOfWeek(meeting.date);
           const startTime = convertTo24Hour(meeting.startTime);
           const endTime = convertTo24Hour(meeting.endTime);
-          const userAvailabilityForDay = userAvailabilityTranslated[day];
-          userAvailabilityForDay.forEach((time) => {
-            if (time[0] <= startTime && time[1] >= endTime) {
-              availabilityFilterList.add(clubId);
-            }
-          });
+
+          if (day in userAvailabilityTranslated) {
+            const userAvailabilityForDay = userAvailabilityTranslated[day];
+            userAvailabilityForDay.forEach((time) => {
+              if (time[0] <= startTime && time[1] >= endTime) {
+                availabilityFilterList.add(clubId);
+              }
+            });
+          }
         }
       });
 
@@ -466,6 +471,19 @@ const ViewClubs = () => {
           }
         });
       });
+
+      if (useSimilarInterestFilter) {
+        const clubInfo = await axios.get("http://127.0.0.1:8000/api/club/", {
+          params: {
+            club_id: clubId,
+          },
+          headers: {
+            Authorization: token,
+          }
+        });
+
+        console.log(clubInfo);
+      }
     });
 
     let filteredList = searchTermFilterList;
@@ -759,7 +777,7 @@ const ViewClubs = () => {
                   interests to you
                 </Typography>
                 <Typography variant="subtitle2">
-                  Note: calculations for this filter can take a while to run.
+                  Note: Calculations for this filter might take a while to run.
                 </Typography>
 
                 <RadioGroup
