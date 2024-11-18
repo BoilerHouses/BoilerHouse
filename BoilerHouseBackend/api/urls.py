@@ -5,7 +5,8 @@ from .views import get_user_profile, save_club_information, get_all_clubs, set_a
 from .views import update_password, get_club_information, get_all_users, delete_user, deny_club, verify, get_example_clubs, modify_user_to_club
 from .views import set_answers, get_answers, get_meeting_times, set_meeting_times, set_deletion, get_club_details_for_edit, update_club_info, get_clubs_for_officer, send_email_to_members
 from .views import set_accepting_applications, set_officer_questions, get_officer_questions, set_officer_answers, get_officer_answers, modify_user_to_officer, leave_club, update_contact_info
-
+from .views import create_rating, delete_rating, get_recommendations
+from .views import update_club_dues, find_similar_users, kick_member, ban_member, get_upcoming_meetings, update_paid_dues, get_dues_information
 
 urlpatterns = [
     path('ping/', ping, name='ping'),
@@ -26,6 +27,8 @@ urlpatterns = [
     path('get_user_profile', get_user_profile, name="get_user_profile"),
     path('setAvailability/', set_availability, name="setAvailability"),
     path('club/', get_club_information, name="get_club_information"),
+    path('rating/create/<int:club_id>/', create_rating, name="create_rating"),
+    path('rating/delete/<int:rating_id>/', delete_rating, name="delete_rating"),
     path('club/join/', join_club, name="join_club"),
     path('club/delete/vote/', set_deletion, name="delete_club"),
     path('club/join/approval/', modify_user_to_club, name="modify_user_club"),
@@ -50,4 +53,12 @@ urlpatterns = [
     path("send_email_to_members/", send_email_to_members, name="send_email_to_members"),
     path("leaveClub/", leave_club, name="leave_club"),
     path("club/<int:club_id>/defaultContact", update_contact_info, name="update_contact_info"),
+    path("club/<int:club_id>/clubDues", update_club_dues, name="update_club_dues"),
+    path("recommendations/users/", find_similar_users, name="reccomend_users"),
+    path("recommendations/clubs/", get_recommendations, name="reccomend_clubs"),
+    path("club/kick_member/", kick_member, name="kick_member"),
+    path("club/ban_member/", ban_member, name="ban_member"),
+    path("meetings/upcoming/", get_upcoming_meetings, name="get_upcoming_meetings"),
+    path("club/update_paid_dues", update_paid_dues, name="update_paid_dues"),
+    path("club/get_dues_information", get_dues_information, name="get_dues_information"),
 ]

@@ -19,11 +19,14 @@ const ViewProfile = () => {
     interests: ["Jai"],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [recommendedUsers, setRecommendedUsers] = useState([])
+  const threshold = 0.1
 
   useEffect(() => {
     const fetchProfile = async () => {
       setIsLoading(true);
       const token = localStorage.getItem("token");
+      
       if (token) {
         const response = await axios.get("http://127.0.0.1:8000/api/profile/", {
           headers: {
@@ -34,17 +37,33 @@ const ViewProfile = () => {
           },
         });
         setUser(response.data);
+        
+        axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+          headers: {
+            Authorization: token,
+          }
+        })
+        .then((response) => {
+          setRecommendedUsers(response.data.user_list)
+        })
+        .catch((error) => {
+          console.error("There was an error fetching the reccomended users!", error);
+        });
         setIsLoading(false);
       }
     };
     fetchProfile();
   }, []);
 
+  const handleViewMeetings = () => {
+    navigate("/upcoming_meetings");
+  };
+
   if (isLoading) {
     return <div>Loading..</div>;
   } else {
     return (
-      <div className="relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md">
+      <div className={recommendedUsers[userId] >= threshold ? `relative border rounded-lg p-6 max-w-full mx-auto bg-yellow-${100 + (100 * Math.round(Math.round( ((recommendedUsers[userId] - threshold) * (400 / (1 - threshold)))) / 100))} shadow-md` : "relative border rounded-lg p-6 max-w-full mx-auto bg-gray-100 shadow-md"}>
         {/* Edit Profile Button */}
         <button
           className={
@@ -74,6 +93,11 @@ const ViewProfile = () => {
         </div>
 
         <p className="italic mb-4">{user.bio}</p>
+        <p className={recommendedUsers[userId] > threshold ? "italic mb-4" : "hidden"}>This user has similar interests to you!</p>
+        <p className={userId in recommendedUsers ? "italic mb-4" : "hidden"}>{`Your similarity score is: ${((1 + recommendedUsers[userId]) * 100).toFixed(2)}`}</p>
+        <p className={recommendedUsers[userId] > threshold ? "italic mb-4" : "hidden"}>{`Get in contact with ${user.name} at ${user.email}`}</p>
+
+
         <div className="text-gray-800">
           <p>
             <strong>Major:</strong> {user.major.join(", ")}
@@ -109,6 +133,42 @@ const ViewProfile = () => {
           }}
         >
           Log Out
+        </button>
+        <button
+          className={
+            localStorage.getItem("username") == userId
+              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+              : "hidden"
+          }
+          visibility={(localStorage.getItem("username") === userId).toString()}
+          onClick={() => {
+            const token = localStorage.getItem("token")
+            axios.get(`http://127.0.0.1:8000/api/recommendations/clubs/`, {
+              headers: {
+                Authorization: token,
+              }
+            })
+            .then((response) => {
+              console.log(response.data.club_list)
+            })
+            .catch((error) => {
+              console.error("There was an error fetching the reccomended users!", error);
+            });
+          }}
+        >
+          Reccomend
+        </button>
+
+        {/* New button for viewing upcoming meetings */}
+        <button
+          className={
+            localStorage.getItem("username") == userId
+            ? "absolute top-36 right-4 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+            : "hidden"
+          }
+          onClick={handleViewMeetings}
+        >
+          View Upcoming Meetings
         </button>
       </div>
     );

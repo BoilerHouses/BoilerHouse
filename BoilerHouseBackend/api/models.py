@@ -55,7 +55,11 @@ class Club(models.Model):
     clubEmail = models.CharField(max_length=100, default='')
     pending_officers = models.ManyToManyField(User, related_name='pending_officer_list')
     targetedAudience = models.CharField(max_length=2048, default='')
-
+    clubDues = models.CharField(max_length=2048, default='')
+    dueName = models.CharField(max_length=2048, default='')
+    dueDate = models.DateField(null=True, blank=True)
+    paid_dues = models.ManyToManyField(User, related_name='clubs_with_paid_dues')
+    banned_members = models.ManyToManyField(User, related_name='banned_clubs')
 
     @classmethod
     def create(cls, name, description, culture, time_commitment, targetedAudience, interests, owner, icon, gallery):
@@ -64,6 +68,20 @@ class Club(models.Model):
         club.officers.add(owner)
         club.members.add(owner)
         return club
+
+class Rating(models.Model):
+    club = models.ForeignKey(Club, on_delete=models.CASCADE, related_name="ratings")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ratings")
+    review = models.CharField(max_length=1000, default='')
+    rating = models.FloatField(default=2.5)
+
+    @classmethod
+    def create(cls, author, club, review, rating):
+        rating = cls(author=author, club=club, review=review, rating=rating)
+        rating.save()
+        return rating
+
+
 
 class LoginPair(models.Model):
     username = models.CharField(max_length=255, unique=True)
