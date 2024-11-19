@@ -59,7 +59,7 @@ const ViewClubs = () => {
   const [similarInterestMax, setSimilarInterestMax] = useState(100);
 
   const [recommendedUsers, setRecommendedUsers] = useState([]);
-
+  const [reccomended, setReccomended] = useState({})
   const [isCalculatingFilters, setIsCalculatingFilters] = useState(false);
 
   const navigate = useNavigate();
@@ -87,6 +87,18 @@ const ViewClubs = () => {
           .catch(() => {
             setIsLoadingClubs(false);
             setError(true);
+          });
+          axios.get(`http://127.0.0.1:8000/api/recommendations/clubs/`, {
+            headers: {
+              Authorization: token,
+            }
+          })
+          .then((response) => {
+            setReccomended(response.data.club_list)
+            console.log(response.data.club_list)
+          })
+          .catch((error) => {
+            console.error("There was an error fetching the reccomended clubs!", error);
           });
       }
     };
@@ -875,7 +887,8 @@ const ViewClubs = () => {
             <div
               key={item.id}
               index={item.id}
-              className="relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+              className={`relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 ${
+                reccomended[item.id] >= 0.25 ? 'ring-4 ring-yellow-500' : ''}`}
               style={{ backgroundImage: `url("${item.icon}")` }}
               onClick={handleClick}
             >

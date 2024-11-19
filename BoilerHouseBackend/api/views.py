@@ -1289,18 +1289,39 @@ def get_recommendations(request):
     for i in range(0, len(cosine_list)):
         user_scores.append((user_list[i], cosine_list[i]))
     user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:len(user_scores)/4]
+    user_scores = user_scores[:20]
     user_vectors = []
-    for user, score in user_scores:
-        user_vectors.append([0] * len(list(Club.objects.all())))
+    for i in range(len(user_scores)):
+        user_vectors.append([0] * len(Club.objects.all()))
+    count = 0
+    total_members = 0
+    club_list = []
     for club in Club.objects.all():
-        count = 0
-        for i in range(user_scores):
+        club_list.append(club.pk)
+        total_members += len(club.members.all())
+        for i in range(len(user_scores)):
             if user_scores[i][0] in club.members.all():
                 user_vectors[i][count] = 1
         count+=1
-    print(user_vectors)
+    for i in range(len(user_vectors)):
+        vector = user_vectors[i]
+        avg_rating = np.mean(vector)
+        user_vectors[i] = [x - avg_rating for x in vector]
+    user_vectors = np.array(user_vectors)
+    club_vectors = np.transpose(user_vectors)
+    club_weighted_ratings = []
+    for club in club_vectors:
+        total_similarity = 0
+        total_rating = 0
+        for j in range(len(club)):
+            total_similarity += user_scores[j][1]
+            total_rating += user_scores[j][1] * club[j]
+        club_weighted_ratings.append(total_rating / total_similarity)
+    global_average = total_members / len(User.objects.all())
+    club_final_ratings = [x + global_average for x in club_weighted_ratings]
     final_score = {}
+    for i in range(len(club_list)):
+        final_score[club_list[i]] = club_final_ratings[i]
     return Response({"club_list": final_score }, status=200)
 
 

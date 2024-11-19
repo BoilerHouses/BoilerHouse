@@ -20,7 +20,7 @@ const ViewProfile = () => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([])
-  const threshold = 0.1
+  const threshold = 0.2
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -133,30 +133,6 @@ const ViewProfile = () => {
           }}
         >
           Log Out
-        </button>
-        <button
-          className={
-            localStorage.getItem("username") == userId
-              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-              : "hidden"
-          }
-          visibility={(localStorage.getItem("username") === userId).toString()}
-          onClick={() => {
-            const token = localStorage.getItem("token")
-            axios.get(`http://127.0.0.1:8000/api/recommendations/clubs/`, {
-              headers: {
-                Authorization: token,
-              }
-            })
-            .then((response) => {
-              console.log(response.data.club_list)
-            })
-            .catch((error) => {
-              console.error("There was an error fetching the reccomended users!", error);
-            });
-          }}
-        >
-          Reccomend
         </button>
 
         {/* New button for viewing upcoming meetings */}

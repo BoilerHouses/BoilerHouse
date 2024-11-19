@@ -54,7 +54,7 @@ const ClubInformation = () => {
   const [editMeeting, setEditMeeting] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([]);
 
-  const threshold = 0.01;
+  const threshold = 0.2;
 
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [updatedReview, setUpdatedReview] = useState("");
@@ -72,6 +72,8 @@ const ClubInformation = () => {
   const [mostCommonMajors, setMostCommonMajors] = useState([]);
   const [mostCommonInterests, setMostCommonInterests] = useState([]);
   const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
+
+  const[reccomended, setReccomended] = useState(0.0)
 
   const [sendEmail, setSendEmail] = useState(false);
 
@@ -140,6 +142,18 @@ const ClubInformation = () => {
           error
         );
       });
+      axios.get(`http://127.0.0.1:8000/api/recommendations/clubs/`, {
+        headers: {
+          Authorization: token,
+        }
+      })
+      .then((response) => {
+        setReccomended(response.data.club_list[`${clubId}`])
+        console.log(response.data.club_list)
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the reccomended clubs!", error);
+      });
 
     axios({
       // create account endpoint
@@ -185,6 +199,7 @@ const ClubInformation = () => {
         alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
+      
   }, [clubId]);
 
   const handleKickMember = (memberId) => {
@@ -1254,6 +1269,9 @@ const ClubInformation = () => {
             />
           ))}
       </Box>
+      {!joined && <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        {`Club Similarity Score: ${(reccomended * 100 + 100).toFixed(2)}`}
+      </Typography>}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Similar User Key:
       </Typography>
