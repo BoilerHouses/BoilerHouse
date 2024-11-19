@@ -8,6 +8,9 @@ import {
   FormControlLabel,
   Radio,
   TextField,
+  Box,
+  Chip,
+  CircularProgress,
 } from "@mui/material";
 import axios from "axios";
 
@@ -22,6 +25,9 @@ const ViewClubs = () => {
 
   const [minClubDue, setMinClubDue] = useState("");
   const [maxClubDue, setMaxClubDue] = useState("");
+
+  const [minClubDueFilter, setMinClubDueFilter] = useState("");
+  const [maxClubDueFilter, setMaxClubDueFilter] = useState("");
 
   const [clubDueError, setClubDueError] = useState(false);
   const [clubDueHelperText, setClubDueHelperText] = useState("");
@@ -41,6 +47,20 @@ const ViewClubs = () => {
   const [minClubSize, setMinClubSize] = useState(0);
   const [maxClubSize, setMaxClubSize] = useState(Infinity);
   const [error, setError] = useState(false);
+
+  const [tag, setTag] = useState("");
+  const [tagList, setTagList] = useState([]);
+  const [tagListFilter, setTagListFilter] = useState([]);
+
+  const [tagCount, setTagCount] = useState([]);
+
+  const [similarInterestRange, setSimilarInterestRange] = useState("None");
+  const [similarInterestMin, setSimilarInterestMin] = useState(0);
+  const [similarInterestMax, setSimilarInterestMax] = useState(100);
+
+  const [recommendedUsers, setRecommendedUsers] = useState([]);
+
+  const [isCalculatingFilters, setIsCalculatingFilters] = useState(false);
 
   const navigate = useNavigate();
 
@@ -89,6 +109,23 @@ const ViewClubs = () => {
       }
     };
     fetchProfile();
+    const token = localStorage.getItem("token");
+    const fetchRecommendedUsers = async () => {
+      axios
+        .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+          headers: {
+            Authorization: token,
+          },
+        })
+        .then((response) => {
+          setRecommendedUsers(response.data.user_list);
+        })
+        .catch((error) => {
+          alert("There was an error fetching the recommended users!", error);
+        });
+    };
+
+    fetchRecommendedUsers();
   }, []);
 
   const handleClick = (event) => {
@@ -101,6 +138,10 @@ const ViewClubs = () => {
 
   const changeSelectedTimeCommitment = (event) => {
     setSelectedTimeCommitment(event.target.value);
+  };
+
+  const changeSelectedInterestRange = (event) => {
+    setSimilarInterestRange(event.target.value);
   };
 
   const handleSearchChange = (event) => {
@@ -121,6 +162,15 @@ const ViewClubs = () => {
     if (!valid) {
       return;
     }
+
+    if (parseFloat(newVal) > parseFloat(maxClubDue)) {
+      setClubDueError(true);
+      setClubDueHelperText("Max cannot be smaller than min.");
+    } else {
+      setClubDueError(false);
+      setClubDueHelperText("");
+    }
+
     setMinClubDue(newVal);
   };
 
@@ -157,8 +207,6 @@ const ViewClubs = () => {
     if (clubDueError) {
       return;
     }
-    setOpenFilterMenu(false);
-
     switch (selectedClubSize) {
       case "None":
         setMinClubSize(0);
@@ -186,9 +234,43 @@ const ViewClubs = () => {
         break;
     }
 
+    switch (similarInterestRange) {
+      case "None":
+        setSimilarInterestMin(0);
+        setSimilarInterestMax(100);
+        break;
+      case "0%-25%":
+        setSimilarInterestMin(0);
+        setSimilarInterestMax(25);
+        break;
+      case "26%-50%":
+        setSimilarInterestMin(26);
+        setSimilarInterestMax(50);
+        break;
+      case "51%-75%":
+        setSimilarInterestMin(51);
+        setSimilarInterestMax(75);
+        break;
+      case "76%-100%":
+        setSimilarInterestMin(76);
+        setSimilarInterestMax(100);
+        break;
+    }
+
     setTimeCommitmentFilter(selectedTimeCommitment);
     setCultureFilter(selectedCulture);
     setSelectedAvailabilityFilter(selectedAvailability);
+
+    setMinClubDueFilter(parseFloat(minClubDue));
+    setMaxClubDueFilter(parseFloat(maxClubDue));
+
+    if (minClubDue === "") {
+      setMinClubDueFilter(0);
+    }
+    if (maxClubDue === "") {
+      setMaxClubDueFilter(Infinity);
+    }
+    setTagListFilter(tagList);
   };
 
   const clearFilters = () => {
@@ -207,6 +289,13 @@ const ViewClubs = () => {
     setMaxClubDue("");
     setClubDueError(false);
     setClubDueHelperText("");
+    setMinClubDueFilter(0);
+    setMaxClubDueFilter(Infinity);
+    setTagList([]);
+    setTagListFilter([]);
+    setSimilarInterestMin(0);
+    setSimilarInterestMax(100);
+    setSimilarInterestRange("None");
   };
 
   useEffect(() => {
@@ -218,6 +307,11 @@ const ViewClubs = () => {
     timeCommitmentFilter,
     cultureFilter,
     selectedAvailabilityFilter,
+    minClubDueFilter,
+    maxClubDueFilter,
+    tagListFilter,
+    similarInterestMin,
+    similarInterestMax,
   ]);
 
   // convert 12 hour time to 24 hour time
@@ -250,17 +344,28 @@ const ViewClubs = () => {
     return daysOfWeek[date.getDay()];
   }
 
-  const handleFilter = () => {
+  const handleFilter = async () => {
+    setIsCalculatingFilters(true);
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
     let timeCommitmentFilterList = new Set();
     let cultureFilterList = new Set();
     let availabilityFilterList = new Set();
+    let clubDueFilterList = new Set();
+    let clubTagsFilterList = new Set();
+    let similarInterestFilterList = new Set();
 
     const useSizeFilter = selectedClubSize !== "None";
     const useTimeCommitmentFilter = timeCommitmentFilter !== "None";
     const useCultureFilter = cultureFilter.length > 0;
     const useAvailabilityFilter = selectedAvailabilityFilter !== "None";
+    const useClubDueFilter = !(
+      minClubDueFilter === 0 && maxClubDueFilter === Infinity
+    );
+    const useClubTagsFilter = tagListFilter.length > 0;
+    const useSimilarInterestFilter = !(
+      similarInterestMin === 0 && similarInterestMax === 100
+    );
 
     const startHour = 8;
     const interval = 30;
@@ -290,9 +395,20 @@ const ViewClubs = () => {
       });
     });
 
-    data.forEach((club) => {
+    const threshold = 0.01;
+    const token = localStorage.getItem("token");
+    const currentUser = localStorage.getItem("username");
+
+    for (const club of data) {
       const clubId = club.id;
       const members = club.num_members;
+      let dues = parseFloat(club.clubDues);
+
+      // handle clubs with no dues set
+      if (Number.isNaN(dues)) {
+        dues = 0;
+      }
+      const tags = club.interests;
 
       if (club.name.toLowerCase().includes(searchTerm.toLowerCase())) {
         searchTermFilterList.add(clubId);
@@ -331,15 +447,74 @@ const ViewClubs = () => {
           const startTime = convertTo24Hour(meeting.startTime);
           const endTime = convertTo24Hour(meeting.endTime);
 
-          const userAvailabilityForDay = userAvailabilityTranslated[day];
-          userAvailabilityForDay.forEach((time) => {
-            if (time[0] <= startTime && time[1] >= endTime) {
-              availabilityFilterList.add(clubId);
-            }
-          });
+          if (day in userAvailabilityTranslated) {
+            const userAvailabilityForDay = userAvailabilityTranslated[day];
+            userAvailabilityForDay.forEach((time) => {
+              if (time[0] <= startTime && time[1] >= endTime) {
+                availabilityFilterList.add(clubId);
+              }
+            });
+          }
         }
       });
-    });
+
+      if (
+        !Number.isNaN(dues) &&
+        dues >= minClubDueFilter &&
+        dues <= maxClubDueFilter
+      ) {
+        clubDueFilterList.add(clubId);
+      }
+
+      tags.forEach((clubTag) => {
+        tagListFilter.forEach((filterTag) => {
+          if (clubTag.toLowerCase() === filterTag.toLowerCase()) {
+            clubTagsFilterList.add(clubId);
+          }
+        });
+      });
+
+      if (useSimilarInterestFilter) {
+        try {
+          const clubInfo = await axios.get("http://127.0.0.1:8000/api/club/", {
+            params: {
+              club_id: clubId,
+            },
+            headers: {
+              Authorization: token,
+            },
+          });
+          const members = clubInfo.data.club.members;
+          let total_members = members.length;
+
+          let similar_member_count = 0;
+
+          members.forEach((member) => {
+            const email = member[3];
+            if (email === currentUser) {
+              total_members -= 1;
+            } else {
+              if (recommendedUsers[email] >= threshold) {
+                similar_member_count += 1;
+              }
+            }
+          });
+
+          const ratio = (similar_member_count / total_members) * 100;
+
+          if (ratio >= similarInterestMin && ratio <= similarInterestMax) {
+            similarInterestFilterList.add(clubId);
+          }
+        } catch (e) {
+          console.log(e);
+          alert(
+            "An error occurred while trying to apply this filter. Please try again later."
+          );
+          setIsCalculatingFilters(false);
+          return;
+        }
+      }
+    }
 
     let filteredList = searchTermFilterList;
     if (useSizeFilter) {
@@ -354,7 +529,15 @@ const ViewClubs = () => {
     if (useAvailabilityFilter) {
       filteredList = filteredList.intersection(availabilityFilterList);
     }
-
+    if (useClubDueFilter) {
+      filteredList = filteredList.intersection(clubDueFilterList);
+    }
+    if (useClubTagsFilter) {
+      filteredList = filteredList.intersection(clubTagsFilterList);
+    }
+    if (useSimilarInterestFilter) {
+      filteredList = filteredList.intersection(similarInterestFilterList);
+    }
     let filteredClubs = [];
 
     data.forEach((club) => {
@@ -364,10 +547,40 @@ const ViewClubs = () => {
     });
 
     setFilteredData(filteredClubs);
+    setIsCalculatingFilters(false);
+    setOpenFilterMenu(false);
   };
 
   const handleCultureFilter = (e) => {
     setSelectedCulture(e.target.value);
+  };
+
+  const handleAddTag = (event) => {
+    if (event.key === "Enter" && tag) {
+      let a = tagList.filter((key, t) => key == tag);
+      if (a.length > 0) {
+        setTag("");
+        return;
+      }
+      setTagList((prevTags) => [...prevTags, (tagCount, tag)]);
+      setTagCount(tagCount + 1);
+      setTag("");
+    }
+  };
+
+  const handleTagChange = (event) => {
+    setTag(event.target.value);
+  };
+
+  const handleDeleteTag = (tagToDelete) => {
+    setTagList((prevTags) =>
+      prevTags.filter((key, tag) => tag !== tagToDelete)
+    );
+  };
+
+  const resetTags = () => {
+    setTag("");
+    setTagList([]);
   };
 
   return (
@@ -467,6 +680,9 @@ const ViewClubs = () => {
               </FormControl>
               <Typography variant="h6">Culture</Typography>
               <Typography variant="subtitle1">Filter by Culture</Typography>
+              <Typography variant="subtitle2">
+                Leave blank if you don&apos;t want to use this filter.
+              </Typography>
 
               <input
                 type="text"
@@ -512,7 +728,8 @@ const ViewClubs = () => {
                 Filter by amount of club dues (in $)
               </Typography>
               <Typography variant="subtitle2">
-                Leave blank if you don&apos;t want to use this filter.
+                Leave blank if you don&apos;t want to use this filter. Clubs
+                with no dues set are treated as if their dues are $0.
               </Typography>
 
               <div className="flex items-center space-x-2">
@@ -545,12 +762,100 @@ const ViewClubs = () => {
                 Reset Club Due Filter
               </Button>
 
+              <Typography variant="h6">Tags/Majors</Typography>
+              <Typography variant="subtitle1">
+                Filter by club tags/majors
+              </Typography>
+              <Typography variant="subtitle2">
+                Press enter to add a new tag/major. Leave blank if you
+                don&apos;t want to use this filter. Returned clubs will have at
+                least one of the specified tags/majors specified.
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Enter tags/majors..."
+                name="tags"
+                value={tag}
+                onKeyDown={handleAddTag}
+                onChange={handleTagChange}
+                className="bg-white !mt-3.5"
+              />
+              <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap" }}>
+                {tagList.map((key, tag) => (
+                  <Chip
+                    key={tag}
+                    label={key}
+                    onDelete={() => handleDeleteTag(tag)}
+                    sx={{
+                      backgroundColor: "gold",
+                      color: "black",
+                      borderRadius: "16px",
+                      margin: "4px",
+                    }}
+                  />
+                ))}
+              </Box>
+
+              <Button
+                className="!mt-5 !mx-auto !justify-center"
+                onClick={resetTags}
+              >
+                Reset Tags Filter
+              </Button>
+
+              <Typography variant="h6">Similar Interest Students</Typography>
+              <FormControl component="fieldset">
+                <Typography variant="subtitle1">
+                  Returns clubs with the specified % of students with simialar
+                  interests to you
+                </Typography>
+                <Typography variant="subtitle2">
+                  Note: Calculations for this filter might take a while to run.
+                </Typography>
+
+                <RadioGroup
+                  value={similarInterestRange}
+                  onChange={changeSelectedInterestRange}
+                >
+                  <FormControlLabel
+                    value="None"
+                    control={<Radio />}
+                    label="None"
+                  />
+                  <FormControlLabel
+                    value="0%-25%"
+                    control={<Radio />}
+                    label="0% - 25%"
+                  />
+                  <FormControlLabel
+                    value="26%-50%"
+                    control={<Radio />}
+                    label="26% - 50%"
+                  />
+                  <FormControlLabel
+                    value="51%-75%"
+                    control={<Radio />}
+                    label="51% - 75%"
+                  />
+                  <FormControlLabel
+                    value="76%-100%"
+                    control={<Radio />}
+                    label="76% - 100%"
+                  />
+                </RadioGroup>
+              </FormControl>
+
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"
                 onClick={applyFilters}
               >
-                Apply Filters
+                {isCalculatingFilters ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Apply Filters"
+                )}
               </Button>
               <Button
                 variant="contained"

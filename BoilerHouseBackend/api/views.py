@@ -29,6 +29,9 @@ import uuid
 import os
 import boto3
 import cryptocode
+from django.utils import timezone
+from dateutil import parser
+
 
 
 
@@ -349,10 +352,13 @@ def get_all_clubs(request):
     if not user.is_admin and approved == 'False':
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
+
+
     clubs = []
     for x in club_list:
         if (x.officers.count() <= 0):
             continue
+
 
         members = x.members.count()
         t = model_to_dict(x)
@@ -360,6 +366,8 @@ def get_all_clubs(request):
         t['members'] = []
         t['pending_members'] = []
         t['pending_officers'] = []
+        t['banned_members'] = []
+        t['paid_dues'] = []
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
@@ -379,6 +387,8 @@ def get_example_clubs(request):
         t['members'] = [model_to_dict(a) for a in x.members.all()]
         t['pending_members'] = [model_to_dict(a) for a in x.pending_members.all()]
         t['pending_officers'] = []
+        t['banned_members'] = []
+        t['paid_dues'] = []
         t['k'] = x.pk
         clubs.append(t)
     return Response({'clubs': clubs}, 200)
@@ -394,6 +404,10 @@ def join_club(request):
     club = Club.objects.filter(name=request.query_params['club_name']).first()
     if (not club.is_approved):
         return Response({'error': 'Club is not Active!'}, status=400)
+
+    if user in club.banned_members.all():
+        return Response({'error': 'You are banned from this club and cannot join.'}, status=403)
+
     if (user not in list(club.members.all()) and user not in list(club.pending_members.all())):
         club.pending_members.add(user)
     club.save()
@@ -530,6 +544,8 @@ def get_club_information(request):
         ret_club['members'] = member_list
         ret_club['pending_members'] = pending_list
         ret_club['pending_officers'] = []
+        ret_club['banned_members'] = []
+        ret_club['paid_dues'] = []
         ret_club['ratings'] = rating_list
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
@@ -1145,38 +1161,29 @@ def update_club_dues(request, club_id):
         return Response({"error": str(e)}, status=500)
 
 @api_view(['GET'])
-def add_paid_dues(request):
+def update_paid_dues(request):
     user = verify_token(request.headers.get('Authorization'))
     if user == 'Invalid token':
         return Response({'error': 'Invalid Auth Token'}, status=400)
     if "club_id" not in request.query_params:
         return Response({"error": "Missing club id"}, status=400)
-    if "user_id" not in request.query_params:
-        return Response({"error": "Missing user id"}, status=400)
+    if "email" not in request.query_params:
+        return Response({"error": "Missing user email"}, status=400)
+    if "did_pay" not in request.query_params:
+        return Response({"error": "Missing did pay"}, status=400)
     club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
+    did_pay = request.query_params.get('did_pay')
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
-    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
-    club.paid_dues.add(new_user)
+    target_user = User.objects.filter(username=request.query_params.get('email')).first()
+    if did_pay == "true":
+        club.paid_dues.add(target_user)
+    else:
+        club.paid_dues.remove(target_user)
     club.save()
     return Response("success", status=200)
 
-@api_view(['GET'])
-def remove_paid_dues(request):
-    user = verify_token(request.headers.get('Authorization'))
-    if user == 'Invalid token':
-        return Response({'error': 'Invalid Auth Token'}, status=400)
-    if "club_id" not in request.query_params:
-        return Response({"error": "Missing club id"}, status=400)
-    if "user_id" not in request.query_params:
-        return Response({"error": "Missing user id"}, status=400)
-    club = Club.objects.filter(pk=request.query_params.get('club_id')).first()
-    if user not in club.officers.all():
-        return Response({"error": "Invalid Permissions, cannot modify club!"}, status=400)
-    new_user = User.objects.filter(pk=request.query_params.get('user_id')).first()
-    club.paid_dues.remove(new_user)
-    club.save()
-    return Response("success", status=200)
+
 
 @api_view(['POST'])
 def kick_member(request):
@@ -1198,7 +1205,11 @@ def kick_member(request):
     if not member or member not in club.members.all():
         return Response({"error": "User not found in club members"}, status=404)
 
+    if user.username == member_username:
+        return Response({"error": "You cannot kick yourself from the club"}, status=400)
     club.members.remove(member)
+    if member in list(club.officers.all()):
+        club.officers.remove(member)
     club.save()
 
     return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
@@ -1223,11 +1234,18 @@ def ban_member(request):
     if not member or member not in club.members.all():
         return Response({"error": "User not found in club members"}, status=404)
 
+    if user.username == member_username:
+        return Response({"error": "You cannot ban yourself from the club"}, status=400)
+
+
     club.members.remove(member)
+    if member in list(club.officers.all()):
+        club.officers.remove(member)
+
     club.banned_members.add(member)
     club.save()
 
-    return Response({"message": f"{member_username} has been banned from the club"}, status=200)
+    return Response({"message": f"{member_username} has been kicked from the club"}, status=200)
 
 
 @api_view(['GET'])
@@ -1286,6 +1304,60 @@ def get_recommendations(request):
     return Response({"club_list": final_score }, status=200)
 
 
+@api_view(['GET'])
+def get_dues_information(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
 
+    club_id = request.query_params.get('club_id')
+    club = Club.objects.filter(pk=club_id).first()
+    member_list = []
+    for member in club.members.all():
+        name = member.name
+        email = member.username
+        did_pay = False
+        if member in club.paid_dues.all():
+            did_pay = True
+        member_list.append({'name': name, 'email':email, 'did_pay':did_pay})
+    return Response({"dues_information":member_list}, status= 200)
+
+@api_view(['GET'])
+def get_upcoming_meetings(request):
+    user = verify_token(request.headers.get('Authorization'))
+    if user == 'Invalid token':
+        return Response({'error': 'Invalid Auth Token'}, status=400)
+    user_clubs = Club.objects.filter(members=user)
+
+    upcoming_meetings = []
+
+    for club in user_clubs:
+        for meeting in club.meetings:
+            try:
+                meeting_date = parser.parse(meeting['date'])
+                if meeting_date.tzinfo is None:
+                    meeting_date = timezone.make_aware(meeting_date)
+
+                if meeting_date >= timezone.now():
+                    upcoming_meetings.append({
+                    'id': meeting.get('id', ''),
+                    'club_name': club.name,
+                    'name' : meeting.get('meetingName',''),
+                    'date': meeting['date'],
+                    'startTime': meeting.get('startTime', ''),
+                    'endTime': meeting.get('endTime', ''),
+                    'location': meeting.get('meetingLocation', ''),
+                    'description': meeting.get('meetingAgenda', '')
+                })
+            except ValueError:
+                continue
+
+        # Sort meetings by date
+    upcoming_meetings.sort(key=lambda x: (parser.parse(x['date']), x['startTime']))
+
+        # Limit to 10 upcoming meetings
+    upcoming_meetings = upcoming_meetings[:10]
+
+    return Response(upcoming_meetings, status=200)
 
 

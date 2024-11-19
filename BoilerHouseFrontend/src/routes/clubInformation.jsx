@@ -11,7 +11,6 @@ import {
   Avatar,
   Card,
   Rating,
-
   CardContent,
   Dialog,
   DialogTitle,
@@ -23,7 +22,10 @@ import {
   List,
   ListItem,
   ListItemText,
-  Grid, FormGroup, FormControlLabel, Checkbox,
+  Grid,
+  FormGroup,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 
 import { DatePicker, TimePicker } from "@mui/x-date-pickers";
@@ -36,7 +38,7 @@ const ClubInformation = () => {
   const { clubId } = useParams();
   const [clubData, setClubData] = useState(null);
   const [joined, setJoined] = useState(false);
-  const [pending, setPending] = useState(false)
+  const [pending, setPending] = useState(false);
   const [officer, setOfficer] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [accepting, setAccepting] = useState(false);
@@ -50,12 +52,12 @@ const ClubInformation = () => {
   const [meetingMenu, setMeetingMenu] = useState(false);
   const [timeError, setTimeError] = useState(false);
   const [editMeeting, setEditMeeting] = useState(false);
-  const [recommendedUsers, setRecommendedUsers] = useState([])
+  const [recommendedUsers, setRecommendedUsers] = useState([]);
 
-  const threshold = .01
+  const threshold = 0.01;
 
   const [editingReviewId, setEditingReviewId] = useState(null);
-  const [updatedReview, setUpdatedReview] = useState('');
+  const [updatedReview, setUpdatedReview] = useState("");
   const [updatedRating, setUpdatedRating] = useState(0);
 
   const [startDate, setStartDate] = useState(today);
@@ -71,7 +73,7 @@ const ClubInformation = () => {
   const [mostCommonInterests, setMostCommonInterests] = useState([]);
   const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
 
-  const [sendEmail, setSendEmail] = useState(false)
+  const [sendEmail, setSendEmail] = useState(false);
 
   const defaultPhotos = [
     "https://mauconline.net/wp-content/uploads/10-Tips-for-Marketing-to-College-Students-New.jpg",
@@ -97,12 +99,10 @@ const ClubInformation = () => {
         },
       })
       .then((response) => {
-        console.log(response.data.club)
         setClubData(response.data.club);
-        console.log(response.data.club)
         setIsLoading(false);
         setJoined(response.data.joined);
-        setPending(response.data.pending)
+        setPending(response.data.pending);
         setDeleted(response.data.deleted);
         setOfficer(response.data.officer);
         setDeletedCount(response.data.deleted_count);
@@ -111,32 +111,34 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
-        let avg = 0
+        let avg = 0;
         if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
-            avg += e.rating
-          })
-          avg /= response.data.club.ratings.length
-          setAverageRating(avg.toFixed(2))
+            avg += e.rating;
+          });
+          avg /= response.data.club.ratings.length;
+          setAverageRating(avg.toFixed(2));
         }
-        
       })
       .catch((error) => {
         alert("There was an error fetching the club data!", error);
-        console.log(error)
+        console.log(error);
         setIsLoading(false);
       });
-      axios.get(`http://127.0.0.1:8000/api/recommendations/users/`, {
+    axios
+      .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
         headers: {
           Authorization: token,
-        }
+        },
       })
       .then((response) => {
-        console.log(response.data.user_list)
-        setRecommendedUsers(response.data.user_list)
+        setRecommendedUsers(response.data.user_list);
       })
       .catch((error) => {
-        console.error("There was an error fetching the reccomended users!", error);
+        console.error(
+          "There was an error fetching the reccomended users!",
+          error
+        );
       });
 
     axios({
@@ -186,47 +188,55 @@ const ClubInformation = () => {
   }, [clubId]);
 
   const handleKickMember = (memberId) => {
-      const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-      axios
-        .post(
-          `http://127.0.0.1:8000/api/club/kick_member/`, // Assuming this endpoint kicks a member
-          {
-            club_id: clubId,
-            member_username: memberId,
+    axios
+      .post(
+        `http://127.0.0.1:8000/api/club/kick_member/`, // Assuming this endpoint kicks a member
+        {
+          club_id: clubId,
+          member_username: memberId,
+        },
+        {
+          headers: {
+            Authorization: token,
           },
-          {
-            headers: {
-              Authorization: token,
-            },
-          }
-        )
-        .then(() => {
-          // Redirect to the club information page
-          alert("The member has been successfully kicked from the club.");
-          window.location.reload();
-        })
-        .catch((error) => {
+        }
+      )
+      .then(() => {
+        // Redirect to the club information page
+        alert("The member has been successfully kicked from the club.");
+        window.location.reload();
+      })
+      .catch((error) => {
+        if (error.status == 400) {
+          alert("You cannot kick yourself from the club", error);
+        } else {
           alert("There was an error with kicking the member!", error);
-        });
+        }
+      });
   };
 
-  const handleMemberBan = (event) => {
+
+  const handleMemberBan = (memberId) => {
+      console.log(memberId)
       const token = localStorage.getItem("token");
       axios.post(`http://127.0.0.1:8000/api/club/ban_member/`, {
           club_id: clubId,
-          member_username: event.target.getAttribute("index")
+          member_username: memberId
       }, {
           headers: {
-              Authorization: token,
-          }
-      })
+            Authorization: token,
+          },
+        }
+      )
       .then(() => {
-          window.location.reload();
+          alert("The member has been successfully banned from the club.");
+        window.location.reload();
       })
       .catch((error) => {
-          alert("There was an error with banning the member!", error);
-          setIsLoading(false);
+        alert("There was an error with banning the member!", error);
+        setIsLoading(false);
       });
   };
 
@@ -294,32 +304,31 @@ const ClubInformation = () => {
 
   const cancelEditing = () => {
     setEditingReviewId(null);
-    setUpdatedReview('');
+    setUpdatedReview("");
     setUpdatedRating(0);
   };
 
   const saveUpdatedReview = (id) => {
-      const token = localStorage.getItem("token");
-      const data = {
-          id: id,
-          review: updatedReview,
-          rating: updatedRating
-      }
-      axios
-        .post(`http://127.0.0.1:8000/api/rating/create/${clubId}/`, data, {
-          headers: {
-            Authorization: token,
-          }
-          
-        })
-        .then((response) => {
-          console.log(response);
-          navigate(0);
-        })
-        .catch((error) => {
-          console.error("There was an error creating your rating!", error);
-        });
-        cancelEditing();
+    const token = localStorage.getItem("token");
+    const data = {
+      id: id,
+      review: updatedReview,
+      rating: updatedRating,
+    };
+    axios
+      .post(`http://127.0.0.1:8000/api/rating/create/${clubId}/`, data, {
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        navigate(0);
+      })
+      .catch((error) => {
+        console.error("There was an error creating your rating!", error);
+      });
+    cancelEditing();
   };
 
   const handleMemberProfile = (event) => {
@@ -471,10 +480,14 @@ const ClubInformation = () => {
         setClubData(response.data.club);
         setJoined(true);
         setIsLoading(false);
-        setPending(true)
+        setPending(true);
       })
       .catch((error) => {
-        alert("There was an error joining club!", error);
+        if (error.status == 403) {
+          alert("You are banned from this club", error);
+        } else {
+          alert("There was an error joining club!", error);
+        }
         setIsLoading(false);
       });
   };
@@ -553,9 +566,9 @@ const ClubInformation = () => {
       params: {
         clubId: clubId,
         meetings: newMeetings,
-        sendEmail:sendEmail,
-        relevant_meetings:JSON.stringify([newMeeting]),
-        action:'updated'
+        sendEmail: sendEmail,
+        relevant_meetings: JSON.stringify([newMeeting]),
+        action: "updated",
       },
     })
       // success
@@ -591,20 +604,22 @@ const ClubInformation = () => {
   };
 
   const deleteRating = (e) => {
-    const rating_id = e.target.getAttribute('index')
-    const token = localStorage.getItem("token")
-    axios.get(`http://127.0.0.1:8000/api/rating/delete/${rating_id}`, {
-      headers: {
-        Authorization: token,
-      }
-    }).then((response) => {
-      console.log(response);
-      navigate(0);
-    })
-    .catch((error) => {
-      console.error("There was an error creating your rating!", error);
-    });
-  }
+    const rating_id = e.target.getAttribute("index");
+    const token = localStorage.getItem("token");
+    axios
+      .get(`http://127.0.0.1:8000/api/rating/delete/${rating_id}`, {
+        headers: {
+          Authorization: token,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        navigate(0);
+      })
+      .catch((error) => {
+        console.error("There was an error creating your rating!", error);
+      });
+  };
   // delete a meeting
   const deleteMeeting = () => {
     const index = meetings.findIndex(
@@ -613,7 +628,7 @@ const ClubInformation = () => {
     if (index == -1) {
       return;
     }
-    const deleted_meeting = meetings[index]
+    const deleted_meeting = meetings[index];
     meetings.splice(index, 1);
     let newMeetings = JSON.stringify(meetings);
 
@@ -626,9 +641,9 @@ const ClubInformation = () => {
       params: {
         clubId: clubId,
         meetings: newMeetings,
-        sendEmail:sendEmail,
-        relevant_meetings:JSON.stringify([deleted_meeting]),
-        action:'deleted'
+        sendEmail: sendEmail,
+        relevant_meetings: JSON.stringify([deleted_meeting]),
+        action: "deleted",
       },
     })
       // success
@@ -719,45 +734,50 @@ const ClubInformation = () => {
   }
 
   const handleLeaveClub = () => {
-      if (officer){
-        if (officerCount === 1){
-          alert("You cannot leave as you are the only officer left. Delete the club or make another user an officer")
-        }
-        else {
-          axios({
-            url: "http://127.0.0.1:8000/api/leaveClub/",
-            method: "GET",
-            headers: {
-              Authorization: localStorage.getItem("token")
-            },
-            // params
-            params: {
-              club_name: clubData.name,
-            },
-          }).then(() => {
-            navigate("/clubs");
-          }) .catch(() => {
-              alert("There was an error in leaving the club. Please try again.")
-          })
-        }
-      }else {
+    if (officer) {
+      if (officerCount === 1) {
+        alert(
+          "You cannot leave as you are the only officer left. Delete the club or make another user an officer"
+        );
+      } else {
         axios({
           url: "http://127.0.0.1:8000/api/leaveClub/",
           method: "GET",
           headers: {
-            Authorization: localStorage.getItem("token")
+            Authorization: localStorage.getItem("token"),
           },
           // params
           params: {
             club_name: clubData.name,
           },
-        }).then(() => {
-          navigate("/clubs");
-        }) .catch(() => {
-            alert("There was an error in leaving the club. Please try again.")
         })
+          .then(() => {
+            navigate("/clubs");
+          })
+          .catch(() => {
+            alert("There was an error in leaving the club. Please try again.");
+          });
       }
-  }
+    } else {
+      axios({
+        url: "http://127.0.0.1:8000/api/leaveClub/",
+        method: "GET",
+        headers: {
+          Authorization: localStorage.getItem("token"),
+        },
+        // params
+        params: {
+          club_name: clubData.name,
+        },
+      })
+        .then(() => {
+          navigate("/clubs");
+        })
+        .catch(() => {
+          alert("There was an error in leaving the club. Please try again.");
+        });
+    }
+  };
 
   return (
     <Box
@@ -769,35 +789,35 @@ const ClubInformation = () => {
     >
       <div className="absolute right-0">
         <button
-            className={
-              clubData.is_approved && !joined
-                  ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-                  : "hidden"
-            }
-            onClick={handleJoin}
+          className={
+            clubData.is_approved && !joined
+              ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
+          onClick={handleJoin}
         >
           Join Club
         </button>
 
         <div className="flex justify-between">
           <button
-              className={
-                officer
-                    ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-                    : "hidden"
-              }
-              onClick={goToCreateMeeting}
+            className={
+              officer
+                ? "bg-green-500 text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+                : "hidden"
+            }
+            onClick={goToCreateMeeting}
           >
             Create Meeting
           </button>
 
           <button
-              className={
-                officer && joined
-                    ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
-                    : "hidden"
-              }
-              onClick={deleteClub}
+            className={
+              officer && joined
+                ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600"
+                : "hidden"
+            }
+            onClick={deleteClub}
           >
             {deleted ? "Revoke Vote to Delete" : "Vote to Delete Club"}
           </button>
@@ -806,21 +826,21 @@ const ClubInformation = () => {
         <div className="flex justify-between">
           <div className="flex items-center">
             <input
-                type="checkbox"
-                checked={accepting}
-                onChange={handleCheckboxChange}
-                className={
-                  officer && joined && clubData.is_approved
-                      ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                      : "hidden"
-                }
+              type="checkbox"
+              checked={accepting}
+              onChange={handleCheckboxChange}
+              className={
+                officer && joined && clubData.is_approved
+                  ? "w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                  : "hidden"
+              }
             />
             <label
-                className={
-                  officer && joined && clubData.is_approved
-                      ? "ml-2 text-gray-700"
-                      : "hidden"
-                }
+              className={
+                officer && joined && clubData.is_approved
+                  ? "ml-2 text-gray-700"
+                  : "hidden"
+              }
             >
               Accept Officer Applications
             </label>
@@ -833,27 +853,27 @@ const ClubInformation = () => {
 
         <div className="flex justify-between">
           <button
-              className={
-                officer && clubData.is_approved && joined
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/createQuestions/${clubId}`)}
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createQuestions/${clubId}`)}
           >
             Edit Questionnaire
           </button>
 
           <button
-              className={
-                officer && clubData.is_approved && joined
-                    ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
+            className={
+              officer && clubData.is_approved && joined
+                ? "bg-blue-500 text-white font-bold py-2 px-6 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/createOfficerQuestions/${clubId}`)}
           >
             Edit Officer Questionnaire
           </button>
-          <div/>
+          <div />
         </div>
 
         <div className="flex justify-between">
@@ -879,18 +899,32 @@ const ClubInformation = () => {
             Contact Us!
           </button>
           <button
-             className={
-               officer && clubData.is_approved
-                   ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                   : "hidden"
-             }
-             onClick={() => navigate(`/club/${clubId}/clubDues`)}
+              className={
+                officer && clubData.is_approved
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
-             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
+            {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
               className={
-                !officer && clubData.is_approved && joined && accepting && !pending
+                officer && clubData.is_approved && clubData.clubDues
+                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                    : "hidden"
+              }
+              onClick={() => navigate(`/manageDues/${clubId}`)}
+          >
+            Manage Dues
+          </button>
+          <button
+              className={
+                !officer &&
+                clubData.is_approved &&
+                joined &&
+                accepting &&
+                !pending
                     ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
                     : "hidden"
               }
@@ -915,10 +949,10 @@ const ClubInformation = () => {
         <button
             className={
               !clubData.is_approved
-                  ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
-                  : "hidden"
-            }
-            onClick={handleApproval}
+              ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
+              : "hidden"
+          }
+          onClick={handleApproval}
         >
           Approve
         </button>
@@ -1072,12 +1106,12 @@ const ClubInformation = () => {
                 />
                 <FormGroup>
                   <FormControlLabel
-                      control={<Checkbox />}
-                      checked={sendEmail}
-                      onClick={() => {
-                        setSendEmail(!sendEmail);
-                      }}
-                      label="Notify Members"
+                    control={<Checkbox />}
+                    checked={sendEmail}
+                    onClick={() => {
+                      setSendEmail(!sendEmail);
+                    }}
+                    label="Notify Members"
                   />
                 </FormGroup>
 
@@ -1186,26 +1220,26 @@ const ClubInformation = () => {
         Club Dues:
       </Typography>
       <Typography variant="body1" gutterBottom color="black">
-              {(!clubData.dueName && !clubData.clubDues && !clubData.dueDate) ? (
-                "No club dues information provided."
-              ) : (
-                <>
-                  {clubData.dueName && <div>{"Due Name: " + clubData.dueName}</div>}
-                  {clubData.clubDues ? <div>{"Amount: $" + clubData.clubDues}</div> : <div>Amount: $0</div>}
-                  {clubData.dueDate && <div>{"Due Date: " + clubData.dueDate}</div>}
-                </>
-              )}
-            </Typography>
-
-
-
-
+        {!clubData.dueName && !clubData.clubDues && !clubData.dueDate ? (
+          "No club dues information provided."
+        ) : (
+          <>
+            {clubData.dueName && <div>{"Due Name: " + clubData.dueName}</div>}
+            {clubData.clubDues ? (
+              <div>{"Amount: $" + clubData.clubDues}</div>
+            ) : (
+              <div>Amount: $0</div>
+            )}
+            {clubData.dueDate && <div>{"Due Date: " + clubData.dueDate}</div>}
+          </>
+        )}
+      </Typography>
 
       {/* Interests */}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Tags:
       </Typography>
-      
+
       <Box sx={{ display: "flex", flexWrap: "wrap", mt: 2 }}>
         {clubData.interests &&
           clubData.interests.map((interest, index) => (
@@ -1225,11 +1259,26 @@ const ClubInformation = () => {
       </Typography>
       <div className="flex">
         <span className="mr-2">Fairly Similar User</span>
-        <div className="bg-yellow-100 rounded" style={{ width: '30px', height: '30px' }}></div>
-        <div className="bg-yellow-200 rounded" style={{ width: '30px', height: '30px' }}></div>
-        <div className="bg-yellow-300 rounded" style={{ width: '30px', height: '30px' }}></div>
-        <div className="bg-yellow-400 rounded" style={{ width: '30px', height: '30px' }}></div>
-        <div className="bg-yellow-500 rounded" style={{ width: '30px', height: '30px' }}></div>
+        <div
+          className="bg-yellow-100 rounded"
+          style={{ width: "30px", height: "30px" }}
+        ></div>
+        <div
+          className="bg-yellow-200 rounded"
+          style={{ width: "30px", height: "30px" }}
+        ></div>
+        <div
+          className="bg-yellow-300 rounded"
+          style={{ width: "30px", height: "30px" }}
+        ></div>
+        <div
+          className="bg-yellow-400 rounded"
+          style={{ width: "30px", height: "30px" }}
+        ></div>
+        <div
+          className="bg-yellow-500 rounded"
+          style={{ width: "30px", height: "30px" }}
+        ></div>
         <span className="ml-2">Very Similar User</span>
       </div>
       {/* Officers Section */}
@@ -1243,7 +1292,20 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${100 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * (400 / (1 - threshold)))) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"}
+            className={
+              recommendedUsers[profile[3]] > threshold
+                ? `flex items-center bg-yellow-${
+                    100 +
+                    100 *
+                      Math.round(
+                        Math.round(
+                          (recommendedUsers[profile[3]] - threshold) *
+                            (400 / (1 - threshold))
+                        ) / 100
+                      )
+                  } rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500`
+                : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+            }
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1271,7 +1333,20 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={recommendedUsers[profile[3]] > threshold ? `flex items-center bg-yellow-${100 + (100 * Math.round(Math.round( ((recommendedUsers[profile[3]] - threshold) * (400 / (1 - threshold)))) / 100))} rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group` : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"}
+            className={
+              recommendedUsers[profile[3]] > threshold
+                ? `flex items-center bg-yellow-${
+                    100 +
+                    100 *
+                      Math.round(
+                        Math.round(
+                          (recommendedUsers[profile[3]] - threshold) *
+                            (400 / (1 - threshold))
+                        ) / 100
+                      )
+                  } rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group`
+                : "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500 group"
+            }
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1323,13 +1398,24 @@ const ClubInformation = () => {
             <button
               className={
                 officer
-                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  ? "bg-blue-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-blue-600 group-hover:block hidden"
                   : "hidden"
               }
               index={profile[3] + "..."}
               onClick={() => handleKickMember(profile[3])}
             >
               Kick
+            </button>
+            <button
+              className={
+                officer
+                  ? "bg-red-500 right-[13%] ml-5 px-1 py-1 text-white font-bold rounded hover:bg-red-600 group-hover:block hidden"
+                  : "hidden"
+              }
+              index={profile[3] + "..."}
+              onClick={() => handleMemberBan(profile[3])}
+            >
+              Ban
             </button>
           </div>
         ))}
@@ -1497,7 +1583,11 @@ const ClubInformation = () => {
             index={profile[3]}
             key={index}
             onClick={handleMemberProfile}
-            className={officer ? "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500" : 'hidden'}
+            className={
+              officer
+                ? "flex items-center bg-gray-100 rounded-lg p-2 mb-2 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 hover:ring-yellow-500"
+                : "hidden"
+            }
             style={{ maxWidth: "calc(100% - 8px)", overflow: "hidden" }} // Prevent overflow
           >
             <img
@@ -1545,105 +1635,129 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-      <RatingForm clubId={clubId}/>
+      <RatingForm clubId={clubId} />
       <Box
-      className={`${(clubData.ratings && clubData.ratings.length === 0) ? "hidden" : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"}`}
-      sx={{ maxHeight: '400px' }}
-    >
-      <Box className="mb-4 bg-slate-200 rounded">
-        <Typography variant="body1" color="text.secondary">
-          {`Average Rating: ${averageRating}`}
-        </Typography>
-      </Box>
-      {clubData.ratings &&
-        clubData.ratings.map((rating, index) => (
-          <Box
-            key={index}
-            className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
-          >
-            <Box className="flex items-center p-4">
-              <img
-                className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full mr-4"
-                src={rating.portrait}
-                alt="User avatar"
-              />
-              <Box className="flex-1">
-                {editingReviewId === rating.id ? (
+        className={`${
+          clubData.ratings && clubData.ratings.length === 0
+            ? "hidden"
+            : "mx-auto mt-4 w-60% w-2/3 overflow-y-auto bg-white rounded-lg shadow-md p-4"
+        }`}
+        sx={{ maxHeight: "400px" }}
+      >
+        <Box className="mb-4 bg-slate-200 rounded">
+          <Typography variant="body1" color="text.secondary">
+            {`Average Rating: ${averageRating}`}
+          </Typography>
+        </Box>
+        {clubData.ratings &&
+          clubData.ratings.map((rating, index) => (
+            <Box
+              key={index}
+              className="mb-4 transition-transform transform hover:scale-105 hover:shadow-lg bg-slate-200 rounded"
+            >
+              <Box className="flex items-center p-4">
+                <img
+                  className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full mr-4"
+                  src={rating.portrait}
+                  alt="User avatar"
+                />
+                <Box className="flex-1">
+                  {editingReviewId === rating.id ? (
+                    <>
+                      <TextField
+                        value={updatedReview}
+                        onChange={(e) => setUpdatedReview(e.target.value)}
+                        fullWidth
+                        variant="outlined"
+                        size="small"
+                        className="mb-2"
+                      />
+                      <Rating
+                        value={updatedRating}
+                        precision={0.5}
+                        onChange={(e, newValue) => setUpdatedRating(newValue)}
+                      />
+                      <Box className="flex items-center mt-2 space-x-2">
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          onClick={() => saveUpdatedReview(rating.id)}
+                        >
+                          Save
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="secondary"
+                          onClick={cancelEditing}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant="body1" color="text.secondary">
+                        {rating.review}
+                      </Typography>
+                      <Box className="flex items-center mt-2">
+                        <Rating
+                          value={rating.rating}
+                          precision={0.5}
+                          readOnly
+                        />
+                        <Typography
+                          variant="body2"
+                          sx={{ ml: 1, fontWeight: "bold" }}
+                        >
+                          {rating.rating}
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Box>
+
+                <Link
+                  to={`/profile/${rating.author}`}
+                  className="text-primary-500 font-bold ml-4"
+                >
+                  <Typography
+                    variant="subtitle2"
+                    color="primary"
+                    sx={{ fontWeight: "bold" }}
+                  >
+                    {rating.author}
+                  </Typography>
+                </Link>
+
+                {rating.author === localStorage.getItem("username") && (
                   <>
-                    <TextField
-                      value={updatedReview}
-                      onChange={(e) => setUpdatedReview(e.target.value)}
-                      fullWidth
-                      variant="outlined"
-                      size="small"
-                      className="mb-2"
-                    />
-                    <Rating
-                      value={updatedRating}
-                      precision={0.5}
-                      onChange={(e, newValue) => setUpdatedRating(newValue)}
-                    />
-                    <Box className="flex items-center mt-2 space-x-2">
-                      <Button variant="contained" color="primary" onClick={() => saveUpdatedReview(rating.id)}>
-                        Save
-                      </Button>
-                      <Button variant="outlined" color="secondary" onClick={cancelEditing}>
+                    {editingReviewId === rating.id ? (
+                      <Button
+                        onClick={cancelEditing}
+                        className="ml-4 text-red-500"
+                      >
                         Cancel
                       </Button>
-                    </Box>
-                  </>
-                ) : (
-                  <>
-                    <Typography variant="body1" color="text.secondary">
-                      {rating.review}
-                    </Typography>
-                    <Box className="flex items-center mt-2">
-                      <Rating value={rating.rating} precision={0.5} readOnly />
-                      <Typography variant="body2" sx={{ ml: 1, fontWeight: 'bold' }}>
-                        {rating.rating}
-                      </Typography>
-                    </Box>
+                    ) : (
+                      <Button
+                        onClick={() => startEditing(rating)}
+                        className="ml-4 text-blue-500"
+                      >
+                        Edit
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => deleteRating(rating.id)}
+                      className="ml-4 rounded bg-red-500 py-2 px-2 text-white transform hover:scale-105 hover:shadow-lg"
+                    >
+                      Delete
+                    </Button>
                   </>
                 )}
               </Box>
-
-              <Link to={`/profile/${rating.author}`} className="text-primary-500 font-bold ml-4">
-                <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>
-                  {rating.author}
-                </Typography>
-              </Link>
-              
-              {rating.author === localStorage.getItem("username") && (
-                <>
-                  {editingReviewId === rating.id ? (
-                    <Button
-                      onClick={cancelEditing}
-                      className="ml-4 text-red-500"
-                    >
-                      Cancel
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={() => startEditing(rating)}
-                      className="ml-4 text-blue-500"
-                    >
-                      Edit
-                    </Button>
-                  )}
-                  <Button
-                    onClick={() => deleteRating(rating.id)}
-                    className="ml-4 rounded bg-red-500 py-2 px-2 text-white transform hover:scale-105 hover:shadow-lg"
-                  >
-                    Delete
-                  </Button>
-                </>
-              )}
             </Box>
-          </Box>
-        ))}
-    </Box>
-
-
+          ))}
+      </Box>
 
       {/* Photos Gallery Section */}
       <div className={clubData.gallery.length == 0 ? "" : "hidden"}>
@@ -1664,7 +1778,6 @@ const ClubInformation = () => {
               ))}
           </div>
         </div>
-
       </div>
 
       <div className={clubData.gallery.length > 0 ? "" : "hidden"}>
