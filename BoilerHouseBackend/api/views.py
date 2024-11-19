@@ -353,6 +353,7 @@ def get_all_clubs(request):
         return Response({'error': 'Cannot Access this Resource'}, status=403)
     club_list = Club.objects.filter(is_approved=approved)
 
+    scores, users = get_club_recs(user)
 
     clubs = []
     for x in club_list:
@@ -371,10 +372,12 @@ def get_all_clubs(request):
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
+        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.22
+        t['joined'] = user in x.members.all()
         clubs.append(t)
 
 
-    return Response({'clubs': clubs}, 200)
+    return Response({'clubs': clubs, 'user_list': users}, 200)
 
 @api_view(['GET'])
 def get_example_clubs(request):
@@ -547,6 +550,8 @@ def get_club_information(request):
         ret_club['banned_members'] = []
         ret_club['paid_dues'] = []
         ret_club['ratings'] = rating_list
+        rating, reccomended_users = get_rec_for_club(user, club.pk)
+        ret_club['rating'] = rating
         deleted = user.username in club.deletion_votes
         if user.username in club.deletion_votes:
             deleted = deleted and club.deletion_votes[user.username]
@@ -586,7 +591,7 @@ def get_club_information(request):
         for year, freq in most_common_grad_years:
             grad_year_pairs.append((year, round((freq/num_members) * 100, 2)))
 
-        return Response({'club': ret_club, "joined": (inClub or isPending), "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs, "pending": isPending}, status=200)
+        return Response({'club': ret_club, "joined": (inClub or isPending), "officer": isOfficer, "deleted": deleted, "deleted_count": voted_count, "officer_count": len(officer_names), "common_majors": major_pairs, 'common_interests': interest_pairs, 'common_grad_years': grad_year_pairs, "pending": isPending, "user_list": reccomended_users}, status=200)
     except Club.DoesNotExist:
         return Response({"error": "Club not found"}, status=404)
 
@@ -1253,76 +1258,8 @@ def get_recommendations(request):
     user = verify_token(request.headers.get('Authorization'))
     if user is None or user == 'Invalid token':
         return Response({'error': 'invalid token'}, status=400)
-    user_list = [x for x in User.objects.all() if x.pk != user.pk]
-    word_dict = {}
-    for x in user_list:
-        for i in x.interests:
-            word_dict[i] = True
-    for i in user.interests:
-        word_dict[i] = True
-    document_list = []
-    for x in user_list:
-        vector = []
-        for word in word_dict.keys():
-            vector.append(x.interests.count(word))
-        document_list.append(vector)
-    document_list = np.transpose(np.array(document_list))
-    qT = []
-    for word in word_dict.keys():
-        qT.append(user.interests.count(word))
-    U, S, V = svd(document_list, full_matrices= False)
-    k = 35
-    U_k = U[:,:k]
-    S_inv = []
-    VT_k = np.transpose(V)[:, :k]
-    for i in range(0, k):
-        t = [0] * k
-        t[i] = 1/ S[i]
-        S_inv.append(t)
-    temp = np.matmul(qT, U_k)
-    new_q = np.matmul(temp, S_inv)
-    cosine_list = []
-    for d in VT_k:
-        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
-        cosine_list.append(-1 if np.isnan(t) else t)
-    user_scores = []
-    for i in range(0, len(cosine_list)):
-        user_scores.append((user_list[i], cosine_list[i]))
-    user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:20]
-    user_vectors = []
-    for i in range(len(user_scores)):
-        user_vectors.append([0] * len(Club.objects.all()))
-    count = 0
-    total_members = 0
-    club_list = []
-    for club in Club.objects.all():
-        club_list.append(club.pk)
-        total_members += len(club.members.all())
-        for i in range(len(user_scores)):
-            if user_scores[i][0] in club.members.all():
-                user_vectors[i][count] = 1
-        count+=1
-    for i in range(len(user_vectors)):
-        vector = user_vectors[i]
-        avg_rating = np.mean(vector)
-        user_vectors[i] = [x - avg_rating for x in vector]
-    user_vectors = np.array(user_vectors)
-    club_vectors = np.transpose(user_vectors)
-    club_weighted_ratings = []
-    for club in club_vectors:
-        total_similarity = 0
-        total_rating = 0
-        for j in range(len(club)):
-            total_similarity += user_scores[j][1]
-            total_rating += user_scores[j][1] * club[j]
-        club_weighted_ratings.append(total_rating / total_similarity)
-    global_average = total_members / len(User.objects.all())
-    club_final_ratings = [x + global_average for x in club_weighted_ratings]
-    final_score = {}
-    for i in range(len(club_list)):
-        final_score[club_list[i]] = club_final_ratings[i]
-    return Response({"club_list": final_score }, status=200)
+    club_recs, user_recs = get_club_recs(user)
+    return Response({"club_list": club_recs }, status=200)
 
 
 @api_view(['GET'])
@@ -1382,3 +1319,147 @@ def get_upcoming_meetings(request):
     return Response(upcoming_meetings, status=200)
 
 
+def get_club_recs(user):
+    user_list = [x for x in User.objects.all() if x.pk != user.pk]
+    word_dict = {}
+    for x in user_list:
+        for i in x.interests:
+            word_dict[i] = True
+    for i in user.interests:
+        word_dict[i] = True
+    document_list = []
+    for x in user_list:
+        vector = []
+        for word in word_dict.keys():
+            vector.append(x.interests.count(word))
+        document_list.append(vector)
+    document_list = np.transpose(np.array(document_list))
+    qT = []
+    for word in word_dict.keys():
+        qT.append(user.interests.count(word))
+    U, S, V = svd(document_list, full_matrices= False)
+    k = 35
+    U_k = U[:,:k]
+    S_inv = []
+    VT_k = np.transpose(V)[:, :k]
+    for i in range(0, k):
+        t = [0] * k
+        t[i] = 1/ S[i]
+        S_inv.append(t)
+    temp = np.matmul(qT, U_k)
+    new_q = np.matmul(temp, S_inv)
+    cosine_list = []
+    for d in VT_k:
+        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
+        cosine_list.append(-1 if np.isnan(t) else t)
+    user_scores = []
+    user_dict = {}
+    for i in range(0, len(cosine_list)):
+        user_scores.append((user_list[i], cosine_list[i]))
+        user_dict[user_list[i].username] = cosine_list[i]
+    user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
+    user_scores = user_scores[:65]
+    user_vectors = []
+    for i in range(len(user_scores)):
+        user_vectors.append([0] * len(Club.objects.all()))
+    count = 0
+    total_members = 0
+    club_list = []
+    for club in Club.objects.all():
+        club_list.append(club.pk)
+        total_members += len(club.members.all())
+        for i in range(len(user_scores)):
+            if user_scores[i][0] in club.members.all():
+                user_vectors[i][count] = 1
+        count+=1
+    for i in range(len(user_vectors)):
+        vector = user_vectors[i]
+        avg_rating = np.mean(vector)
+        user_vectors[i] = [x - avg_rating for x in vector]
+    user_vectors = np.array(user_vectors)
+    club_vectors = np.transpose(user_vectors)
+    club_weighted_ratings = []
+    for club in club_vectors:
+        total_similarity = 0
+        total_rating = 0
+        for j in range(len(club)):
+            total_similarity += user_scores[j][1]
+            total_rating += user_scores[j][1] * club[j]
+        club_weighted_ratings.append(total_rating / total_similarity)
+    global_average = total_members / len(User.objects.all())
+    club_final_ratings = [x + global_average for x in club_weighted_ratings]
+    final_score = {}
+    for i in range(len(club_list)):
+        final_score[club_list[i]] = club_final_ratings[i]
+    return final_score, user_dict
+
+def get_rec_for_club(user, club_id):
+    user_list = [x for x in User.objects.all() if x.pk != user.pk]
+    word_dict = {}
+    for x in user_list:
+        for i in x.interests:
+            word_dict[i] = True
+    for i in user.interests:
+        word_dict[i] = True
+    document_list = []
+    for x in user_list:
+        vector = []
+        for word in word_dict.keys():
+            vector.append(x.interests.count(word))
+        document_list.append(vector)
+    document_list = np.transpose(np.array(document_list))
+    qT = []
+    for word in word_dict.keys():
+        qT.append(user.interests.count(word))
+    U, S, V = svd(document_list, full_matrices= False)
+    k = 35
+    U_k = U[:,:k]
+    S_inv = []
+    VT_k = np.transpose(V)[:, :k]
+    for i in range(0, k):
+        t = [0] * k
+        t[i] = 1/ S[i]
+        S_inv.append(t)
+    temp = np.matmul(qT, U_k)
+    new_q = np.matmul(temp, S_inv)
+    cosine_list = []
+    for d in VT_k:
+        t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
+        cosine_list.append(-1 if np.isnan(t) else t)
+    user_scores = []
+    user_dict = {}
+    for i in range(0, len(cosine_list)):
+        user_scores.append((user_list[i], cosine_list[i]))
+        user_dict[user_list[i].username] = cosine_list[i]
+    user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
+    user_scores = user_scores[:65]
+    user_vectors = []
+    for i in range(len(user_scores)):
+        user_vectors.append([0] * len(Club.objects.all()))
+    count = 0
+    total_members = 0
+    club_list = []
+    for club in Club.objects.all():
+        club_list.append(club.pk)
+        total_members += len(club.members.all())
+        for i in range(len(user_scores)):
+            if user_scores[i][0] in club.members.all():
+                user_vectors[i][count] = 1
+        count+=1
+    for i in range(len(user_vectors)):
+        vector = user_vectors[i]
+        avg_rating = np.mean(vector)
+        user_vectors[i] = [x - avg_rating for x in vector]
+    user_vectors = np.array(user_vectors)
+    club_vectors = np.transpose(user_vectors)
+    club_weighted_rating = 0
+    selected_vector = club_vectors[club_list.index(club_id)]
+    total_similarity = 0
+    total_rating = 0
+    for j in range(len(selected_vector)):
+        total_similarity += user_scores[j][1]
+        total_rating += user_scores[j][1] * selected_vector[j]
+    club_weighted_rating = total_rating / total_similarity
+    global_average = total_members / len(User.objects.all())
+    club_final_rating = global_average + club_weighted_rating
+    return club_final_rating, user_dict

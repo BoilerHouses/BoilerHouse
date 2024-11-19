@@ -113,7 +113,8 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
-        let avg = 0;
+        setRecommendedUsers(response.data.user_list)
+          let avg = 0;
         if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
             avg += e.rating;
@@ -126,33 +127,6 @@ const ClubInformation = () => {
         alert("There was an error fetching the club data!", error);
         console.log(error);
         setIsLoading(false);
-      });
-    axios
-      .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
-        headers: {
-          Authorization: token,
-        },
-      })
-      .then((response) => {
-        setRecommendedUsers(response.data.user_list);
-      })
-      .catch((error) => {
-        console.error(
-          "There was an error fetching the reccomended users!",
-          error
-        );
-      });
-      axios.get(`http://127.0.0.1:8000/api/recommendations/clubs/`, {
-        headers: {
-          Authorization: token,
-        }
-      })
-      .then((response) => {
-        setReccomended(response.data.club_list[`${clubId}`])
-        console.log(response.data.club_list)
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the reccomended clubs!", error);
       });
 
     axios({
@@ -1270,7 +1244,7 @@ const ClubInformation = () => {
           ))}
       </Box>
       {!joined && <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-        {`Club Similarity Score: ${(reccomended * 100 + 100).toFixed(2)}`}
+        {`Club Similarity Score: ${(clubData.rating * 100 + 100).toFixed(2)}`}
       </Typography>}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Similar User Key:
