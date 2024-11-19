@@ -1264,44 +1264,25 @@ def get_recommendations(request):
     temp = np.matmul(qT, U_k)
     new_q = np.matmul(temp, S_inv)
     cosine_list = []
-    user_dict = {}
     for d in VT_k:
         t = np.dot(new_q, d) / (np.linalg.norm(new_q) * np.linalg.norm(d))
         cosine_list.append(-1 if np.isnan(t) else t)
+    user_scores = []
     for i in range(0, len(cosine_list)):
-        user_dict[user_list[i].username] = cosine_list[i]
-    total_similarity = 0
-    for i in user_dict.keys():
-        total_similarity += (user_dict[i] + 1)
-    club_dict = {}
-    average_similarity_scores = []
-    proportionate_similarity_scores = []  
+        user_scores.append((user_list[i], cosine_list[i]))
+    user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
+    user_scores = user_scores[:len(user_scores)/4]
+    user_vectors = []
+    for user, score in user_scores:
+        user_vectors.append([0] * len(list(Club.objects.all())))
     for club in Club.objects.all():
-        average_similarity = 0
-        proportionate_similarity = 0
         count = 0
-        for member in club.members.all():
-            if member.username in user_dict:
-                average_similarity += (user_dict[member.username] + 1)
-                proportionate_similarity += (user_dict[member.username] + 1)
-                count += 1
-        average_similarity /= count
-        proportionate_similarity /= total_similarity
-        club_dict[club.name] = (average_similarity, proportionate_similarity)
-        
-        average_similarity_scores.append(average_similarity)
-        proportionate_similarity_scores.append(proportionate_similarity)
-
-    average_mean = np.mean(np.array(average_similarity_scores))
-    average_std =  np.std(np.array(average_similarity_scores))
-    proportionate_mean = np.mean(np.array(proportionate_similarity_scores))
-    proportionate_std =  np.std(np.array(proportionate_similarity_scores))
+        for i in range(user_scores):
+            if user_scores[i][0] in club.members.all():
+                user_vectors[i][count] = 1
+        count+=1
+    print(user_vectors)
     final_score = {}
-    for club in club_dict.keys():
-        club_scores = club_dict[club]
-        score = (club_scores[0] - average_mean) / average_std
-        score += (club_scores[1] - proportionate_mean) / proportionate_std
-        final_score[club] = score
     return Response({"club_list": final_score }, status=200)
 
 
