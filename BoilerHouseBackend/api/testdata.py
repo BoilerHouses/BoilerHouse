@@ -135,7 +135,7 @@ def insert_user_data(conn):
             queries = build_interested_user(username, name, "user" not in name, -1)   
             for query in queries:   
                 cursor.execute(query)  
-        for i in range(13, 500):
+        for i in range(13, 1000):
             username = f'user{i}@purdue.edu'
             name = f'user{i}'
             interest_index = i % len(GROUPS_OF_INTERESTS)

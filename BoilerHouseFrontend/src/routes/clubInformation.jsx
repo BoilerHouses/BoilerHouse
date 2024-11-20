@@ -54,7 +54,7 @@ const ClubInformation = () => {
   const [editMeeting, setEditMeeting] = useState(false);
   const [recommendedUsers, setRecommendedUsers] = useState([]);
 
-  const threshold = 0.01;
+  const threshold = 0.2;
 
   const [editingReviewId, setEditingReviewId] = useState(null);
   const [updatedReview, setUpdatedReview] = useState("");
@@ -72,6 +72,8 @@ const ClubInformation = () => {
   const [mostCommonMajors, setMostCommonMajors] = useState([]);
   const [mostCommonInterests, setMostCommonInterests] = useState([]);
   const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
+
+  const[reccomended, setReccomended] = useState(0.0)
 
   const [sendEmail, setSendEmail] = useState(false);
 
@@ -111,7 +113,8 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
-        let avg = 0;
+        setRecommendedUsers(response.data.user_list)
+          let avg = 0;
         if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
             avg += e.rating;
@@ -124,21 +127,6 @@ const ClubInformation = () => {
         alert("There was an error fetching the club data!", error);
         console.log(error);
         setIsLoading(false);
-      });
-    axios
-      .get(`http://127.0.0.1:8000/api/recommendations/users/`, {
-        headers: {
-          Authorization: token,
-        },
-      })
-      .then((response) => {
-        setRecommendedUsers(response.data.user_list);
-      })
-      .catch((error) => {
-        console.error(
-          "There was an error fetching the reccomended users!",
-          error
-        );
       });
 
     axios({
@@ -185,6 +173,7 @@ const ClubInformation = () => {
         alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
+      
   }, [clubId]);
 
   const handleKickMember = (memberId) => {
@@ -1254,6 +1243,9 @@ const ClubInformation = () => {
             />
           ))}
       </Box>
+      {!joined && <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+        {`Club Similarity Score: ${(clubData.rating * 100 + 100).toFixed(2)}`}
+      </Typography>}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Similar User Key:
       </Typography>
