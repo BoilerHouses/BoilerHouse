@@ -372,7 +372,7 @@ def get_all_clubs(request):
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
-        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.22
+        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.75
         t['joined'] = user in x.members.all()
         clubs.append(t)
 
@@ -1400,21 +1400,19 @@ def get_rec_for_club(user, club_id):
     word_dict = {}
     for x in user_list:
         for i in x.interests:
-            word_dict[i.lower()] = True
+            word_dict[i] = True
     for i in user.interests:   
         word_dict[i] = True
     document_list = []
     for x in user_list:
         vector = []
         for word in word_dict.keys():
-            interest_list = [interest.lower() for interest in x.interests]
-            vector.append(interest_list.count(word))
+            vector.append(x.interests.count(word))
         document_list.append(vector)
     document_list = np.transpose(np.array(document_list))
     qT = []
     for word in word_dict.keys():
-        interest_list = [interest.lower() for interest in user.interests]
-        qT.append(interest_list.count(word))
+        qT.append(user.interests.count(word))
     U, S, V = svd(document_list, full_matrices= False)
     k = 35
     U_k = U[:,:k]
