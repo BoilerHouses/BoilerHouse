@@ -73,7 +73,7 @@ const ClubInformation = () => {
   const [mostCommonInterests, setMostCommonInterests] = useState([]);
   const [mostCommonGradYears, setMostCommonGradYears] = useState([]);
 
-  const[reccomended, setReccomended] = useState(0.0)
+  const [reccomended, setReccomended] = useState(0.0);
 
   const [sendEmail, setSendEmail] = useState(false);
 
@@ -113,8 +113,8 @@ const ClubInformation = () => {
         setMostCommonMajors(response.data.common_majors);
         setMostCommonInterests(response.data.common_interests);
         setMostCommonGradYears(response.data.common_grad_years);
-        setRecommendedUsers(response.data.user_list)
-          let avg = 0;
+        setRecommendedUsers(response.data.user_list);
+        let avg = 0;
         if (response.data.club.ratings) {
           response.data.club.ratings.forEach((e) => {
             avg += e.rating;
@@ -173,7 +173,6 @@ const ClubInformation = () => {
         alert("There was an error fetching meetings!", error);
         setGetMeetingError(true);
       });
-      
   }, [clubId]);
 
   const handleKickMember = (memberId) => {
@@ -206,21 +205,24 @@ const ClubInformation = () => {
       });
   };
 
-
   const handleMemberBan = (memberId) => {
-      console.log(memberId)
-      const token = localStorage.getItem("token");
-      axios.post(`http://127.0.0.1:8000/api/club/ban_member/`, {
+    console.log(memberId);
+    const token = localStorage.getItem("token");
+    axios
+      .post(
+        `http://127.0.0.1:8000/api/club/ban_member/`,
+        {
           club_id: clubId,
-          member_username: memberId
-      }, {
+          member_username: memberId,
+        },
+        {
           headers: {
             Authorization: token,
           },
         }
       )
       .then(() => {
-          alert("The member has been successfully banned from the club.");
+        alert("The member has been successfully banned from the club.");
         window.location.reload();
       })
       .catch((error) => {
@@ -593,7 +595,7 @@ const ClubInformation = () => {
   };
 
   const deleteRating = (e) => {
-    const rating_id = e.target.getAttribute("index");
+    const rating_id = e;
     const token = localStorage.getItem("token");
     axios
       .get(`http://127.0.0.1:8000/api/rating/delete/${rating_id}`, {
@@ -606,7 +608,7 @@ const ClubInformation = () => {
         navigate(0);
       })
       .catch((error) => {
-        console.error("There was an error creating your rating!", error);
+        alert("There was an error deleting your rating!", error);
       });
   };
   // delete a meeting
@@ -867,68 +869,68 @@ const ClubInformation = () => {
 
         <div className="flex justify-between">
           <button
-              className={
-                officer && clubData.is_approved
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/club/${clubId}/edit`)}
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/edit`)}
           >
             Edit Culture, Time Commitment, Audience
           </button>
 
           <button
-              className={
-                officer && clubData.is_approved
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/club/${clubId}/defaultContact`)}
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/defaultContact`)}
           >
             Contact Us!
           </button>
           <button
-              className={
-                officer && clubData.is_approved
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/club/${clubId}/clubDues`)}
+            className={
+              officer && clubData.is_approved
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/club/${clubId}/clubDues`)}
           >
             {clubData.clubDues ? "Edit Dues" : "Set Club Dues"}
           </button>
           <button
-              className={
-                officer && clubData.is_approved && clubData.clubDues
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/manageDues/${clubId}`)}
+            className={
+              officer && clubData.is_approved && clubData.clubDues
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/manageDues/${clubId}`)}
           >
             Manage Dues
           </button>
           <button
-              className={
-                !officer &&
-                clubData.is_approved &&
-                joined &&
-                accepting &&
-                !pending
-                    ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
-                    : "hidden"
-              }
-              onClick={() => navigate(`/officer_questions/${clubId}`)}
+            className={
+              !officer &&
+              clubData.is_approved &&
+              joined &&
+              accepting &&
+              !pending
+                ? "bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600"
+                : "hidden"
+            }
+            onClick={() => navigate(`/officer_questions/${clubId}`)}
           >
             Apply To Be an Officer!
           </button>
         </div>
         <button
-            className={
-              joined
-                  ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
-                  : "hidden"
-            }
-            onClick={handleLeaveClub}
+          className={
+            joined
+              ? "bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 mt-5"
+              : "hidden"
+          }
+          onClick={handleLeaveClub}
         >
           Leave Club
         </button>
@@ -936,8 +938,8 @@ const ClubInformation = () => {
 
       <div className="relative">
         <button
-            className={
-              !clubData.is_approved
+          className={
+            !clubData.is_approved
               ? "bg-green-500 absolute top-4 right-[5%] text-white font-bold py-2 px-4 rounded hover:bg-green-600"
               : "hidden"
           }
@@ -1243,9 +1245,11 @@ const ClubInformation = () => {
             />
           ))}
       </Box>
-      {!joined && <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
-        {`Club Similarity Score: ${(clubData.rating * 100 + 100).toFixed(2)}`}
-      </Typography>}
+      {!joined && (
+        <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
+          {`Club Similarity Score: ${(clubData.rating * 100 + 100).toFixed(2)}`}
+        </Typography>
+      )}
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }} color="black">
         Similar User Key:
       </Typography>
@@ -1627,7 +1631,7 @@ const ClubInformation = () => {
           </div>
         ))}
       </div>
-      <RatingForm clubId={clubId} />
+      {joined && <RatingForm clubId={clubId} />}
       <Box
         className={`${
           clubData.ratings && clubData.ratings.length === 0

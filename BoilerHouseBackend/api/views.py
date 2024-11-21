@@ -372,7 +372,7 @@ def get_all_clubs(request):
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
-        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.22
+        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.75
         t['joined'] = user in x.members.all()
         clubs.append(t)
 
@@ -1358,7 +1358,7 @@ def get_club_recs(user):
         user_scores.append((user_list[i], cosine_list[i]))
         user_dict[user_list[i].username] = cosine_list[i]
     user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:65]
+    user_scores = user_scores[:20]
     user_vectors = []
     for i in range(len(user_scores)):
         user_vectors.append([0] * len(Club.objects.all()))
@@ -1432,7 +1432,7 @@ def get_rec_for_club(user, club_id):
         user_scores.append((user_list[i], cosine_list[i]))
         user_dict[user_list[i].username] = cosine_list[i]
     user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:65]
+    user_scores = user_scores[:20]
     user_vectors = []
     for i in range(len(user_scores)):
         user_vectors.append([0] * len(Club.objects.all()))

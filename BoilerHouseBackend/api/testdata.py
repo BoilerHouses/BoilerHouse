@@ -135,7 +135,7 @@ def insert_user_data(conn):
             queries = build_interested_user(username, name, "user" not in name, -1)   
             for query in queries:   
                 cursor.execute(query)  
-        for i in range(13, 1000):
+        for i in range(13, 100):
             username = f'user{i}@purdue.edu'
             name = f'user{i}'
             interest_index = i % len(GROUPS_OF_INTERESTS)
@@ -206,7 +206,7 @@ def insert_club_data(conn, id_list):
             if i > 1:
                 for j in id_list[interest_map[i]]:
                     join_club = random.randint(1, 25)
-                    if (join_club <= 6):
+                    if (join_club <= 22):
                         member_queries.append(f"INSERT INTO api_club_members (club_id, user_id) VALUES ({i}, {j})")
                 rand_list = random.sample(range(1, 6), random.randint(1, 2))
                 for x in rand_list:
