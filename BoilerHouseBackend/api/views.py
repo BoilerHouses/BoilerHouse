@@ -1153,7 +1153,8 @@ def update_club_dues(request, club_id):
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
     try:
-        club.clubDues = request.data.get('clubDues')
+        club.clubDues = '' if request.data.get('clubDues') == 0 else request.data.get('clubDues')
+        print(club.clubDues)
         club.dueName = request.data.get('dueName')
         club.dueDate = request.data.get('dueDate')
         subject = f"Update to club dues for {club.name} "
