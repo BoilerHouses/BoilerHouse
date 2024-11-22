@@ -329,6 +329,11 @@ const ViewClubs = () => {
   }
 
   const handleFilter = async () => {
+
+    if (data.length == 0) {
+      return;
+    }
+
     setIsCalculatingFilters(true);
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
