@@ -82,8 +82,8 @@ const ViewClubs = () => {
             setData(res.data.clubs);
             setFilteredData(res.data.clubs);
             setIsLoadingClubs(false);
-            setRecommendedUsers(res.data.user_list)
-            console.log(res)
+            setRecommendedUsers(res.data.user_list);
+            console.log(res);
           })
           .catch(() => {
             setIsLoadingClubs(false);
@@ -854,22 +854,30 @@ const ViewClubs = () => {
       </div>
 
       {filteredData.length > 0 ? (
-        <div className="grid grid-cols-2 gap-5 overflow-y-auto h-[70%] text-align-center bg-gray-200 rounded-lg border border-black p-5">
-          {filteredData.map((item) => (
-            <div
-              key={item.id}
-              index={item.id}
-              className={`relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 ${
-                item.recommended && !item.joined ? 'ring-4 ring-yellow-500' : ''}`}
-              style={{ backgroundImage: `url("${item.icon}")` }}
-              onClick={handleClick}
-            >
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
-                <span>{item.name}</span>
+        <>
+          <Typography variant="p">
+            Recommended clubs are outlined in gold.
+          </Typography>
+          <div className="grid grid-cols-2 gap-5 overflow-y-auto h-[70%] text-align-center bg-gray-200 rounded-lg border border-black p-5">
+            {filteredData.map((item) => (
+              <div
+                key={item.id}
+                index={item.id}
+                className={`relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 ${
+                  item.recommended && !item.joined
+                    ? "ring-4 ring-yellow-500"
+                    : ""
+                }`}
+                style={{ backgroundImage: `url("${item.icon}")` }}
+                onClick={handleClick}
+              >
+                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
+                  <span>{item.name}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="flex justify-center h-screen">
           <p className="text-black text-center font-bold rounded-md">

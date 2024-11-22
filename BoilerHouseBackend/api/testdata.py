@@ -153,7 +153,7 @@ def insert_club_data(conn, id_list):
     with conn.cursor() as cursor:
         club_query = f'''
                         INSERT INTO api_club (name, description, culture, time_commitment, interests, icon, gallery, is_approved, "useQuestions", questionnaire, responses, meetings, deletion_votes, "officerQuestionnaire", "officerResponses", "acceptingApplications", "clubPhoneNumber", "clubEmail", "targetedAudience", "clubDues", "dueName", "dueDate") VALUES
-                        ('Computer Science Club', 'We Love Computer Science', 'Relaxed Academic Club', '1-5 hours', '{{"Computer Science", "Coding"}}', '{IMAGE}',
+                        ('Test Club', 'We Love Testing', 'Relaxed Academic Club', '1-5 hours', '{{"Computer Science", "Coding"}}', '{IMAGE}',
                         '{{}}', true, false, '{{}}', '{{}}', '{{}}', '{{}}', '[{{"text": "Whats your name?", "required": true}}]'::json, '{{}}', true, '', '', '', '', '', null)
                     '''
 
