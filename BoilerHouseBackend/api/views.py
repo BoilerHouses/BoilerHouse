@@ -373,7 +373,7 @@ def get_all_clubs(request):
         t['k'] = x.pk
         t['num_members'] = members
         t['recommended'] = x.pk in scores and scores[x.pk] >= 0.75
-        t['joined'] = user in x.members.all()
+        t['joined'] = user in x.members.all() or user in x.pending_members.all()
         clubs.append(t)
 
 
