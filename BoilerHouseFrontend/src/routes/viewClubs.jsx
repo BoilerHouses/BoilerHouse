@@ -14,6 +14,9 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
+let usedFilter = false;
+
+
 const ViewClubs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
@@ -63,6 +66,7 @@ const ViewClubs = () => {
 
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchClubs = async () => {
       setIsLoadingClubs(true);
@@ -90,10 +94,17 @@ const ViewClubs = () => {
           },
         })
           .then((res) => {
+
+            if (!usedFilter) {
+              setIsLoadingClubs(false);
+              setData(res.data.clubs);
+              setFilteredData(res.data.clubs);
+              setRecommendedUsers(res.data.clubs);
+            }
             localStorage.setItem("club_info", JSON.stringify(res.data.clubs));
             localStorage.setItem(
               "recommended_users",
-              JSON.stringify(res.data.user_list)
+              JSON.stringify(res.data.clubs)
             );
           })
           .catch(() => {
@@ -848,7 +859,10 @@ const ViewClubs = () => {
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"
-                onClick={applyFilters}
+                onClick={() => {
+                  usedFilter = true;
+                  applyFilters();
+                }}
               >
                 {isCalculatingFilters ? (
                   <CircularProgress size={24} color="inherit" />
