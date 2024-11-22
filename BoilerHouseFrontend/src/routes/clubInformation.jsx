@@ -159,13 +159,17 @@ const ClubInformation = () => {
             return a.id - b.id;
           });
 
-          let startInd = 1;
-          for (let i = startInd; i < meetings.length; i++) {
-            if (new Date(meetings[i].date) < new Date()) {
+          const today = new Date();
+          const currentDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+          let startInd = 0;
+          for (let i = 0; i < meetings.length; i++) {
+            if (new Date(meetings[i].date) < currentDay) {
               startInd++;
             }
           }
-          meetings = meetings.slice(startInd - 1);
+          
+          meetings = meetings.slice(startInd);
           setMeetings(meetings);
         }
       })

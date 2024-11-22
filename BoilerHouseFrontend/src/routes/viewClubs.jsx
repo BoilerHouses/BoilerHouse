@@ -70,8 +70,6 @@ const ViewClubs = () => {
       const club_info = JSON.parse(localStorage.getItem("club_info"));
       const recommended_users = JSON.parse(localStorage.getItem("recommended_users"));
 
-      console.log(club_info);
-
       if (club_info !== null && recommended_users !== null) {
         setIsLoadingClubs(false);
         setData(club_info);
