@@ -66,6 +66,19 @@ const ViewClubs = () => {
   useEffect(() => {
     const fetchClubs = async () => {
       setIsLoadingClubs(true);
+
+      const club_info = JSON.parse(localStorage.getItem("club_info"));
+      const recommended_users = JSON.parse(localStorage.getItem("recommended_users"));
+
+      console.log(club_info);
+
+      if (club_info !== null && recommended_users !== null) {
+        setIsLoadingClubs(false);
+        setData(club_info);
+        setFilteredData(club_info);
+        setRecommendedUsers(recommended_users);
+      }
+
       const token = localStorage.getItem("token");
       if (token) {
         axios({
@@ -83,7 +96,12 @@ const ViewClubs = () => {
             setFilteredData(res.data.clubs);
             setIsLoadingClubs(false);
             setRecommendedUsers(res.data.user_list);
-            console.log(res);
+
+            localStorage.setItem("club_info", JSON.stringify(res.data.clubs));
+            localStorage.setItem(
+              "recommended_users",
+              JSON.stringify(res.data.user_list)
+            );
           })
           .catch(() => {
             setIsLoadingClubs(false);
@@ -329,7 +347,6 @@ const ViewClubs = () => {
   }
 
   const handleFilter = async () => {
-
     if (data.length == 0) {
       return;
     }
