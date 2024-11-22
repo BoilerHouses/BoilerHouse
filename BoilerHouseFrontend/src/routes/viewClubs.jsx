@@ -14,6 +14,9 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
+let usedFilter = false;
+
+
 const ViewClubs = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [data, setData] = useState([]);
@@ -63,9 +66,21 @@ const ViewClubs = () => {
 
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const fetchClubs = async () => {
       setIsLoadingClubs(true);
+
+      const club_info = JSON.parse(localStorage.getItem("club_info"));
+      const recommended_users = JSON.parse(localStorage.getItem("recommended_users"));
+
+      if (club_info !== null && recommended_users !== null) {
+        setIsLoadingClubs(false);
+        setData(club_info);
+        setFilteredData(club_info);
+        setRecommendedUsers(recommended_users);
+      }
+
       const token = localStorage.getItem("token");
       if (token) {
         axios({
@@ -79,11 +94,18 @@ const ViewClubs = () => {
           },
         })
           .then((res) => {
-            setData(res.data.clubs);
-            setFilteredData(res.data.clubs);
-            setIsLoadingClubs(false);
-            setRecommendedUsers(res.data.user_list)
-            console.log(res)
+
+            if (!usedFilter) {
+              setIsLoadingClubs(false);
+              setData(res.data.clubs);
+              setFilteredData(res.data.clubs);
+              setRecommendedUsers(res.data.clubs);
+            }
+            localStorage.setItem("club_info", JSON.stringify(res.data.clubs));
+            localStorage.setItem(
+              "recommended_users",
+              JSON.stringify(res.data.clubs)
+            );
           })
           .catch(() => {
             setIsLoadingClubs(false);
@@ -329,6 +351,10 @@ const ViewClubs = () => {
   }
 
   const handleFilter = async () => {
+    if (data.length == 0) {
+      return;
+    }
+
     setIsCalculatingFilters(true);
     let searchTermFilterList = new Set();
     let sizeFilerList = new Set();
@@ -833,7 +859,10 @@ const ViewClubs = () => {
               <Button
                 variant="contained"
                 className="!mt-5 !mx-auto !justify-center"
-                onClick={applyFilters}
+                onClick={() => {
+                  usedFilter = true;
+                  applyFilters();
+                }}
               >
                 {isCalculatingFilters ? (
                   <CircularProgress size={24} color="inherit" />
@@ -854,22 +883,30 @@ const ViewClubs = () => {
       </div>
 
       {filteredData.length > 0 ? (
-        <div className="grid grid-cols-2 gap-5 overflow-y-auto h-[70%] text-align-center bg-gray-200 rounded-lg border border-black p-5">
-          {filteredData.map((item) => (
-            <div
-              key={item.id}
-              index={item.id}
-              className={`relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 ${
-                item.recommended && !item.joined ? 'ring-4 ring-yellow-500' : ''}`}
-              style={{ backgroundImage: `url("${item.icon}")` }}
-              onClick={handleClick}
-            >
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
-                <span>{item.name}</span>
+        <>
+          <Typography variant="p">
+            Recommended clubs are outlined in gold.
+          </Typography>
+          <div className="grid grid-cols-2 gap-5 overflow-y-auto h-[70%] text-align-center bg-gray-200 rounded-lg border border-black p-5">
+            {filteredData.map((item) => (
+              <div
+                key={item.id}
+                index={item.id}
+                className={`relative h-48 rounded-lg bg-cover bg-center border border-gray-600 shadow-sm transition-transform transform hover:scale-105 hover:shadow-lg hover:ring-2 ${
+                  item.recommended && !item.joined
+                    ? "ring-4 ring-yellow-500"
+                    : ""
+                }`}
+                style={{ backgroundImage: `url("${item.icon}")` }}
+                onClick={handleClick}
+              >
+                <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-70 text-white text-center p-2 rounded-b-lg">
+                  <span>{item.name}</span>
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </>
       ) : (
         <div className="flex justify-center h-screen">
           <p className="text-black text-center font-bold rounded-md">

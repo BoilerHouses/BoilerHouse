@@ -372,8 +372,8 @@ def get_all_clubs(request):
         t['owner'] = list(x.officers.all())[0].username
         t['k'] = x.pk
         t['num_members'] = members
-        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.22
-        t['joined'] = user in x.members.all()
+        t['recommended'] = x.pk in scores and scores[x.pk] >= 0.75
+        t['joined'] = user in x.members.all() or user in x.pending_members.all()
         clubs.append(t)
 
 
@@ -1153,7 +1153,8 @@ def update_club_dues(request, club_id):
     if user not in club.officers.all():
         return Response({"error": "Invalid Permissions, cannot modify club!"}, status=403)
     try:
-        club.clubDues = request.data.get('clubDues')
+        club.clubDues = '' if request.data.get('clubDues') == 0 else request.data.get('clubDues')
+        print(club.clubDues)
         club.dueName = request.data.get('dueName')
         club.dueDate = request.data.get('dueDate')
         subject = f"Update to club dues for {club.name} "
@@ -1325,7 +1326,7 @@ def get_club_recs(user):
     for x in user_list:
         for i in x.interests:
             word_dict[i] = True
-    for i in user.interests:
+    for i in user.interests:  
         word_dict[i] = True
     document_list = []
     for x in user_list:
@@ -1358,7 +1359,7 @@ def get_club_recs(user):
         user_scores.append((user_list[i], cosine_list[i]))
         user_dict[user_list[i].username] = cosine_list[i]
     user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:65]
+    user_scores = user_scores[:20]
     user_vectors = []
     for i in range(len(user_scores)):
         user_vectors.append([0] * len(Club.objects.all()))
@@ -1399,7 +1400,7 @@ def get_rec_for_club(user, club_id):
     for x in user_list:
         for i in x.interests:
             word_dict[i] = True
-    for i in user.interests:
+    for i in user.interests:   
         word_dict[i] = True
     document_list = []
     for x in user_list:
@@ -1432,7 +1433,7 @@ def get_rec_for_club(user, club_id):
         user_scores.append((user_list[i], cosine_list[i]))
         user_dict[user_list[i].username] = cosine_list[i]
     user_scores = sorted(user_scores, key=lambda x: x[1], reverse=True)
-    user_scores = user_scores[:65]
+    user_scores = user_scores[:20]
     user_vectors = []
     for i in range(len(user_scores)):
         user_vectors.append([0] * len(Club.objects.all()))
