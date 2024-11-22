@@ -90,11 +90,6 @@ const ViewClubs = () => {
           },
         })
           .then((res) => {
-            setData(res.data.clubs);
-            setFilteredData(res.data.clubs);
-            setIsLoadingClubs(false);
-            setRecommendedUsers(res.data.user_list);
-
             localStorage.setItem("club_info", JSON.stringify(res.data.clubs));
             localStorage.setItem(
               "recommended_users",

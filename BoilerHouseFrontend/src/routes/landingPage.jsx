@@ -62,15 +62,6 @@ const LandingPage = () => {
         <div className="grid md:grid-cols-3 gap-12">
           <div className="bg-gray-900 p-8 rounded-lg shadow-lg">
             <h2 className="text-2xl font-semibold mb-4 text-yellow-500">
-              Reviews
-            </h2>
-            <ul className="list-disc list-inside text-white">
-              <li>Example</li>
-            </ul>
-          </div>
-
-          <div className="bg-gray-900 p-8 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-semibold mb-4 text-yellow-500">
               Example Clubs
             </h2>
             <ul className="list-disc list-inside text-white">
